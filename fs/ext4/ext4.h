@@ -140,6 +140,7 @@ enum SHIFT_DIRECTION {
 #define EXT4_MB_USE_ROOT_BLOCKS		0x1000
 /* Use blocks from reserved pool */
 #define EXT4_MB_USE_RESERVED		0x2000
+#define EXT4_MB_USED_EXTENTS		0x4000
 
 struct ext4_allocation_request {
 	/* target inode for block we're allocating */
@@ -607,6 +608,7 @@ enum {
 	/* Caller will submit data before dropping transaction handle. This
 	 * allows jbd2 to avoid submitting data before commit. */
 #define EXT4_GET_BLOCKS_IO_SUBMIT		0x0400
+#define EXT4_GET_BLOCKS_USED_EXTENTS		0x0800
 
 /*
  * The bit position of these flags must not overlap with any of the
@@ -654,6 +656,12 @@ enum {
 #define EXT4_IOC_SET_ENCRYPTION_POLICY	FS_IOC_SET_ENCRYPTION_POLICY
 #define EXT4_IOC_GET_ENCRYPTION_PWSALT	FS_IOC_GET_ENCRYPTION_PWSALT
 #define EXT4_IOC_GET_ENCRYPTION_POLICY	FS_IOC_GET_ENCRYPTION_POLICY
+#define EXT4_IOC_DEFRAG_RANGE		_IOWR('f', 22, struct defrag_range)
+#define EXT4_IOC_FALLOCATE_RESERVE	_IOW('f', 23, struct fallocate_reserved_range)
+
+/* ioctl command used to decrypt encrypted filename, storage compact will use it */
+#define EXT4_IOC_DECRYPT_FNAME_V1 		_IOWR('f', 28, struct encrypt_fname_v1)
+#define EXT4_IOC_DECRYPT_FNAME_V2 		_IOWR('f', 29, struct encrypt_fname_v2)
 
 #ifndef FS_IOC_FSGETXATTR
 /* Until the uapi changes get merged for project quota... */
@@ -2348,6 +2356,45 @@ struct mmpd_data {
  */
 #define EXT4_MMP_MAX_CHECK_INTERVAL	300UL
 
+
+/*
+ * Minimum free blocks required for block group defrag.
+ */
+#define EXT4_LOW_FREE_BLOCKS_THRESHOLD_FOR_DEFRAG	256UL
+
+/*
+ * Minimum fragments required for block group defrag.
+ */
+#define EXT4_LOW_FRAGS_THRESHOLD_FOR_DEFRAG		4UL
+
+/*
+ * If free blocks length larger than 512k, don't touch it
+ */
+#define EXT4_MAX_FREE_BLOCKS_LENGTH	128UL
+
+
+struct defrag_range {
+	__u64 free_start;
+	__u64 free_end;
+	__u64 used_start;
+	__u64 used_end;
+	unsigned long length;
+	unsigned int group;
+};
+
+struct pa_address {
+	int pa_group;
+	int pa_offset;
+};
+
+struct fallocate_reserved_range {
+	int mode;
+	loff_t offset;
+	loff_t len;
+	struct pa_address pa_addr;
+};
+
+
 /*
  * Function prototypes
  */
@@ -2625,6 +2672,8 @@ extern int ext4_mb_add_groupinfo(struct super_block *sb,
 extern int ext4_group_add_blocks(handle_t *handle, struct super_block *sb,
 				ext4_fsblk_t block, unsigned long count);
 extern int ext4_trim_fs(struct super_block *, struct fstrim_range *);
+extern int ext4_defrag_range(struct super_block *sb, struct defrag_range *range);
+
 extern void ext4_process_freed_data(struct super_block *sb, tid_t commit_tid);
 
 /* inode.c */
@@ -3330,6 +3379,8 @@ extern void ext4_ext_init(struct super_block *);
 extern void ext4_ext_release(struct super_block *);
 extern long ext4_fallocate(struct file *file, int mode, loff_t offset,
 			  loff_t len);
+extern long ext4_fallocate_with_pa_reserve(struct file *file, int mode, loff_t offset,
+			loff_t len, struct pa_address *pa_addr);
 extern int ext4_convert_unwritten_extents(handle_t *handle, struct inode *inode,
 					  loff_t offset, ssize_t len);
 extern int ext4_convert_unwritten_io_end_vec(handle_t *handle,
