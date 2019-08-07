@@ -92,6 +92,8 @@ jbd2_get_transaction(journal_t *journal, transaction_t *transaction)
 	atomic_set(&transaction->t_updates, 0);
 	atomic_set(&transaction->t_outstanding_credits,
 		   atomic_read(&journal->j_reserved_credits));
+	atomic_set(&transaction->t_write_inodes, 0);
+	atomic_set(&transaction->t_wait_inodes, 0);
 	atomic_set(&transaction->t_handle_count, 0);
 	INIT_LIST_HEAD(&transaction->t_inode_list);
 	INIT_LIST_HEAD(&transaction->t_private_list);
@@ -2565,6 +2567,11 @@ static int jbd2_journal_file_inode(handle_t *handle, struct jbd2_inode *jinode,
 	J_ASSERT(!jinode->i_next_transaction);
 	jinode->i_transaction = transaction;
 	list_add(&jinode->i_list, &transaction->t_inode_list);
+	/* collect transaction inodes info */
+	if (flags & JI_WRITE_DATA)
+		atomic_inc(&transaction->t_write_inodes);
+	else
+		atomic_inc(&transaction->t_wait_inodes);
 done:
 	if (jinode->i_transaction == transaction) {
 		if (jinode->i_dirty_end) {
