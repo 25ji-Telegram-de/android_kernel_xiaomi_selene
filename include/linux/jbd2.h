@@ -458,7 +458,7 @@ struct jbd2_inode {
 	/**
 	 * @i_dirty_start:
 	 *
-	 * Offset in bytes where the dirty range for this inode starts.
+	 * Offset in bytes where the dirty range for this inode starts in current transaction.
 	 * [j_list_lock]
 	 */
 	loff_t i_dirty_start;
@@ -466,10 +466,26 @@ struct jbd2_inode {
 	/**
 	 * @i_dirty_end:
 	 *
-	 * Inclusive offset in bytes where the dirty range for this inode
+	 * Inclusive offset in bytes where the dirty range for this inode in current transaction
 	 * ends. [j_list_lock]
 	 */
 	loff_t i_dirty_end;
+
+	/**
+	 * @i_next_dirty_start:
+	 *
+	 * Offset in bytes where the dirty range for this inode starts in next transaction.
+	 * [j_list_lock]
+	 */
+	loff_t i_next_dirty_start;
+
+	/**
+	 * @i_next_dirty_end:
+	 *
+	 * Inclusive offset in bytes where the dirty range for this inode in next transaction
+	 * ends. [j_list_lock]
+	 */
+	loff_t i_next_dirty_end;
 };
 
 struct jbd2_revoke_table_s;
