@@ -244,7 +244,6 @@ config ANDROID_DEFAULT_SETTING
 	select UHID
 	select UID_SYS_STATS
 	select UNIX
-	select UNMAP_KERNEL_AT_EL0
 	select USB
 	select USB_CONFIGFS
 	select USB_CONFIGFS_F_ACC
