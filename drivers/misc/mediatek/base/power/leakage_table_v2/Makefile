@@ -108,5 +108,3 @@ obj-$(CONFIG_MACH_MT6877) += mtk_static_power_mt6877.o
 obj-$(CONFIG_MACH_MT8168) += mtk_static_power.o
 
 obj-$(CONFIG_MACH_MT8168) += mtk_static_power_mt8168.o
-
-ccflags-y += -Wno-maybe-uninitialized
