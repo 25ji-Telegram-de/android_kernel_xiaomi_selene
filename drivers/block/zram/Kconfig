@@ -35,6 +35,11 @@ config ZRAM_DEFAULT_COMP_ALGORITHM
 	string "Default ZRAM compression algorithm"
 	default "lz4"
 
+config ZRAM_SIZE_OVERRIDE
+	int "zram size to set from kernel"
+	range 1 8
+	default 2
+
 config ZRAM_MEMORY_TRACKING
 	bool "Track zRam block status"
 	depends on ZRAM && DEBUG_FS
