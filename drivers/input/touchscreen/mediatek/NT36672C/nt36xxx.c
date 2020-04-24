@@ -361,6 +361,8 @@ int32_t CTP_SPI_READ(struct spi_device *client, uint8_t *buf, uint16_t len)
 		if (ret == 0)
 			break;
 		retries++;
+		msleep(20);
+		NVT_ERR("error, retry=%d\n", retries);
 	}
 
 	if (unlikely(retries == 5)) {
@@ -396,6 +398,8 @@ int32_t CTP_SPI_WRITE(struct spi_device *client, uint8_t *buf, uint16_t len)
 		if (ret == 0)
 			break;
 		retries++;
+		msleep(20);
+		NVT_ERR("error, retry=%d\n", retries);
 	}
 
 	if (unlikely(retries == 5)) {
