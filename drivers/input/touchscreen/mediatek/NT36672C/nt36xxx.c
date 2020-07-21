@@ -970,7 +970,7 @@ static int32_t nvt_flash_open(struct inode *inode, struct file *file)
 {
 	struct nvt_flash_data *dev;
 
-	dev = kmalloc(sizeof(struct nvt_flash_data), GFP_KERNEL);
+	dev = kzalloc(sizeof(struct nvt_flash_data), GFP_KERNEL);
 	if (dev == NULL) {
 		NVT_ERR("Failed to allocate memory for nvt flash data\n");
 		return -ENOMEM;
@@ -1443,8 +1443,11 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 	int32_t i = 0;
 	int32_t finger_cnt = 0;
 
+	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
+	sched_setscheduler(current, SCHED_FIFO, &param);
+
 #if WAKEUP_GESTURE
-	if (bTouchIsAwake == 0) {
+	if (likely(bTouchIsAwake == 0)) {
 		pm_wakeup_event(&ts->input_dev->dev, 5000);
 	}
 #endif
@@ -1452,18 +1455,10 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 	mutex_lock(&ts->lock);
 
 	ret = CTP_SPI_READ(ts->client, point_data, POINT_DATA_LEN + 1);
-	if (ret < 0) {
+	if (unlikely(ret < 0)) {
 		NVT_ERR("CTP_SPI_READ failed.(%d)\n", ret);
 		goto XFER_ERROR;
 	}
-/*
-	//--- dump SPI buf ---
-	for (i = 0; i < 10; i++) {
-		printk("%02X %02X %02X %02X %02X %02X  ",
-			point_data[1+i*6], point_data[2+i*6], point_data[3+i*6], point_data[4+i*6], point_data[5+i*6], point_data[6+i*6]);
-	}
-	printk("\n");
-*/
 
 #if NVT_TOUCH_WDT_RECOVERY
    /* ESD protect by WDT */
@@ -1500,9 +1495,10 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 /*BSP.TP - Add pocket mode - 2020.11.26*/
 
 #if WAKEUP_GESTURE
-	if (bTouchIsAwake == 0) {
+	if (likely(bTouchIsAwake == 0)) {
 		//input_id = (uint8_t)(point_data[1] >> 3);
 		nvt_ts_wakeup_gesture_report(input_id, point_data);
+		nvt_irq_enable(true);
 		mutex_unlock(&ts->lock);
 		return IRQ_HANDLED;
 	}
@@ -2090,7 +2086,7 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 #endif
 	NVT_LOG("start\n");
 
-	ts = kmalloc(sizeof(struct nvt_ts_data), GFP_KERNEL);
+	ts = kzalloc(sizeof(struct nvt_ts_data), GFP_KERNEL);
 	if (ts == NULL) {
 		NVT_ERR("failed to allocated memory for nvt ts data\n");
 		return -ENOMEM;
