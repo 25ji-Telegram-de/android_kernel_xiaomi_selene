@@ -24,6 +24,7 @@
 #include <linux/spi/spi.h>
 #include <linux/uaccess.h>
 #include <linux/hqsysfs.h>
+#include <linux/pm_qos.h>
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #include <linux/earlysuspend.h>
@@ -186,6 +187,7 @@ struct nvt_ts_data {
 #ifdef CONFIG_SPI_MT65XX
     struct mtk_chip_config spi_ctrl;
 #endif
+	struct pm_qos_request pm_qos_req;
 /*BSP.TP add nvt_irq modified in 20201111.Start*/
 	spinlock_t irq_lock;
 };
