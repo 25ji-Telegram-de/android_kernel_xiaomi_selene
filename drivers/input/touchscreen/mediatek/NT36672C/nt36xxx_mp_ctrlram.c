@@ -24,7 +24,7 @@
 #include "nt36xxx.h"
 #include "nt36xxx_mp_ctrlram.h"
 
-#if NVT_TOUCH_MP
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_MP_CTRLRAM
 
 #define NORMAL_MODE 0x00
 #define TEST_MODE_1 0x21
@@ -1682,7 +1682,7 @@ void nvt_mp_proc_deinit(void)
 		NVT_LOG("Removed /proc/%s\n", "nvt_selftest");
 	}
 }
-#endif /* #if NVT_TOUCH_MP */
+#endif /* #ifdef CONFIG_TOUCHSCREEN_NT36672C_MP_CTRLRAM */
 
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - start*/
 #if NVT_LOCKDOWN
@@ -1970,7 +1970,7 @@ int32_t nvt_tp_selftest_proc_init(void)
 		ret = -1;
 		return ret;
 	} else {
-	#if	!NVT_TOUCH_MP
+	#ifdef	!CONFIG_TOUCHSCREEN_NT36672C_MP_CTRLRAM
 		if (nvt_mp_buffer_init()) {
 			NVT_ERR("Allocate mp memory failed\n");
 			ret = -1;
@@ -1979,7 +1979,7 @@ int32_t nvt_tp_selftest_proc_init(void)
 		} else {
 	#endif
 			NVT_LOG("create /proc/tp_selftest Succeeded!\n");
-	#if	!NVT_TOUCH_MP
+	#ifdef	!CONFIG_TOUCHSCREEN_NT36672C_MP_CTRLRAM
 		}
 	#endif
 		return 0;
@@ -1988,7 +1988,7 @@ int32_t nvt_tp_selftest_proc_init(void)
 
 void nvt_tp_selftest_proc_deinit(void)
 {
-	#if !NVT_TOUCH_MP
+	#ifdef !CONFIG_TOUCHSCREEN_NT36672C_MP_CTRLRAM
 	nvt_mp_buffer_deinit();
 	#endif
 
