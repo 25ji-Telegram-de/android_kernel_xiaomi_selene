@@ -47,17 +47,17 @@
 /* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
 
 #include "nt36xxx.h"
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 #include <linux/jiffies.h>
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 static struct delayed_work nvt_esd_check_work;
 static struct workqueue_struct *nvt_esd_check_wq;
 static unsigned long irq_timer;
 uint8_t esd_check;
 uint8_t esd_retry;
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
 /* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 start */
 bool tp_charger_status;
@@ -892,14 +892,14 @@ static ssize_t nvt_flash_read(struct file *file, char __user *buff, size_t count
 		goto out;
 	}
 
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	/*
 	 * stop esd check work to avoid case that 0x77 report righ after here to enable esd check again
 	 * finally lead to trigger esd recovery bootloader reset
 	 */
 	cancel_delayed_work_sync(&nvt_esd_check_work);
 	nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
 	spi_wr = str[0] >> 7;
 	memcpy(buf, str+2, ((str[0] & 0x7F) << 8) | str[1]);
@@ -1278,7 +1278,7 @@ static uint8_t nvt_fw_recovery(uint8_t *point_data)
 	return detected;
 }
 
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 void nvt_esd_check_enable(uint8_t enable)
 {
 	/* update interrupt timer */
@@ -1319,7 +1319,7 @@ static void nvt_esd_check_func(struct work_struct *work)
 	queue_delayed_work(nvt_esd_check_wq, &nvt_esd_check_work,
 			msecs_to_jiffies(NVT_TOUCH_ESD_CHECK_PERIOD));
 }
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
 #if NVT_TOUCH_WDT_RECOVERY
 static uint8_t recovery_cnt;
@@ -1467,9 +1467,9 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 
 	/* ESD protect by FW handshake */
 	if (nvt_fw_recovery(point_data)) {
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 		nvt_esd_check_enable(true);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 		goto XFER_ERROR;
 	}
 
@@ -1507,10 +1507,10 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 			continue;
 
 		if (likely(((point_data[position] & 0x07) == 0x01) || ((point_data[position] & 0x07) == 0x02))) {	//finger down (enter & moving)
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 			/* update interrupt timer */
 			irq_timer = jiffies;
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 			input_x = (uint32_t) (point_data[position + 1] << 4) + (uint32_t) (point_data[position + 3] >> 4);
 			input_y = (uint32_t) (point_data[position + 2] << 4) + (uint32_t) (point_data[position + 3] & 0x0F);
 
@@ -1554,10 +1554,10 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 
 #if TOUCH_KEY_NUM > 0
 	if (point_data[61] == 0xF8) {
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 		/* update interrupt timer */
 		irq_timer = jiffies;
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 		for (i = 0; i < ts->max_button_num; i++) {
 			input_report_key(ts->input_dev, touch_key_array[i], ((point_data[62] >> i) & 0x01));
 		}
@@ -1686,9 +1686,9 @@ static int nvt_set_cur_value(int mode, int value)
 {
 	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
 	mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
 	if (mode < Touch_Mode_NUM && mode >= 0) {
 		xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE] = value;
@@ -1741,9 +1741,9 @@ static int nvt_get_mode_cur_value(int mode)
 		
 	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
 	mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 	/* Huaqin modify for TP optimutex_unlock protectmization by zhangjiangbin at 2021/07/13 end */
 	
 	if (mode < Touch_Mode_NUM && mode >= 0) {
@@ -1853,23 +1853,23 @@ static int nvt_reset_Mode(int mode)
 			nvt_set_cur_value(0, 0);
 		} else if (mode == 2) {
 			mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 			nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 			nvt_set_sensitivity_switch(3);
 			mutex_unlock(&ts->lock);
 		} else if (mode == 3) {
 			mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 			nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 			nvt_set_pf_switch(0);
 			mutex_unlock(&ts->lock);
 		} else if (mode == 7) {
 			mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 			nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 			nvt_set_er_range_switch(2);
 			mutex_unlock(&ts->lock);
 		} else {
@@ -1915,9 +1915,9 @@ int nvt_palm_sensor_write(int value)
 	}
 	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
 	mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
 	ret = nvt_palm_sensor_cmd(value);
 	if (!ret) {
@@ -2291,8 +2291,7 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 	queue_delayed_work(nvt_fwu_wq, &ts->nvt_fwu_work, msecs_to_jiffies(14000));
 #endif
 
-	NVT_LOG("NVT_TOUCH_ESD_PROTECT is %d\n", NVT_TOUCH_ESD_PROTECT);
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	INIT_DELAYED_WORK(&nvt_esd_check_work, nvt_esd_check_func);
 	nvt_esd_check_wq = alloc_workqueue("nvt_esd_check_wq", WQ_MEM_RECLAIM, 1);
 	if (!nvt_esd_check_wq) {
@@ -2302,7 +2301,7 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 	}
 	queue_delayed_work(nvt_esd_check_wq, &nvt_esd_check_work,
 			msecs_to_jiffies(NVT_TOUCH_ESD_CHECK_PERIOD));
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
 /* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 start */
 #if TP_RESUME_EN
@@ -2468,7 +2467,7 @@ err_nvt_suspend_init_wq_failed:
 #endif
 /* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 end */
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - end*/
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	if (nvt_esd_check_wq) {
 		cancel_delayed_work_sync(&nvt_esd_check_work);
 		destroy_workqueue(nvt_esd_check_wq);
@@ -2565,7 +2564,7 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 #endif
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - end*/
 
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	if (nvt_esd_check_wq) {
 		cancel_delayed_work_sync(&nvt_esd_check_work);
 		nvt_esd_check_enable(false);
@@ -2648,14 +2647,14 @@ static void nvt_ts_shutdown(struct spi_device *client)
 #endif
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - end*/
 
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	if (nvt_esd_check_wq) {
 		cancel_delayed_work_sync(&nvt_esd_check_work);
 		nvt_esd_check_enable(false);
 		destroy_workqueue(nvt_esd_check_wq);
 		nvt_esd_check_wq = NULL;
 	}
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
 #if BOOT_UPDATE_FIRMWARE
 	if (nvt_fwu_wq) {
@@ -2704,11 +2703,11 @@ static int32_t nvt_ts_suspend(struct device *dev)
 	nvt_irq_enable(false);
 #endif
 /* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	NVT_LOG("cancel delayed work sync\n");
 	cancel_delayed_work_sync(&nvt_esd_check_work);
 	nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
 	mutex_lock(&ts->lock);
 
@@ -2787,11 +2786,11 @@ int32_t nvt_ts_tp_suspend(void)
 	nvt_irq_enable(false);
 #endif
 
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	NVT_LOG("cancel delayed work sync\n");
 	cancel_delayed_work_sync(&nvt_esd_check_work);
 	nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
 	mutex_lock(&ts->lock);
 
@@ -2888,11 +2887,11 @@ static int32_t nvt_ts_resume(struct device *dev)
 #endif
 	/* Huaqin modify for TP GESTURE by zhangjiangbin at 2021/07/13 end */
 	
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	nvt_esd_check_enable(false);
 	queue_delayed_work(nvt_esd_check_wq, &nvt_esd_check_work,
 			msecs_to_jiffies(NVT_TOUCH_ESD_CHECK_PERIOD));
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
 	bTouchIsAwake = 1;
 
@@ -2954,11 +2953,11 @@ int32_t nvt_ts_tp_resume(void)
 	nvt_irq_enable(true);
 #endif
 	/* Huaqin modify for TP GESTURE by zhangjiangbin at 2021/07/13 end */
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 	nvt_esd_check_enable(false);
 	queue_delayed_work(nvt_esd_check_wq, &nvt_esd_check_work,
 			msecs_to_jiffies(NVT_TOUCH_ESD_CHECK_PERIOD));
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 
 	bTouchIsAwake = 1;
 

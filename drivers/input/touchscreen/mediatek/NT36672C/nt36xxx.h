@@ -127,7 +127,6 @@ extern char *MP_UPDATE_FIRMWARE_NAME;
 
 //---ESD Protect.---
 /* Huaqin modify for HQ-140017 by caogaojie at 2021/07/05 start */
-#define NVT_TOUCH_ESD_PROTECT 1
 #define NVT_TOUCH_ESD_CHECK_PERIOD 1500	/* ms */
 #define NVT_TOUCH_WDT_RECOVERY 1
 #define NVT_TOUCH_ESD_DISP_RECOVERY 1
@@ -261,9 +260,9 @@ int32_t nvt_clear_fw_status(void);
 int32_t nvt_check_fw_status(void);
 int32_t nvt_set_page(uint32_t addr);
 int32_t nvt_write_addr(uint32_t addr, uint8_t data);
-#if NVT_TOUCH_ESD_PROTECT
+#ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT
 extern void nvt_esd_check_enable(uint8_t enable);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
+#endif /* ifdef CONFIG_TOUCHSCREEN_NT36672C_ESD_PROTECT */
 /* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
 #if NVT_TOUCH_VDD_TP_RECOVERY
 void nvt_bootloader_reset_locked(void);
