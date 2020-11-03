@@ -4677,14 +4677,17 @@ static int mtk_dsi_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 
 	case DSI_GET_MODE_BY_MAX_VREFRESH:
 	{
-		struct drm_display_mode *tmp = NULL;
+		struct drm_display_mode *max_mode;
 		unsigned int vrefresh = 0;
 
+		if (dsi == NULL)
+			break;
+
 		mode = (struct drm_display_mode **)params;
-		list_for_each_entry(tmp, &dsi->conn.modes, head) {
-			if (tmp && tmp->vrefresh > vrefresh) {
-				vrefresh = tmp->vrefresh;
-				*mode = tmp;
+		list_for_each_entry(max_mode, &dsi->conn.modes, head) {
+			if (max_mode && max_mode->vrefresh > vrefresh) {
+				vrefresh = max_mode->vrefresh;
+				*mode = max_mode;
 			}
 		}
 	}
@@ -5761,7 +5764,7 @@ int fbconfig_get_esd_check_test(struct drm_crtc *crtc,
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
 	struct mtk_ddp_comp *output_comp;
 	struct mtk_dsi *dsi;
-	struct mtk_panel_params *dsi_params;
+	struct mtk_panel_params *dsi_params = NULL;
 	int cmd_matched = 0;
 	uint32_t i = 0;
 
