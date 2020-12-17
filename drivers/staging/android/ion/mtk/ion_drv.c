@@ -450,6 +450,12 @@ static long ion_sys_cache_sync(struct ion_client *client,
 			is_kernel_addr = 1;
 			if (buffer->kmap_cnt != 0) {
 				sync_va = (unsigned long)buffer->vaddr;
+				ret = __cache_sync_by_range(client, sync_type,
+							    sync_va, sync_size,
+							    1);
+				if (ret < 0)
+					goto err;
+				goto out;
 			} else {
 				/* Do kernel map and do cache sync
 				 * 32bit project, vmap space is small,
@@ -534,9 +540,7 @@ static long ion_sys_cache_sync(struct ion_client *client,
 		ion_need_unmap_flag = 0;
 	}
 
-#ifndef CONFIG_ARM64
 out:
-#endif
 	ion_drv_put_kernel_handle(kernel_handle);
 	return ret;
 
