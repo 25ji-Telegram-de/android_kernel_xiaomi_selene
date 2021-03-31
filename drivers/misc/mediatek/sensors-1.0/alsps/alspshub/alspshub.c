@@ -35,7 +35,6 @@ struct alspshub_ipi_data {
 
 	/*data */
 	u16		als;
-	/*add psensor vdd3 compile by luozeng at 2021.3.24 start*/
   	u32		als_data_action_data_cpy;
 	u8		ps;
 	int		ps_cali;
@@ -322,6 +321,9 @@ static void alspshub_init_done_work(struct work_struct *work)
 		pr_err("sensor_cfg_to_hub als fail\n");
 #endif
 }
+ /*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 start*/
+extern int ps_event_report_t(struct data_unit_t *pevent, int status, int64_t time_stamp);
+/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 end*/
 static int ps_recv_data(struct data_unit_t *event, void *reserved)
 {
 	int err = 0;
@@ -335,8 +337,9 @@ static int ps_recv_data(struct data_unit_t *event, void *reserved)
 	else if (event->flush_action == DATA_ACTION &&
 			READ_ONCE(obj->ps_android_enable) == true) {
 		__pm_wakeup_event(&obj->ps_wake_lock, msecs_to_jiffies(100));
-		err = ps_data_report_t(event->proximity_t.oneshot,
-			SENSOR_STATUS_ACCURACY_HIGH,
+		/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 start*/
+		err = ps_event_report_t(event, SENSOR_STATUS_ACCURACY_HIGH,
+		/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 end*/
 			(int64_t)event->time_stamp);
 	} else if (event->flush_action == CALI_ACTION) {
 		spin_lock(&calibration_lock);
@@ -421,20 +424,17 @@ static int alshub_factory_enable_sensor(bool enable_disable,
 }
 static int alshub_factory_get_data(int32_t *data)
 {
-    struct alspshub_ipi_data *obj = obj_ipi_data;
+/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 start*/
+	int err = 0;
+	struct data_unit_t data_t;
 
-    if (!obj)
-        return 0;
-
-    spin_lock(&calibration_lock);
-    if (NULL != data){
-        *data = obj->als_data_action_data_cpy;
-    }
-    spin_unlock(&calibration_lock);
-
-    return 0;
+	err = sensor_get_data_from_hub(ID_LIGHT, &data_t);
+	if (err < 0)
+		return -1;
+	*data = data_t.data[1];
+	return 0;
 }
-/*add psensor vdd3 compile by luozeng at 2021.3.24 end*/
+/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 end*/
 static int alshub_factory_get_raw_data(int32_t *data)
 {
 	int err = 0;

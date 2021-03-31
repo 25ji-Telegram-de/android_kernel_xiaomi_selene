@@ -139,6 +139,25 @@ int rgbw_flush_report(void)
 	return err;
 }
 
+/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 start*/
+int ps_event_report_t(struct data_unit_t *pevent, int status, int64_t time_stamp)
+{
+	int err = 0;
+	struct sensor_event event;
+
+	memset(&event, 0, sizeof(struct sensor_event));
+
+	event.flush_action = DATA_ACTION;
+	event.time_stamp = time_stamp;
+	event.word[0] = pevent->proximity_t.oneshot + 1;
+	event.word[1] = 0;
+	event.word[2] = pevent->proximity_t.steps;
+	event.status = status;
+	//pr_notice("[ALS/PS]%s! %d, %d, %d, status:%d\n", __func__, event.word[0], event.word[1], event.word[2], status);
+	err = sensor_input_event(alsps_context_obj->ps_mdev.minor, &event);
+	return err;
+}
+/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 end*/
 int ps_data_report_t(int value, int status, int64_t time_stamp)
 {
 	int err = 0;
@@ -1407,17 +1426,17 @@ static int alsps_remove(void)
 
 	return 0;
 }
-/*add psensor vdd3 compile by luozeng at 2021.3.24 start*/
+/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 start*/
 extern int alsps_ldo3_driver_init(void);
-/*add psensor vdd3 compile by luozeng at 2021.3.24 end*/
+/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 end*/
 
 static int __init alsps_init(void)
 {
 	pr_debug("%s\n", __func__);
-/*add psensor vdd3 compile by luozeng at 2021.3.24 start*/
+/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 start*/
   	pr_debug("%s: call alsps_ldo3_driver_init\n", __func__);
     	alsps_ldo3_driver_init();
-/*add psensor vdd3 compile by luozeng at 2021.3.24 end*/
+/*Huaqin modify for HQ-12367 by luozeng at 2021.3.31 end*/
 	if (alsps_probe()) {
 		pr_err("failed to register alsps driver\n");
 		return -ENODEV;
