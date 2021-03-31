@@ -125,9 +125,9 @@ int musb_fake_CDP;
  * init.$platform.usb.rc
  */
 int kernel_init_done;
-/* Huaqin add/modify/del for WXYFB-996 by miaozhichao at 2021/3/29 start */
-int musb_force_on;
-/* Huaqin add/modify/del for WXYFB-996 by miaozhichao at 2021/3/29 end */
+/* Huaqin add/modify/del for WXYFB-996 by wangqi at 2021/3/31 start */
+int musb_force_on = 1;
+/* Huaqin add/modify/del for WXYFB-996 by wangqi at 2021/3/31 end */
 int musb_host_dynamic_fifo = 1;
 int musb_host_dynamic_fifo_usage_msk;
 bool musb_host_db_enable;
