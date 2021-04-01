@@ -50,9 +50,6 @@
 #include "inc/tcpci.h"
 #include "inc/tcpci_timer.h"
 #include "inc/tcpci_typec.h"
-/*K19A WXYFB-996 K19A charger by wangqi at 2021/3/31 start*/
-extern int musb_force_on;
-/*K19A WXYFB-996 K19A charger by wangqi at 2021/3/31 end*/
 
 #if 1 /*  #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))*/
 #include <linux/sched/rt.h>
@@ -1037,10 +1034,7 @@ pr_err("szw:chip_id2=%d\n",chip_id);
 		}
 		pr_err("from 0x%02x read 0x%02x\n", (uint8_t)i, rc);
 	}
-/*K19A WXYFB-996 K19A charger by wangqi at 2021/3/31 start*/
-	musb_force_on = 0;
-	pr_err("%s set musb_force_on = 0\n", __func__);
-/*K19A WXYFB-996 K19A charger by wangqi at 2021/3/31 end*/
+
 	pr_info("%s probe OK!\n", __func__);
 	return 0;
 
