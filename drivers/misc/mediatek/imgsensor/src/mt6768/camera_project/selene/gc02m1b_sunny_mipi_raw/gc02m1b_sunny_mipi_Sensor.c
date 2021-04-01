@@ -702,6 +702,61 @@ static kal_uint32 set_test_pattern_mode(kal_bool enable)
 	return ERROR_NONE;
 }
 
+//Used to read In_Sensor data
+static char otp_data[11] = { 0 };
+
+unsigned int
+gc02m1_read_otp_info(struct i2c_client *client,
+		 unsigned int addr, unsigned char *data, unsigned int size)
+{
+	int ii = 0;
+	LOG_INF("swl addr %d,size %d", addr, size);
+	for (ii = 0; ii < 11; ii++) {
+		data[ii] = otp_data[addr + ii];
+		LOG_INF("swl otp_info %x,data %x", data[ii],
+				otp_data[addr + ii]);
+	}
+	return size;
+}
+
+static void gc02m1_read_otp(void)
+{
+	int i = 0;
+	int otp_addr[] = { 16, 18, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+	kal_uint8 otp_info[11];
+	write_cmos_sensor(0xfe, 0x00);
+	write_cmos_sensor(0xfc, 0x01);
+	write_cmos_sensor(0xf4, 0x41);
+	write_cmos_sensor(0xf5, 0xc0);
+	write_cmos_sensor(0xf6, 0x44);
+	write_cmos_sensor(0xf8, 0x38);
+	write_cmos_sensor(0xf9, 0x82);
+	write_cmos_sensor(0xfa, 0x00);
+	write_cmos_sensor(0xfd, 0x80);
+	write_cmos_sensor(0xfc, 0x81);
+	write_cmos_sensor(0xf7, 0x01);
+	write_cmos_sensor(0xfc, 0x80);
+	write_cmos_sensor(0xfc, 0x80);
+	write_cmos_sensor(0xfc, 0x80);
+	write_cmos_sensor(0xfc, 0x8e);
+	write_cmos_sensor(0xf3, 0x30);
+	write_cmos_sensor(0xfe, 0x02);
+	for (i = 0; i < 11; i++) {
+		write_cmos_sensor(0x17, otp_addr[i] * 8);
+		write_cmos_sensor(0xf3, 0x34);
+		otp_info[i] = read_cmos_sensor(0x19);
+		LOG_INF("otp_info2[%d] = %x\n", i, otp_info[i]);
+	}
+	if (otp_info[1] == 68) {
+		for (i = 0; i < 11; i++) {
+			otp_data[i] = otp_info[i];
+			LOG_INF("otp_info[%d] = %x\n", i, otp_data[i]);
+		}
+	}
+	write_cmos_sensor(0xf7, 0x00);
+	write_cmos_sensor(0xfe, 0x00);
+}
+
 static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 {
 	kal_uint8 i = 0;
@@ -715,6 +770,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			*sensor_id = return_sensor_id();
 			if (*sensor_id == imgsensor_info.sensor_id) {
 				LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id, *sensor_id);
+				gc02m1_read_otp();
 				return ERROR_NONE;
 			}
 			LOG_INF("Read sensor id fail, write id: 0x%x, id: 0x%x\n", imgsensor.i2c_write_id, *sensor_id);
@@ -728,6 +784,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		*sensor_id = 0xFFFFFFFF;
 		return ERROR_SENSOR_CONNECT_FAIL;
 	}
+
 	return ERROR_NONE;
 }
 

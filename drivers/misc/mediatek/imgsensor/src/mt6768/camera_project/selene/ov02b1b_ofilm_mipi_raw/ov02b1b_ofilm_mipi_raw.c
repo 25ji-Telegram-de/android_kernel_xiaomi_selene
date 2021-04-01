@@ -1290,10 +1290,12 @@ static void ov02b1b_read_otp(void)
     {
         write_cmos_sensor(0xfd, 0x06);
         otp_info[i] = read_cmos_sensor(otp_addr[i]);
+		LOG_INF("otp_info2[%d] = %x\n", i, otp_info[i]);
     }
     for (i = 0; i < OTP_DATA_NUMBER; i++)
     {
         otp_data[i] = otp_info[i];
+		LOG_INF("otp_info[%d] = %x\n", i, otp_data[i]);
     }
 }
 
