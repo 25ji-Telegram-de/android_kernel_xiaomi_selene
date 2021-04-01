@@ -326,7 +326,6 @@ static int fusb303_read_device_id(struct fusb303_chip *chip)
 	int rc;
 	rc = i2c_smbus_read_byte_data(chip->client,
 				FUSB303_REG_DEVICEID);
-	pr_err("szw:rc=%d\n",rc);
 	if (rc < 0)
 		return rc;
 	chip->dev_id = rc;

@@ -954,7 +954,7 @@ static int wusb3801_i2c_probe(struct i2c_client *client,
 	int i, rc;
 	bool use_dt = client->dev.of_node;
 
-	pr_info("%s\n", __func__);
+	pr_err("ljj124 %s\n", __func__);
 	if (i2c_check_functionality(client->adapter,
 			I2C_FUNC_SMBUS_I2C_BLOCK | I2C_FUNC_SMBUS_BYTE_DATA))
 		pr_info("I2C functionality : OK...\n");
@@ -962,11 +962,13 @@ static int wusb3801_i2c_probe(struct i2c_client *client,
 		pr_info("I2C functionality check : failuare...\n");
 
 	chip_id = wusb3801_check_revision(client);
+	pr_err("szw:chip_id=%d\n",chip_id);
 	if (chip_id < 0) {
 		chip_id = wusb3801_check_revision(client);
 		if (chip_id < 0)
 			return chip_id;
 	}
+pr_err("szw:chip_id2=%d\n",chip_id);
 	chip = devm_kzalloc(&client->dev, sizeof (*chip), GFP_KERNEL);
 	if (!chip)
 		return -ENOMEM;

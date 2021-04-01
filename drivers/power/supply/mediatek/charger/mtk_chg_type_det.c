@@ -118,6 +118,7 @@ static const char * const mtk_chg_type_name[] = {
 	"Apple 1.0A Charger",
 	"Apple 0.5A Charger",
 	"Wireless Charger",
+	"HVDCP_CHARGER",
 };
 
 static void dump_charger_name(enum charger_type type)
@@ -131,6 +132,7 @@ static void dump_charger_name(enum charger_type type)
 	case APPLE_2_1A_CHARGER:
 	case APPLE_1_0A_CHARGER:
 	case APPLE_0_5A_CHARGER:
+	case HVDCP_CHARGER:
 		pr_info("%s: charger type: %d, %s\n", __func__, type,
 			mtk_chg_type_name[type]);
 		break;
@@ -169,6 +171,10 @@ void reverse_charger(bool en)
 
 	primary_charger = get_charger_by_name("primary_chg");
 	pr_err("dhx---is otg : %d\n", is_otg);
+	if (!primary_charger) {
+		pr_err("primary charger otg is null\n");
+		return;
+	}
 	if (en) {
 		reverse_flage = 1;
 		charger_dev_enable_otg(primary_charger, false);
@@ -289,6 +295,7 @@ static int mt_charger_set_property(struct power_supply *psy,
 		/* usb */
 		if ((mtk_chg->chg_type == STANDARD_HOST) ||
 			(mtk_chg->chg_type == CHARGING_HOST) ||
+			(mtk_chg->chg_type == HVDCP_CHARGER) ||
 			(mtk_chg->chg_type == NONSTANDARD_CHARGER))
 			mt_usb_connect();
 		else
@@ -330,7 +337,7 @@ static int mt_usb_get_property(struct power_supply *psy,
 	enum power_supply_property psp, union power_supply_propval *val)
 {
 	struct mt_charger *mtk_chg = power_supply_get_drvdata(psy);
-	struct tcpc_device *tcpc = tcpc_dev_get_by_name("type_c_port0");
+	//struct tcpc_device *tcpc = tcpc_dev_get_by_name("type_c_port0");
 	int typec_mode = 0;
 
 	switch (psp) {
@@ -389,6 +396,9 @@ static int mt_usb_get_property(struct power_supply *psy,
 			break;
 		case  STANDARD_CHARGER:
 			val->intval = POWER_SUPPLY_TYPE_USB_DCP;
+			break;
+		case  HVDCP_CHARGER:
+			val->intval = POWER_SUPPLY_TYPE_USB_HVDCP;
 			break;
 		default:
 			val->intval = POWER_SUPPLY_TYPE_UNKNOWN;
@@ -648,6 +658,10 @@ static int pd_tcp_notifier_call(struct notifier_block *pnb,
 
 	static struct charger_device *primary_charger;
 	primary_charger = get_charger_by_name("primary_chg");
+	if (!primary_charger) {
+		pr_err("primary charger notifier is null\n");
+		return 0;
+	}
 	switch (event) {
 	case TCP_NOTIFY_TYPEC_STATE:
 		if (noti->typec_state.old_state == TYPEC_UNATTACHED &&

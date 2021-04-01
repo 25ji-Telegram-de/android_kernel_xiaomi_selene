@@ -126,7 +126,7 @@ int musb_fake_CDP;
  */
 int kernel_init_done;
 /* Huaqin add/modify/del for WXYFB-996 by wangqi at 2021/3/31 start */
-int musb_force_on = 1;
+int musb_force_on;
 /* Huaqin add/modify/del for WXYFB-996 by wangqi at 2021/3/31 end */
 int musb_host_dynamic_fifo = 1;
 int musb_host_dynamic_fifo_usage_msk;

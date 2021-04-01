@@ -246,7 +246,7 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 			}
 		}
 
-		chr_info("[%s]vbus:%d input_cur:%d idx:%d current:%d\n",
+		chr_err("[%s]vbus:%d input_cur:%d idx:%d current:%d\n",
 			__func__, vbus, cur, idx,
 			info->data.pd_charger_current);
 
@@ -332,6 +332,10 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 				info->data.apple_2_1a_charger_current;
 		pdata->charging_current_limit =
 				info->data.apple_2_1a_charger_current;
+	} else if (info->chr_type == POWER_SUPPLY_TYPE_USB_HVDCP) {
+          pdata->input_current_limit = 2000000;
+          pdata->charging_current_limit = 6000000;
+          pr_err("POWER_SUPPLY_TYPE_USB_HVDCP set icl\n");
 	}
 
 	if (info->enable_sw_jeita) {
@@ -441,8 +445,9 @@ done:
 		pdata->input_current_limit = pdata->input_current_limit / 2;
 		pdata2->input_current_limit = pdata2->input_current_limit / 2;
 	}
-
-	pr_notice("force:%d %d thermal:(%d %d,%d %d)(%d %d %d)setting:(%d %d)(%d %d)",
+	pdata->charging_current_limit = 5000000;
+	pdata2->charging_current_limit = 5000000;
+	pr_err("force:%d %d thermal:(%d %d,%d %d)(%d %d %d)setting:(%d %d)(%d %d)",
 		_uA_to_mA(pdata->force_charging_current),
 		_uA_to_mA(pdata2->force_charging_current),
 		_uA_to_mA(pdata->thermal_input_current_limit),
@@ -457,7 +462,7 @@ done:
 		_uA_to_mA(pdata2->input_current_limit),
 		_uA_to_mA(pdata2->charging_current_limit));
 
-	pr_notice("type:%d usb_unlimited:%d usbif:%d usbsm:%d aicl:%d atm:%d parallel:%d\n",
+	pr_err("type:%d usb_unlimited:%d usbif:%d usbsm:%d aicl:%d atm:%d parallel:%d\n",
 		info->chr_type, info->usb_unlimited,
 		IS_ENABLED(CONFIG_USBIF_COMPLIANCE), info->usb_state,
 		_uA_to_mA(pdata->input_current_limit_by_aicl),
@@ -558,12 +563,12 @@ static void dual_swchg_turn_on_charging(struct charger_manager *info)
 	if (swchgalg->state == CHR_ERROR) {
 		chg1_enable = false;
 		chg2_enable = false;
-		pr_notice("Charging Error, disable charging!\n");
+		pr_err("Charging Error, disable charging!\n");
 	} else if ((get_boot_mode() == META_BOOT) ||
 		   (get_boot_mode() == ADVMETA_BOOT)) {
 		chg1_enable = false;
 		chg2_enable = false;
-		pr_notice("In meta mode, disable charging\n");
+		pr_err("In meta mode, disable charging\n");
 	} else {
 		mtk_pe20_start_algorithm(info);
 		if (mtk_pe20_get_is_connect(info) == false)
@@ -574,7 +579,7 @@ static void dual_swchg_turn_on_charging(struct charger_manager *info)
 		    || info->chg1_data.charging_current_limit == 0) {
 			chg1_enable = false;
 			chg2_enable = false;
-			pr_notice("chg1's aicr is set to 0mA, turn off\n");
+			pr_err("chg1's aicr is set to 0mA, turn off\n");
 		}
 
 		if ((mtk_pe20_get_is_enable(info) &&
@@ -587,14 +592,16 @@ static void dual_swchg_turn_on_charging(struct charger_manager *info)
 			if (info->chg2_data.input_current_limit == 0 ||
 			    info->chg2_data.charging_current_limit == 0) {
 				chg2_enable = false;
-				pr_notice("chg2's aicr is 0mA, turn off\n");
+				pr_err("chg2's aicr is 0mA, turn off\n");
 			}
 		}
 		if (chg1_enable)
+            pr_err("swchg_select_cv\n");
 			swchg_select_cv(info);
 	}
 
 	charger_dev_enable(info->chg1_dev, chg1_enable);
+    pr_err("charger_dev_enable, chg1_enable %d chg2_enable %d\n",chg1_enable,chg2_enable);
 
 	if (chg2_enable == true) {
 		if ((mtk_pe20_get_is_enable(info) &&

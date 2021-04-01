@@ -26,7 +26,7 @@ endif
 ifeq ($(CONFIG_MTK_GAUGE_VERSION),30)
 	obj-$(CONFIG_MTK_CHARGER) += charger/
 #/*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 start*/
-	obj-$(CONFIG_MEDIA_POWER_SUPPLY)	+= battery_secrete/
+	#obj-$(CONFIG_MEDIA_POWER_SUPPLY)	+= battery_secrete/
 #/*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 end*/
 else ifeq ($(CONFIG_MTK_GAUGE_VERSION),20)
 	obj-$(CONFIG_MTK_SMART_BATTERY) += battery_meter_fg_20.o battery_common_fg_20.o

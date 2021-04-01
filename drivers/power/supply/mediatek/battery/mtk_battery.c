@@ -496,6 +496,12 @@ void otg_thermal_limit(void)
 	if (!primary_charger) {
 		pr_err("primary_charger is NULL\n");
 		primary_charger = get_charger_by_name("primary_chg");
+		
+		if (!primary_charger) {
+			pr_err("primary_charger is NULL again\n");
+			return;
+		}
+		pr_err("primary_charger is NULL0331\n");
 	}
 
 	if (otg_limit == 1) {
@@ -505,6 +511,7 @@ void otg_thermal_limit(void)
 	}
 }
 
+int get_charger_type(void);
 static int battery_get_property(struct power_supply *psy,
 	enum power_supply_property psp,
 	union power_supply_propval *val)
@@ -542,8 +549,10 @@ static int battery_get_property(struct power_supply *psy,
 		cycle_count = gm.bat_cycle;
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-		charger_dev_get_charger_type(primary_charger, &type);
-		if (type > 3 || type < 0)
+		//charger_dev_get_charger_type(primary_charger, &type);
+		type = get_charger_type();
+		pr_err("ljj charger_dev_get_charger_type = %d\n",type);
+		if (type > 9 || type < 0)
 			type = 0;
 		val->intval = type;
 		break;
@@ -766,6 +775,10 @@ void battery_update(struct battery_data *bat_data)
 	if (!primary_charger) {
 		pr_err("primary_charger is NULL\n");
 		primary_charger = get_charger_by_name("primary_chg");
+		if (!primary_charger) {
+			pr_err("primary_charger is NULL00\n");
+			return;
+		}
 	}
 	charger_dev_is_charging_done(primary_charger, &chg_done);
 
@@ -4242,6 +4255,10 @@ static void otg_boost_limit_work(struct work_struct *work)
 	if (!primary_charger) {
 		pr_err("primary_charger is NULL\n");
 		primary_charger = get_charger_by_name("primary_chg");
+		if (!primary_charger) {
+			pr_err("primary_charger is NULL\n");
+			return;
+		}
 	}
 	if (otg_limit == 1) {
 		pr_err("phone is to high skip batterty otg boost check\n");
