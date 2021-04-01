@@ -2019,6 +2019,19 @@
                 <smt>false</smt>
                 <ies>true</ies>
             </gpio177>
+	    <!--enabel alsps ldo by luozeng at 2021.3.24 start-->
+            <gpio178>
+                <eint_mode>false</eint_mode>
+                <def_mode>0</def_mode>
+                <inpull_en>false</inpull_en>
+                <inpull_selhigh>false</inpull_selhigh>
+                <def_dir>OUT</def_dir>
+                <out_high>true</out_high>
+                <varName0>GPIO_ALSPS_LDO_EN_PIN</varName0>
+                <smt>false</smt>
+                <ies>true</ies>
+            </gpio178>
+          <!--enabel alsps ldo by luozeng at 2021.3.24 end-->
             <gpio179>
                 <eint_mode>false</eint_mode>
                 <def_mode>0</def_mode>
@@ -2030,6 +2043,16 @@
                 <smt>false</smt>
                 <ies>true</ies>
             </gpio179>
+            <gpio180>
+                <eint_mode>true</eint_mode>
+                <def_mode>0</def_mode>
+                <inpull_en>true</inpull_en>
+                <inpull_selhigh>false</inpull_selhigh>
+                <def_dir>IN</def_dir>
+                <out_high>false</out_high>
+                <smt>false</smt>
+                <ies>true</ies>
+            </gpio180>
         </module>
         <module name="i2c">
             <count>32</count>
