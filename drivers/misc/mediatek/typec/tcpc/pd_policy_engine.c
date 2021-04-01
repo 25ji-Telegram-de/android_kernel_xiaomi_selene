@@ -1373,6 +1373,14 @@ int pd_policy_engine_run(struct tcpc_device *tcpc)
 	struct pd_port *pd_port = &tcpc->pd_port;
 	struct pd_event *pd_event = pd_get_curr_pd_event(pd_port);
 
+	/*K19A WXYFB-996 K19A charger by wangchao at 2021/3/31 start*/
+	if(tcpc->ops->set_msg_header == NULL)
+	{
+		pr_err("tcpc->ops->set_msg_header == NULL , return\n");
+		return false;
+	}
+	/*K19A WXYFB-996 K19A charger by wangchao at 2021/3/31 end*/
+
 	ret = pd_try_get_next_event(tcpc, pd_event);
 
 	if (ret == PE_NEW_EVT_NULL)
