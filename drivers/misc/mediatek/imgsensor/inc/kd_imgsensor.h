@@ -409,7 +409,7 @@
 #define GC02K0_SENSOR_ID                        0x2385
 #define OV16A10_SENSOR_ID                       0x561641
 #define GC02M1B_SENSOR_ID                       0x02e0
-#define GC02M1B_SENSOR_ID1                      0x02e0
+#define GC02M1B_SENSOR_ID1                      (0x02e0 + 2)
 #define OV02B1B_OFILM_SENSOR_ID                 0x002b
 
 /* CAMERA DRIVER NAME */
