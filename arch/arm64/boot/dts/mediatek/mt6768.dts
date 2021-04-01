@@ -1399,7 +1399,9 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 
 	swtp: swtp {
 		compatible = "mediatek, swtp-eint";
-		ant_sw_gpios = <&pio 72 0>;
+/*Huaqin modify for HQ-123513 by shiwenlong at 2021.4.01 start*/
+		swtp-gpio = <&pio 56 0>;
+/*Huaqin modify for HQ-123513 by shiwenlong at 2021.4.01 end*/
 	};
 
 	mt6358_gauge {

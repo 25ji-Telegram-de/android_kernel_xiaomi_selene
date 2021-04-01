@@ -26,14 +26,36 @@
 #include "ccci_modem.h"
 #include "ccci_swtp.h"
 #include "ccci_fsm.h"
-
+/*Huaqin add for HQ-123513 by shiwenlong at 2021.4.01 start*/
+#include <linux/proc_fs.h>
+/*Huaqin add for HQ-123513 by shiwenlong at 2021.4.01 end*/
 const struct of_device_id swtp_of_match[] = {
 	{ .compatible = SWTP_COMPATIBLE_DEVICE_ID, },
 	{},
 };
 #define SWTP_MAX_SUPPORT_MD 1
 struct swtp_t swtp_data[SWTP_MAX_SUPPORT_MD];
+/*Huaqin add for HQ-123513 by shiwenlong at 2021.4.01 start*/
+int get_swtp_state = -1;
+int get_swtp_gpio = -1;
+static struct proc_dir_entry  *swtp_gpio_status;
 
+static int swtp_gpio_proc_show(struct seq_file *file, void *data)
+{
+	get_swtp_state = gpio_get_value(get_swtp_gpio);
+	seq_printf(file, "%d\n", get_swtp_state);
+
+	return 0;
+}
+static int swtp_gpio_proc_open (struct inode *inode, struct file *file)
+{
+	return single_open(file, swtp_gpio_proc_show, inode->i_private);
+}
+static const struct file_operations swtp_gpio_status_ops = {
+	.open = swtp_gpio_proc_open,
+	.read = seq_read,
+};
+/*Huaqin add for HQ-123513 by shiwenlong at 2021.4.01 end*/
 static int switch_Tx_Power(int md_id, unsigned int mode)
 {
 	int ret = 0;
@@ -190,6 +212,9 @@ int swtp_md_tx_power_req_hdlr(int md_id, int data)
 int swtp_init(int md_id)
 {
 	int ret = 0;
+	/*Huaqin add for HQ-123513 by shiwenlong at 2021.4.01 start*/
+	int ret1 = 0;
+	/*Huaqin add for HQ-123513 by shiwenlong at 2021.4.01 end*/
 	struct device_node *node = NULL;
 #ifdef CONFIG_MTK_EIC
 	u32 ints[2] = { 0, 0 };
@@ -251,6 +276,17 @@ int swtp_init(int md_id)
 	}
 	register_ccci_sys_call_back(md_id, MD_SW_MD1_TX_POWER_REQ,
 		swtp_md_tx_power_req_hdlr);
+	/*Huaqin add for HQ-123513 by shiwenlong at 2021.4.01 start*/
+	get_swtp_gpio = of_get_named_gpio(node, "swtp-gpio", 0);
+	ret1 =  gpio_request(get_swtp_gpio, "swtp-gpio");
+	if (ret1) {
+		pr_err("gpio_request_one get_swtp_gpio(%d)=%d\n",get_swtp_gpio, ret1);
+	}
+	swtp_gpio_status = proc_create("SWTP_GOIP_STATUS", 0644, NULL, &swtp_gpio_status_ops);
+	if (swtp_gpio_status == NULL) {
+		printk("tpd, create_proc_entry swtp_gpio_status_ops failed\n");
+	}
+	/*Huaqin add for HQ-123513 by shiwenlong at 2021.4.01 end*/
 	return ret;
 }
 
