@@ -726,6 +726,9 @@ static inline bool __pd_put_pe_event(
 	return __pd_put_event(tcpc, &evt, false);
 }
 
+/*K19A WXYFB-590 K19A charger by wangqqi at 2021/4/1 start*/
+extern uint8_t     typec_cc_orientation;
+/*K19A WXYFB-590 K19A charger by wangqi at 2021/4/1 end*/
 bool __pd_put_cc_attached_event(
 		struct tcpc_device *tcpc, uint8_t type)
 {
@@ -741,6 +744,12 @@ bool __pd_put_cc_attached_event(
 	case TYPEC_ATTACHED_SRC:
 		tcpc->pd_pe_running = true;
 		tcpc->pd_wait_pe_idle = false;
+/*K19A WXYFB-590 K19A charger by wangqqi at 2021/4/1 start*/
+		if(tcpc->typec_polarity == 0)
+			typec_cc_orientation = 1;
+		else
+			typec_cc_orientation = 2;
+/*K19A WXYFB-590 K19A charger by wangqqi at 2021/4/1 end*/
 		break;
 #ifdef CONFIG_TYPEC_CAP_DBGACC_SNK
 	case TYPEC_ATTACHED_DBGACC_SNK:
@@ -807,7 +816,9 @@ void pd_put_cc_detached_event(struct tcpc_device *tcpc)
 	tcpc->pd_wait_vbus_once = PD_WAIT_VBUS_DISABLE;
 	tcpc->pd_bist_mode = PD_BIST_MODE_DISABLE;
 	tcpc->pd_ping_event_pending = false;
-
+/*K19A WXYFB-590 K19A charger by wangqqi at 2021/4/1 start*/
+	typec_cc_orientation = 0;
+/*K19A WXYFB-590 K19A charger by wangqqi at 2021/4/1 end*/
 #ifdef CONFIG_USB_PD_DIRECT_CHARGE
 	tcpc->pd_during_direct_charge = false;
 #endif	/* CONFIG_USB_PD_DIRECT_CHARGE */
