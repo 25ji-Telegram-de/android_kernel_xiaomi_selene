@@ -21,8 +21,9 @@
 #define PROC_CHIPID_FILE "chip_id"
 
 static struct proc_dir_entry *entry;
-static char dev_id[40], emmc_id_hash[32];
-
+/*Huaqin modify for K19A-22 by shiwenlong at 2021.4.01 start*/
+static char dev_id[40], emmc_id_hash[9];
+/*Huaqin modify for K19A-22 by shiwenlong at 2021.4.01 end*/
 struct device_node *of_chosen_s;
 
 static void init_ids(void)
@@ -45,7 +46,9 @@ static void init_ids(void)
 		const char *name = NULL;
 
 		if (!of_property_read_string(of_chosen_s, "emmc_id,hash", &name)) {
-			sprintf(emmc_id_hash, "%s", name);
+/*Huaqin modify for K19A-22 by shiwenlong at 2021.4.01 start*/
+			snprintf(emmc_id_hash, 9, "%s", name);
+/*Huaqin modify for K19A-22 by shiwenlong at 2021.4.01 end*/
 			printk("emmc_id_hash is : %s\n", emmc_id_hash);
 		}
 	}
