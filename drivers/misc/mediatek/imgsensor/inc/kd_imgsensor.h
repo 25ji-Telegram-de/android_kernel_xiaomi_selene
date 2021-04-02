@@ -155,7 +155,7 @@
 #define IMX091_SENSOR_ID                        0x0091
 #define IMX073_SENSOR_ID                        0x0046
 #define IMX058_SENSOR_ID                        0x0058
-#define IMX355_SUNNY_ULTRA_SENSOR_ID            0x355
+#define IMX355_SUNNY_ULTRA_SENSOR_ID            (0x355 + 1)
 #define IMX355_AAC_ULTRA_SENSOR_ID              0x355
 /*OV*/
 #define OV23850_SENSOR_ID                       0x023850

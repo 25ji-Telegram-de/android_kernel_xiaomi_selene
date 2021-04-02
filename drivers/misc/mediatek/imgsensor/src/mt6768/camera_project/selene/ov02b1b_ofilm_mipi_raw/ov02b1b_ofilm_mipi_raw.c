@@ -1277,6 +1277,8 @@ unsigned int ov02b1b_read_otp_info(struct i2c_client *client,
         int ii = 0;
         for (ii = 0; ii < OTP_DATA_NUMBER; ii++) {
                 data[ii] = otp_data[addr + ii];
+				LOG_INF("otp_info %x,data %x", data[ii],
+						otp_data[addr + ii]);
         }
         return size;
 }

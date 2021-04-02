@@ -57,7 +57,7 @@
 #undef IMX355_PDAF_SUPPORT
 #define SUPPORT_HPS 0
 
-#define VENDOR_ID 0x07
+#define VENDOR_ID 0x01
 
 #define LOG_INF(format, args...) pr_debug(PFX "[%s] " format, __func__, ##args)
 #define LONG_EXP 1
@@ -1789,8 +1789,8 @@ static kal_uint32 return_lot_id_from_otp(void)
 		return 0;
 	}
 #endif
-        return ((read_cmos_sensor(0x0016) << 8)
-                    | read_cmos_sensor(0x0017));
+        return (((read_cmos_sensor(0x0016) << 8)
+                    | read_cmos_sensor(0x0017) + 1));
 
 	/* LOG_INF("0x0A38 0x%x 0x0A39 0x%x\n",	 */
 	// return (read_cmos_sensor(0x0A38)<<4 | read_cmos_sensor(0x0A39)>>4);
@@ -2796,20 +2796,18 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 	 * we should detect the module used i2c address
 	 */
 	vendor_id = get_vendor_id();
-	//if (vendor_id != VENDOR_ID) {
+	LOG_INF("get vendor_id=%d",vendor_id);
+	if (vendor_id != VENDOR_ID) {
 	/* if Vendor ID is not correct, Must set *sensor_id to 0xFFFFFFFF */
-	//	*sensor_id = 0xFFFFFFFF;
-	//	return ERROR_SENSOR_CONNECT_FAIL;
-	//}
-	LOG_INF("Ming");
+		*sensor_id = 0xFFFFFFFF;
+		return ERROR_SENSOR_CONNECT_FAIL;
+	}
 	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
-		LOG_INF("Ming:%x",imgsensor_info.i2c_addr_table[i]);
 		spin_lock(&imgsensor_drv_lock);
 		imgsensor.i2c_write_id = imgsensor_info.i2c_addr_table[i];
 		spin_unlock(&imgsensor_drv_lock);
 		do {
 			*sensor_id = return_lot_id_from_otp();
-			LOG_INF("Ming:id %x",*sensor_id);
 			/* return_sensor_id(); */
 			if (*sensor_id == imgsensor_info.sensor_id) {
 				#ifdef IMX355_PDAF_SUPPORT
