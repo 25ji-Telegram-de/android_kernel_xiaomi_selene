@@ -864,6 +864,21 @@ static int bq2589x_inform_charger_type(struct bq2589x *bq)
 	return ret;
 }
 
+/*K19A WXYFB-996 K19A charger by wangchao at 2021/4/2 start*/
+static int bq2589x_enable_chg_type_det(struct charger_device *chg_dev, bool en)
+{
+	int ret;
+	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
+
+	ret = bq2589x_get_charger_type(bq, &bq->chg_type);
+	if (!ret)
+		bq2589x_inform_charger_type(bq);
+
+	pr_err("bq2589x_enable_chg_type_det end,bq->chg_type = %d\n",bq->chg_type);
+	return 0;
+}
+/*K19A WXYFB-996 K19A charger by wangchao at 2021/4/2 end*/
+
 static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 {
 	int ret;
@@ -1303,6 +1318,9 @@ static struct charger_ops bq2589x_chg_ops = {
 	.is_charging_done = bq2589x_is_charging_done,
 	.get_min_charging_current = bq2589x_get_min_ichg,
 	.get_charger_type = bq2589x_get_charger_type_ext,
+	/*K19A WXYFB-996 K19A charger by wangchao at 2021/4/2 start*/
+	.enable_chg_type_det = bq2589x_enable_chg_type_det,
+	/*K19A WXYFB-996 K19A charger by wangchao at 2021/4/2 end*/
 
 	/* Safety timer */
 	.enable_safety_timer = bq2589x_set_safety_timer,
