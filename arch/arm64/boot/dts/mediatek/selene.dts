@@ -333,16 +333,20 @@
 };
 /*K19A code for WXYFB-991 by zhangpeng at 2021.3.18 end*/
 
-/*K19A code for WXYFB-1001 by zhangpeng at 2021.3.19 start*/
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 start*/
 &i2c6 {
 	fs16xx@34 {
-		compatible = "foursemi,fs16xx";
+		compatible = "foursemi,fs16xx_34";
 		reg = <0x34>;
-		fsm,rst-gpio = <&pio 22 1>;
+		status = "okay";
+	};
+	fs16xx@35 {
+		compatible = "foursemi,fs16xx_35";
+		reg = <0x35>;
 		status = "okay";
 	};
 };
-/*K19A code for WXYFB-1001 by zhangpeng at 2021.3.19 end*/
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 end*/
 
 /*K19A WXYFB-996 K19A charger bring up by miaozhichao at 2021/3/20 start*/
 &i2c5 {

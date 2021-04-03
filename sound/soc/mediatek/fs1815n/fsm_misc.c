@@ -222,6 +222,9 @@ static long fsm_misc_ioctl(struct file *filp, unsigned int cmd,
 {
 	struct fsm_misc_args misc_args;
 	struct fsm_misc *fsm_misc;
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 start*/
+	int mode = FSM_SCENE_MUSIC;
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 end*/
 	int count;
 	int ret;
 
@@ -266,7 +269,9 @@ static long fsm_misc_ioctl(struct file *filp, unsigned int cmd,
 		}
 		break;
 	case FSM_IOC_SPEAKER_ON:
-		fsm_speaker_onn();
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 start*/
+		fsm_speaker_onn(mode);
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 end*/
 		break;
 	case FSM_IOC_SPEAKER_OFF:
 		fsm_speaker_off();

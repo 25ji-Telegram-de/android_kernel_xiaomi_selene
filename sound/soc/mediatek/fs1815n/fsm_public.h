@@ -212,7 +212,9 @@ void fsm_set_scene(int scene);
 void fsm_set_volume(int volume);
 void fsm_set_cfg_flag(int pos, int mark);
 void fsm_init(void);
-void fsm_speaker_onn(void);
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 start*/
+void fsm_speaker_onn(int mode);
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 end*/
 void fsm_speaker_off(void);
 void fsm_stereo_rotation(int next_angle);
 void fsm_batv_monitor(void);

@@ -441,7 +441,8 @@ static int fsm_parse_dts(struct i2c_client *i2c, fsm_dev_t *fsm_dev)
 }
 
 static struct of_device_id fsm_match_tbl[] = {
-	{ .compatible = "foursemi,fs16xx" },
+	{ .compatible = "foursemi,fs16xx_34" },
+	{ .compatible = "foursemi,fs16xx_35" },
 	{},
 };
 MODULE_DEVICE_TABLE(of, fsm_match_tbl);

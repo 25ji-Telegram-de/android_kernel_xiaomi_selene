@@ -1634,12 +1634,17 @@ int fsm_add_control(struct snd_soc_platform *platform)
 EXPORT_SYMBOL_GPL(fsm_add_control);
 /* end modify */
 
-void fsm_speaker_onn(void)
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 start*/
+void fsm_speaker_onn(int mode)
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 end*/
 {
 	fsm_config_t *cfg = fsm_get_config();
 	fsm_dev_t *fsm_dev = NULL;
 	int ret;
 
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 start*/
+	cfg->next_scene = mode;
+/*K19A code for HQ-128766 by zhangpeng at 2021.4.3 end*/
 	pr_info("scene: %04X", cfg->next_scene);
 	fsm_mutex_lock();
 	cfg->stream_muted = false;
