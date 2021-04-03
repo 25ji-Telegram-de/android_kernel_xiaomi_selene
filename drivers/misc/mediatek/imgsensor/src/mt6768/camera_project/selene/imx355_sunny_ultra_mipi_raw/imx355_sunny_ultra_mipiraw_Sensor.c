@@ -57,7 +57,7 @@
 #undef IMX355_PDAF_SUPPORT
 #define SUPPORT_HPS 0
 
-#define VENDOR_ID 0x01
+#define VENDOR_ID 0x68
 
 #define LOG_INF(format, args...) pr_debug(PFX "[%s] " format, __func__, ##args)
 #define LONG_EXP 1
@@ -2764,7 +2764,7 @@ static kal_uint32 set_test_pattern_mode(kal_bool enable)
 static kal_uint16 get_vendor_id(void)
 {
 	kal_uint16 get_byte = 0;
-	char pusendcmd[2] = {(char)(0x01 >> 8), (char)(0x01 & 0xFF) };
+	char pusendcmd[2] = {(char)(0x08 >> 8), (char)(0x08 & 0xFF) };
 
 	iReadRegI2C(pusendcmd, 2, (u8 *)&get_byte, 1, 0xA0);
 	return get_byte;

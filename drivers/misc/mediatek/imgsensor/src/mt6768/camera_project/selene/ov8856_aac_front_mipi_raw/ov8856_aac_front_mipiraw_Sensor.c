@@ -2,7 +2,7 @@
  *
  * Filename:
  * ---------
- *	 OV8856_qtech_ultra_mipiraw_sensor.c
+ *	 OV8856_qtech_front_mipiraw_sensor.c
  *
  * Project:
  * --------
@@ -1264,7 +1264,7 @@ static kal_uint16 get_vendor_id(void)
 {
 	kal_uint16 get_byte = 0;
 	char pusendcmd[2] = { (char)(0x01 >> 8), (char)(0x01 & 0xFF) };
-	iReadRegI2C(pusendcmd, 2, (u8 *) &get_byte, 1, 0xA8);
+	iReadRegI2C(pusendcmd, 2, (u8 *) &get_byte, 1, 0xA2);
 	return get_byte;
 
 }
@@ -1282,26 +1282,22 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		spin_unlock(&imgsensor_drv_lock);
 		do {
 			*sensor_id = return_sensor_id();
-if(*sensor_id == 0x885b)
-*sensor_id = imgsensor_info.sensor_id;
 			if (*sensor_id == imgsensor_info.sensor_id) {
-				LOG_INF("[8856_ultra]get imgsensor:imgsensor.i2c_write_id: 0x%x, *sensor_id=0x%x, vendor_id=0x%x\n",
+				LOG_INF("[8856_front]get imgsensor:imgsensor.i2c_write_id: 0x%x, *sensor_id=0x%x, vendor_id=0x%x\n",
 				imgsensor.i2c_write_id, *sensor_id, vendor_id);
-				return ERROR_NONE;
-
+				if (0x10 == vendor_id) {
+					return ERROR_NONE;
+				}
 			}
-	LOG_INF("Read sensor id fail,imgsensor.i2c_write_id: 0x%x, *sensor_id=0x%x\n", imgsensor.i2c_write_id, *sensor_id);
+			LOG_INF("Read sensor/vendor id fail,imgsensor.i2c_write_id: 0x%x, *sensor_id=0x%x\n", imgsensor.i2c_write_id, *sensor_id);
 			retry--;
 		} while (retry > 0);
 		i++;
 		retry = 2;
 	}
-	if (*sensor_id != imgsensor_info.sensor_id) {
-		// if Sensor ID is not correct, Must set *sensor_id to 0xFFFFFFFF
-		*sensor_id = 0xFFFFFFFF;
-		return ERROR_SENSOR_CONNECT_FAIL;
-	}
-	return ERROR_NONE;
+	// if Sensor ID is not correct, Must set *sensor_id to 0xFFFFFFFF
+	*sensor_id = 0xFFFFFFFF;
+	return ERROR_SENSOR_CONNECT_FAIL;
 }
 
 

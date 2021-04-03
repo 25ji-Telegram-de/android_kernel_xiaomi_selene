@@ -44,7 +44,7 @@
 #define LOG_INF(format, args...)    pr_err(PFX "[%s] " format, __func__, ##args)
 //FIXME:XXX
 #define MULTI_WRITE    1
-
+#define VENDOR_ID	0x01
 
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
@@ -702,10 +702,29 @@ static kal_uint32 set_test_pattern_mode(kal_bool enable)
 	return ERROR_NONE;
 }
 
+static kal_uint16 get_vendor_id(void)
+{
+	kal_uint16 get_byte = 0;
+	char pusendcmd[2] = {(char)(0x01 >> 8), (char)(0x01 & 0xFF) };
+
+	iReadRegI2C(pusendcmd, 2, (u8 *)&get_byte, 1, 0xA4);
+	return get_byte;
+
+}
+
 static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 {
 	kal_uint8 i = 0;
 	kal_uint8 retry = 2;
+	kal_uint16 vendor_id = 0;
+
+	vendor_id = get_vendor_id();
+	LOG_INF("get vendor_id=%d",vendor_id);
+	if (vendor_id != VENDOR_ID) {
+	/* if Vendor ID is not correct, Must set *sensor_id to 0xFFFFFFFF */
+		*sensor_id = 0xFFFFFFFF;
+		return ERROR_SENSOR_CONNECT_FAIL;
+	}
 
 	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
 		spin_lock(&imgsensor_drv_lock);
