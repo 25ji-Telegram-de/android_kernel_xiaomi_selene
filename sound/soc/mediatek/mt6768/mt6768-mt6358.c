@@ -68,7 +68,7 @@ enum aw87xxx_scene_mode {
 };
 enum {
 	AW87XXX_LEFT_CHANNEL = 0,
-	AW87XXX_RIRHT_CHANNEL = 1,
+	AW87XXX_RIGHT_CHANNEL = 1,
 };
 
 extern unsigned char aw87xxx_show_current_mode(int32_t channel);
@@ -104,7 +104,7 @@ static int aw87389_mode_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	unsigned char current_mode;
-	current_mode = aw87xxx_show_current_mode(AW87XXX_LEFT_CHANNEL);
+	current_mode = aw87xxx_show_current_mode(AW87XXX_RIGHT_CHANNEL);
 	ucontrol->value.integer.value[0] = current_mode;
 	pr_info("%s: get mode:%d\n", __func__, current_mode);
 	return 0;
@@ -116,7 +116,7 @@ static int aw87389_mode_set(struct snd_kcontrol *kcontrol,
 	int ret = 0;
 	unsigned char set_mode;
 	set_mode = ucontrol->value.integer.value[0];
-	ret = aw87xxx_audio_scene_load(set_mode, AW87XXX_LEFT_CHANNEL);
+	ret = aw87xxx_audio_scene_load(set_mode, AW87XXX_RIGHT_CHANNEL);
 	if (ret < 0) {
 		pr_err("%s: mode:%d set failed\n", __func__, set_mode);
 		return -EPERM;
@@ -252,11 +252,11 @@ static int mt6768_mt6358_rcv_amp_event(struct snd_soc_dapm_widget *w,
 		if (strcmp((const char *)get_audio_pa_vendor(), awinic) == 0) {
 #ifdef CONFIG_SND_SOC_AW87559
 			if (rcv_amp_mode) {
-				pr_info("%s(), aw87389_audio_drcv()\n", __func__);
-				aw87xxx_audio_scene_load(AW87XXX_RCV_MODE, AW87XXX_LEFT_CHANNEL);
+				pr_info("%s(), aw87xxx_audio_rcv \n", __func__);
+				aw87xxx_audio_scene_load(AW87XXX_RCV_MODE, AW87XXX_RIGHT_CHANNEL);
 			} else {
-				pr_info("%s(), aw87389_audio_dspk()\n", __func__);
-				aw87xxx_audio_scene_load(AW87XXX_MUSIC_MODE, AW87XXX_LEFT_CHANNEL);
+				pr_info("%s(), aw87xxx_audio_spk \n", __func__);
+				aw87xxx_audio_scene_load(AW87XXX_MUSIC_MODE, AW87XXX_RIGHT_CHANNEL);
 			};
 #endif
 		} else if (strcmp((const char *)get_audio_pa_vendor(), foursemi) == 0) {
@@ -279,7 +279,8 @@ static int mt6768_mt6358_rcv_amp_event(struct snd_soc_dapm_widget *w,
 /*K19A code for WXYFB-1001 by zhangpeng at 2021.3.19 start*/
 		if (strcmp((const char *)get_audio_pa_vendor(), awinic) == 0) {
 #ifdef CONFIG_SND_SOC_AW87559
-			aw87xxx_audio_scene_load(AW87XXX_OFF_MODE, AW87XXX_LEFT_CHANNEL);
+			pr_info("%s(), aw87xxx_audio_off \n", __func__);
+			aw87xxx_audio_scene_load(AW87XXX_OFF_MODE, AW87XXX_RIGHT_CHANNEL);
 #endif
 		} else if (strcmp((const char *)get_audio_pa_vendor(), foursemi) == 0) {
 #ifdef CONFIG_SND_SOC_FS16XX

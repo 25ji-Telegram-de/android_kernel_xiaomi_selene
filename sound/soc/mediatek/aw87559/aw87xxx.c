@@ -1376,7 +1376,6 @@ static int aw87xxx_i2c_probe(struct i2c_client *client,
 		if (ret) {
 			aw_dev_err(&client->dev,
 				   "%s: rst request failed\n", __func__);
-			goto exit_gpio_request_failed;
 		}
 	}
 
@@ -1432,9 +1431,6 @@ static int aw87xxx_i2c_probe(struct i2c_client *client,
  exit_i2c_check_id_failed:
 	if (gpio_is_valid(aw87xxx->reset_gpio))
 		devm_gpio_free(&client->dev, aw87xxx->reset_gpio);
- exit_gpio_request_failed:
-	devm_kfree(&client->dev, aw87xxx);
-	aw87xxx = NULL;
  exit_devm_kzalloc_failed:
  exit_check_functionality_failed:
 	return ret;
@@ -1472,6 +1468,9 @@ static const struct of_device_id extpa_of_match[] = {
 /*K19A code for HQ-123483 by zhangpeng at 2021.3.22 start*/
 	{.compatible = "awinic,aw87359_pa_59"},
 /*K19A code for HQ-123483 by zhangpeng at 2021.3.22 end*/
+/*K19A code for HQ-128768 by zhangpeng at 2021.4.9 start*/
+	{.compatible = "awinic,aw87559_pa_5B"},
+/*K19A code for HQ-128768 by zhangpeng at 2021.4.9 end*/
 	{},
 };
 
