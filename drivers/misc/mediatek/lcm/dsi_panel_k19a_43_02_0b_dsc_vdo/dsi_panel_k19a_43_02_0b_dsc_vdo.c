@@ -590,18 +590,29 @@ static void lcm_init_power(void)
 
 static void lcm_suspend_power(void)
 {
-//	SET_RESET_PIN(0);
+/* Huaqin add for HQ-123199 by shiwenlong at 2021/4/4 start */
+	SET_RESET_PIN(0);
+	lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
+	MDELAY(3);
+
+	lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 0);
+	MDELAY(5);
+#if 0
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	if (lcm_util.set_gpio_lcd_enp_bias)
 		lcm_util.set_gpio_lcd_enp_bias(0);
 	else
 		LCM_LOGI("set_gpio_lcd_enp_bias not defined...\n");
+#endif
+/* Huaqin add for HQ-123199 by shiwenlong at 2021/4/4 end */
 }
 
 /* turn on gate ic & control voltage to 5.5V */
 static void lcm_resume_power(void)
 {
-//	SET_RESET_PIN(0);
+/* Huaqin modify for HQ-123199 by shiwenlong at 2021/4/4 start */
+	SET_RESET_PIN(1);
+/* Huaqin modify for HQ-123199 by shiwenlong at 2021/4/4 end */
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	lcm_init_power();
 }
