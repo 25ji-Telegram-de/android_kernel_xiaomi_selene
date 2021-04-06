@@ -150,19 +150,6 @@ struct IMGSENSOR_HW_POWER_SEQ platform_power_sequence[] = {
 
 /* Legacy design */
 struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
-#if defined(OV48D_OFILM_MAIN_MIPI_RAW)
-	{
-		SENSOR_DRVNAME_OV48D_OFILM_MAIN_MIPI_RAW,
-		{
-            {SensorMCLK, Vol_High, 0},
-			{RST, Vol_Low, 1},
-			{AVDD, Vol_2800, 1},
-			{DOVDD, Vol_1800, 1},
-			{DVDD, Vol_1200, 1},
-			{RST, Vol_High, 5},
-		},
-	},
-#endif
 #if defined(OV50C40_OFILM_MAIN_MIPI_RAW)
 	{
 		SENSOR_DRVNAME_OV50C40_OFILM_MAIN_MIPI_RAW,
@@ -176,9 +163,22 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 		},
 	},
 #endif
-#if defined(SK5JN1_OFILM_MAIN_MIPI_RAW)
+#if defined(OV50C40_QTECH_MAIN_MIPI_RAW)
 	{
-		SENSOR_DRVNAME_SK5JN1_OFILM_MAIN_MIPI_RAW,
+		SENSOR_DRVNAME_OV50C40_QTECH_MAIN_MIPI_RAW,
+		{
+            {SensorMCLK, Vol_High, 0},
+			{RST, Vol_Low, 1},
+			{AVDD, Vol_2800, 1},
+			{DOVDD, Vol_1800, 1},
+			{DVDD, Vol_1200, 1},
+			{RST, Vol_High, 5},
+		},
+	},
+#endif
+#if defined(S5KJN1_OFILM_MAIN_MIPI_RAW)
+	{
+		SENSOR_DRVNAME_S5KJN1_OFILM_MAIN_MIPI_RAW,
 		{
 			{RST, Vol_Low, 1},
 			{DOVDD, Vol_1800, 1},

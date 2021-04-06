@@ -27,7 +27,7 @@
  *
  * Setting version:
  * ------------
- *   update full pd setting for OV50C40_OFILM_AM04
+ *   update full pd setting for OV50C40_QTECH_AM04
  *------------------------------------------------------------------------------
  * Upper this line, this part is controlled by CC/CQ. DO NOT MODIFY!!
  *============================================================================
@@ -44,9 +44,9 @@
 #include <linux/types.h>
 #include "kd_imgsensor_define.h"
 
-#include "ov50c40_ofilm_main_mipi_raw.h"
+#include "ov50c40_qtech_main_mipi_raw.h"
 #include "cam_cal_define.h"
-#define PFX "OV50C40_OFILM_camera_sensor"
+#define PFX "OV50C40_QTECH_camera_sensor"
 #define LOG_DBG(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 #define LOG_INF(format, args...)    pr_info(PFX "[%s] " format, __FUNCTION__, ##args)
 #define LOG_ERR(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
@@ -55,7 +55,7 @@
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
 static struct imgsensor_info_struct imgsensor_info = {
-	.sensor_id = OV50C40_OFILM_MAIN_SENSOR_ID,
+	.sensor_id = OV50C40_QTECH_MAIN_SENSOR_ID,
 
 	.checksum_value = 0x3acb7e3a,	//test_Pattern_mode
 
@@ -642,7 +642,7 @@ static void night_mode(kal_bool enable)
 }
 
 #if MULTI_WRITE
-kal_uint16 addr_data_pair_init_OV50C40[] = {
+kal_uint16 addr_data_pair_init_qtech_OV50C40[] = {
 	0x0103, 0x01,
 	0x0301, 0xc8,
 	0x0304, 0x01,
@@ -1221,8 +1221,8 @@ static void sensor_init(void)
 	mdelay(10);
 #if MULTI_WRITE
 	LOG_DBG("sensor_init MULTI_WRITE\n");
-	OV50C40_table_write_cmos_sensor(addr_data_pair_init_OV50C40,
-					sizeof(addr_data_pair_init_OV50C40) /
+	OV50C40_table_write_cmos_sensor(addr_data_pair_init_qtech_OV50C40,
+					sizeof(addr_data_pair_init_qtech_OV50C40) /
 					sizeof(kal_uint16));
 #else
 	LOG_DBG("sensor_init\n");
@@ -1799,7 +1799,7 @@ static void sensor_init(void)
 }
 
 #if MULTI_WRITE
-kal_uint16 addr_data_pair_preview_OV50C40[] = {
+kal_uint16 addr_data_pair_preview_qtech_OV50C40[] = {
 	0x0304, 0x01,
 	0x0305, 0xe0,
 	0x0307, 0x00,
@@ -1972,8 +1972,8 @@ static void preview_setting(void)
 {
 	LOG_DBG("preview_setting RES_4000x3000_30fps\n");
 #if MULTI_WRITE
-	OV50C40_table_write_cmos_sensor(addr_data_pair_preview_OV50C40,
-					sizeof(addr_data_pair_preview_OV50C40) /
+	OV50C40_table_write_cmos_sensor(addr_data_pair_preview_qtech_OV50C40,
+					sizeof(addr_data_pair_preview_qtech_OV50C40) /
 					sizeof(kal_uint16));
 #else
 	write_cmos_sensor(0x0304, 0x01);
@@ -2145,7 +2145,7 @@ static void preview_setting(void)
 }
 
 #if MULTI_WRITE
-kal_uint16 addr_data_pair_capture_15fps_OV50C40[] = {
+kal_uint16 addr_data_pair_capture_15fps_qtech_OV50C40[] = {
 	0x0304, 0x01,
 	0x0305, 0xe0,
 	0x0307, 0x00,
@@ -2313,7 +2313,7 @@ kal_uint16 addr_data_pair_capture_15fps_OV50C40[] = {
 	0x5d11, 0x06,
 };
 
-kal_uint16 addr_data_pair_capture_30fps_OV50C40[] = {
+kal_uint16 addr_data_pair_capture_30fps_qtech_OV50C40[] = {
 	0x0304, 0x01,
 	0x0305, 0xe0,
 	0x0307, 0x00,
@@ -2488,13 +2488,13 @@ static void capture_setting(kal_uint16 currefps)
 #if MULTI_WRITE
 	if (currefps == 150) {
 		OV50C40_table_write_cmos_sensor
-		    (addr_data_pair_capture_15fps_OV50C40,
-		     sizeof(addr_data_pair_capture_15fps_OV50C40) /
+		    (addr_data_pair_capture_15fps_qtech_OV50C40,
+		     sizeof(addr_data_pair_capture_15fps_qtech_OV50C40) /
 		     sizeof(kal_uint16));
 	} else {
 		OV50C40_table_write_cmos_sensor
-		    (addr_data_pair_capture_30fps_OV50C40,
-		     sizeof(addr_data_pair_capture_30fps_OV50C40) /
+		    (addr_data_pair_capture_30fps_qtech_OV50C40,
+		     sizeof(addr_data_pair_capture_30fps_qtech_OV50C40) /
 		     sizeof(kal_uint16));
 	}
 #else
@@ -2838,7 +2838,7 @@ static void capture_setting(kal_uint16 currefps)
 }
 
 #if MULTI_WRITE
-kal_uint16 addr_data_pair_video_OV50C40[] = {
+kal_uint16 addr_data_pair_video_qtech_OV50C40[] = {
 	0x0304, 0x01,
 	0x0305, 0xe0,
 	0x0307, 0x00,
@@ -3011,8 +3011,8 @@ static void normal_video_setting(kal_uint16 currefps)
 {
 	LOG_DBG("normal_video_setting RES_4000x3000_zsl_30fps\n");
 #if MULTI_WRITE
-	OV50C40_table_write_cmos_sensor(addr_data_pair_video_OV50C40,
-					sizeof(addr_data_pair_video_OV50C40) /
+	OV50C40_table_write_cmos_sensor(addr_data_pair_video_qtech_OV50C40,
+					sizeof(addr_data_pair_video_qtech_OV50C40) /
 					sizeof(kal_uint16));
 #else
 	write_cmos_sensor(0x0304, 0x01);
@@ -3184,7 +3184,7 @@ static void normal_video_setting(kal_uint16 currefps)
 }
 
 #if MULTI_WRITE
-kal_uint16 addr_data_pair_hs_video_OV50C40[] = {
+kal_uint16 addr_data_pair_hs_video_qtech_OV50C40[] = {
 	0x0304, 0x02,
 	0x0305, 0x58,
 	0x0307, 0x01,
@@ -3357,8 +3357,8 @@ static void hs_video_setting(void)
 {
 	LOG_DBG("hs_video_setting RES_1280x720_120fps\n");
 #if MULTI_WRITE
-	OV50C40_table_write_cmos_sensor(addr_data_pair_hs_video_OV50C40,
-					sizeof(addr_data_pair_hs_video_OV50C40)
+	OV50C40_table_write_cmos_sensor(addr_data_pair_hs_video_qtech_OV50C40,
+					sizeof(addr_data_pair_hs_video_qtech_OV50C40)
 					/ sizeof(kal_uint16));
 #else
 	write_cmos_sensor(0x0304, 0x02);
@@ -3530,7 +3530,7 @@ static void hs_video_setting(void)
 }
 
 #if MULTI_WRITE
-kal_uint16 addr_data_pair_slim_video_OV50C40[] = {
+kal_uint16 addr_data_pair_slim_video_qtech_OV50C40[] = {
 	0x0304, 0x02,
 	0x0305, 0x58,
 	0x0307, 0x01,
@@ -3703,9 +3703,9 @@ static void slim_video_setting(void)
 {
 	LOG_DBG("slim_video_setting\n");
 #if MULTI_WRITE
-	OV50C40_table_write_cmos_sensor(addr_data_pair_slim_video_OV50C40,
+	OV50C40_table_write_cmos_sensor(addr_data_pair_slim_video_qtech_OV50C40,
 					sizeof
-					(addr_data_pair_slim_video_OV50C40) /
+					(addr_data_pair_slim_video_qtech_OV50C40) /
 					sizeof(kal_uint16));
 #else
 	write_cmos_sensor(0x0304, 0x02);
@@ -3876,7 +3876,7 @@ static void slim_video_setting(void)
 #endif
 }
 #if MULTI_WRITE
-kal_uint16 addr_data_pair_custom1_OV50C40_ofilm[] = {
+kal_uint16 addr_data_pair_custom1_OV50C40_qtech[] = {
 	0x0304, 0x02,
 	0x0305, 0x58,
 	0x0307, 0x00,
@@ -4049,8 +4049,8 @@ static void custom1_setting(void)
 	LOG_INF("CUSTOM1_setting 8000*6000_15fps\n");
 #if MULTI_WRITE
 	OV50C40_table_write_cmos_sensor(
-		addr_data_pair_custom1_OV50C40_ofilm,
-		sizeof(addr_data_pair_custom1_OV50C40_ofilm) /
+		addr_data_pair_custom1_OV50C40_qtech,
+		sizeof(addr_data_pair_custom1_OV50C40_qtech) /
 		sizeof(kal_uint16));
 #else
 	write_cmos_sensor(0x0304, 0x02);
@@ -4225,7 +4225,7 @@ static void custom1_setting(void)
 /*#if OTP_OV50C40
 #define OV50C40_EEPROM_SLAVE_ADD 0xB0
 #define OV50C40_SENSOR_IIC_SLAVE_ADD 0x6c
-#define OV50C40_OFILM_MODULE_ID  0x07
+#define OV50C40_QTECH_MODULE_ID  0x07
 
 typedef struct OV50C40_otp_data {
 	unsigned short module_id;
@@ -4270,8 +4270,8 @@ static int  OV50C40_read_data_from_eeprom(kal_uint8 slave, kal_uint32 start_add,
 */
 static kal_uint32 return_sensor_id(void)
 {
-	return ((read_cmos_sensor(0x300a) << 16) |
-		(read_cmos_sensor(0x300b) << 8) | read_cmos_sensor(0x300c));
+	return (((read_cmos_sensor(0x300a) << 16) |
+		(read_cmos_sensor(0x300b) << 8) | read_cmos_sensor(0x300c))+1);
 }
 
 //#include "../imgsensor_i2c.h"
@@ -4305,7 +4305,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 #endif
 
 	vendor_id = get_vendor_id();
-    LOG_INF("ofilm get vendor_id=%x",vendor_id);
+    LOG_INF("qtech get vendor_id=%x",vendor_id);
 	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
 		spin_lock(&imgsensor_drv_lock);
 		imgsensor.i2c_write_id = imgsensor_info.i2c_addr_table[i];
@@ -4329,17 +4329,17 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		}
 #endif
 		do {
-			if (0x07 == vendor_id) {
+			if (0x01 == vendor_id) {
 				*sensor_id = return_sensor_id();
 				if (*sensor_id == imgsensor_info.sensor_id) {
 					pr_info
-					    ("OV50C40_ofilm i2c write id: 0x%x, sensor id: 0x%x vendor_id: 0x%x\n",
+					    ("OV50C40_qtech i2c write id: 0x%x, sensor id: 0x%x vendor_id: 0x%x\n",
 					     imgsensor.i2c_write_id, *sensor_id,
 					     vendor_id);
 					return ERROR_NONE;
 				} else {
 					pr_err
-					    ("OV50C40_ofilm check id fail i2c write id: 0x%x, sensor id: 0x%x vendor_id: 0x%x\n",
+					    ("OV50C40_qtech check id fail i2c write id: 0x%x, sensor id: 0x%x vendor_id: 0x%x\n",
 					     imgsensor.i2c_write_id, *sensor_id,
 					     vendor_id);
 					*sensor_id = 0xFFFFFFFF;
@@ -4351,11 +4351,11 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 #if INCLUDE_NO_OTP_OV50C40
 				if ((OV50C40_otp_data.module_id > 0) && (OV50C40_otp_data.module_id < 0xFFFF)) {
 #endif
-					if (OV50C40_otp_data.module_id != OV50C40_OFILM_MODULE_ID) {
+					if (OV50C40_otp_data.module_id != OV50C40_QTECH_MODULE_ID) {
 						*sensor_id = 0xFFFFFFFF;
 						return ERROR_SENSOR_CONNECT_FAIL;
 					} else
-						LOG_INF("This is ofilm --->OV50C40 otp data vaild ...");
+						LOG_INF("This is qtech --->OV50C40 otp data vaild ...");
 #if INCLUDE_NO_OTP_OV50C40
 				} else {
 					LOG_INF("This is OV50C40, but no otp data ...");
@@ -4400,7 +4400,7 @@ static kal_uint32 open(void)
 #if INCLUDE_NO_OTP_OV50C40
 				if ((OV50C40_otp_data.module_id > 0) && (OV50C40_otp_data.module_id < 0xFFFF)) {
 #endif
-					if (OV50C40_otp_data.module_id != OV50C40_OFILM_MODULE_ID) {
+					if (OV50C40_otp_data.module_id != OV50C40_QTECH_MODULE_ID) {
 						sensor_id = 0xFFFF;
 						return ERROR_SENSOR_CONNECT_FAIL;
 					}
@@ -5302,7 +5302,7 @@ static struct SENSOR_FUNCTION_STRUCT sensor_func = {
 	close
 };
 
-UINT32 OV50C40_OFILM_MAIN_MIPI_RAW_SensorInit(struct SENSOR_FUNCTION_STRUCT **pfFunc)
+UINT32 OV50C40_QTECH_MAIN_MIPI_RAW_SensorInit(struct SENSOR_FUNCTION_STRUCT **pfFunc)
 {
 	/* To Do : Check Sensor status here */
 	if (pfFunc != NULL)

@@ -44,7 +44,8 @@ struct stCAM_CAL_LIST_STRUCT g_camCalList[] = {
 	/*Below is commom sensor */
 #ifdef CONFIG_TARGET_PRODUCT_SELENECOMMON
 	{OV50C40_OFILM_MAIN_SENSOR_ID, 0xA2, Common_read_region},
-	{SK5JN1_OFILM_MAIN_SENSOR_ID, 0xA2, Common_read_region},
+	{S5KJN1_OFILM_MAIN_SENSOR_ID, 0xA2, Common_read_region},
+    {OV50C40_QTECH_MAIN_SENSOR_ID, 0xA2, Common_read_region},
 	{GC02M1_MACRO_AAC_SENSOR_ID, 0xA4, Common_read_region},
 	{GC02M1_MACRO_SY_SENSOR_ID, 0xA4, Common_read_region},
 	{IMX355_SUNNY_ULTRA_SENSOR_ID, 0xA0, Common_read_region},

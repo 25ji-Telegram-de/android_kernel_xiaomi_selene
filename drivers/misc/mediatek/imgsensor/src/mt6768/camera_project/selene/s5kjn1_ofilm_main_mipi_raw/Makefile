@@ -11,5 +11,5 @@
 # GNU General Public License for more details.
 #
 
-obj-y += sk5jn1_ofilm_main_mipi_raw.o
+obj-y += s5kjn1_ofilm_main_mipi_raw.o
 

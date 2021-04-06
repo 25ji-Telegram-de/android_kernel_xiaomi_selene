@@ -29,7 +29,7 @@
 #include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
 #include "kd_camera_typedef.h"
-#include "sk5jn1_ofilm_main_mipi_raw.h"
+#include "s5kjn1_ofilm_main_mipi_raw.h"
 
 //#define FPTPDAFSUPPORT
 
@@ -41,10 +41,10 @@
 
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 static struct imgsensor_info_struct imgsensor_info = {
-	.sensor_id = SK5JN1_OFILM_MAIN_SENSOR_ID,
+	.sensor_id = S5KJN1_OFILM_MAIN_SENSOR_ID,
 	.checksum_value = 0xdb9c643,
 	.pre = {
-		.pclk = 700000000,
+		.pclk = 560000000,
 		.linelength = 5910,
 		.framelength = 3188,
 		.startx = 0,
@@ -53,10 +53,10 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.grabwindow_height = 3072,
 		.mipi_data_lp2hs_settle_dc = 40,
 		.mipi_pixel_rate = 513600000,
-		.max_framerate = 30,
+		.max_framerate = 300,
 	},
 	.cap = {
-		.pclk = 700000000,
+		.pclk = 560000000,
 		.linelength = 5910,
 		.framelength = 3188,
 		.startx = 0,
@@ -65,7 +65,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.grabwindow_height = 3072,
 		.mipi_data_lp2hs_settle_dc = 40,
 		.mipi_pixel_rate = 513600000,
-		.max_framerate = 30,
+		.max_framerate = 300,
 	},
 	.cap1 = {
 		.pclk = 482000000,
@@ -164,7 +164,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 	.mclk = 24,
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,
 	.i2c_addr_table = {0x20, 0x5A, 0xff},
-	.i2c_speed = 100,
+	.i2c_speed = 400,
 };
 
 static struct imgsensor_struct imgsensor = {
@@ -201,7 +201,7 @@ static struct SENSOR_VC_INFO_STRUCT SENSOR_VC_INFO[3] = {
 
 	{
 		0x02, 0x0A, 0x00, 0x08, 0x40, 0x00,
-		0x00, 0x2B, 0x0ff0, 0x08f8, 0x01, 0x00, 0x0000, 0x0000,
+		0x00, 0x2B, 0x0ff0, 0x0c00, 0x01, 0x00, 0x0000, 0x0000,
 		0x00, 0x30, 0x026C, 0x02E0, 0x03, 0x00, 0x0000, 0x0000
 	}
 };
@@ -6711,7 +6711,7 @@ static struct SENSOR_FUNCTION_STRUCT sensor_func = {
 	close
 };
 
-UINT32 SK5JN1_OFILM_MAIN_MIPI_RAW_SensorInit(struct SENSOR_FUNCTION_STRUCT **pfFunc)
+UINT32 S5KJN1_OFILM_MAIN_MIPI_RAW_SensorInit(struct SENSOR_FUNCTION_STRUCT **pfFunc)
 {
 
 	if (pfFunc != NULL)
