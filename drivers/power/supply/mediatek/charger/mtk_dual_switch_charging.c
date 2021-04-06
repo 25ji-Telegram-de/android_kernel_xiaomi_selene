@@ -559,7 +559,10 @@ static void dual_swchg_turn_on_charging(struct charger_manager *info)
 
 	if (is_dual_charger_supported(info) == false)
 		chg2_enable = false;
-
+/*K19A WXYFB-604 K19A charger by wangqi at 2021/4/6 start*/
+	if(charger_manager_is_input_suspend() == true)
+		chg1_enable = false;
+/*K19A WXYFB-604 K19A charger by wangqi at 2021/4/6 end*/
 	if (swchgalg->state == CHR_ERROR) {
 		chg1_enable = false;
 		chg2_enable = false;

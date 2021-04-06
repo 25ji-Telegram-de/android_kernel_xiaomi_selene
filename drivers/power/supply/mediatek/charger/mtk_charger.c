@@ -860,12 +860,16 @@ int charger_manager_set_input_suspend(int suspend)
 
 	if (suspend) {
 		charger_dev_set_suspend(pinfo->chg1_dev, true);
-//		charger_dev_enable(pinfo->chg2_dev, false);
+/*K19A WXYFB-604 K19A charger by wangqi at 2021/4/6 start*/
+		charger_dev_enable(pinfo->chg1_dev, false);
+/*K19A WXYFB-604 K19A charger by wangqi at 2021/4/6 end*/
 //		charger_dev_enable_powerpath(pinfo->chg1_dev, false);
 		pinfo->is_input_suspend = true;
 	} else {
 		charger_dev_set_suspend(pinfo->chg1_dev, false);
-//		charger_dev_enable(pinfo->chg2_dev, true);
+/*K19A WXYFB-604 K19A charger by wangqi at 2021/4/6 start*/
+		charger_dev_enable(pinfo->chg1_dev, true);
+/*K19A WXYFB-604 K19A charger by wangqi at 2021/4/6 end*/
 //		charger_dev_enable_powerpath(pinfo->chg1_dev, true);
 		pinfo->is_input_suspend = false;
 	}
