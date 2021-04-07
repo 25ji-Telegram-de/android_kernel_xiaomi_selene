@@ -136,7 +136,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 		 * by different scenario
 		 */
 		.mipi_data_lp2hs_settle_dc = 85,	/* unit , ns */
-		.mipi_pixel_rate = 201600000,
+		.mipi_pixel_rate = 202226949,
 		/*     following for GetDefaultFramerateByScenario()    */
 		.max_framerate = 300,
 	},
@@ -149,7 +149,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.grabwindow_width = 3280,
 		.grabwindow_height = 2464,
 		.mipi_data_lp2hs_settle_dc = 85,	/* unit , ns */
-		.mipi_pixel_rate = 28080000,
+		.mipi_pixel_rate = 281118166,
 		.max_framerate = 300,
 	},
 	.normal_video = {	/*data rate 1499.20 Mbps/lane */
@@ -161,7 +161,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.grabwindow_width = 3280,
 		.grabwindow_height = 2464,
 		.mipi_data_lp2hs_settle_dc = 85,	/* unit , ns */
-		.mipi_pixel_rate = 28080000,
+		.mipi_pixel_rate = 281223691,
 		.max_framerate = 300,
 	},
 
