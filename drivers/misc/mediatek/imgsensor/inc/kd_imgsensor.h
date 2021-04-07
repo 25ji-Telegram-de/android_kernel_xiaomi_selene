@@ -216,7 +216,7 @@
 #define OV13B10_SUNNY_SENSOR_ID                 0x560D43
 #define OV13B10_SENSOR_INDIA_ID                       0x560D46
 #define OV13B10_SUNNY_SENSOR_INDIA_ID                 0x560D47
-#define OV48D_OFILM_MAIN_SENSOR_ID              0x564844
+#define OV48D_OFILM_MAIN_SENSOR_ID              0x561244
 #define OV50C40_OFILM_MAIN_SENSOR_ID			0x565043
 #define S5KJN1_OFILM_MAIN_SENSOR_ID             0x38e1
 #define OV50C40_QTECH_MAIN_SENSOR_ID            (0x565043+1)

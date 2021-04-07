@@ -47,13 +47,10 @@
 #include "ov48d_ofilm_main_mipi_raw.h"
 #include "cam_cal_define.h"
 #define PFX "OV48D_OFILM_camera_sensor"
-//#define LOG_DBG(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
-//#define LOG_INF(format, args...)    pr_info(PFX "[%s] " format, __FUNCTION__, ##args)
-//#define LOG_ERR(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
-#define LOG_DBG(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
-#define LOG_INF(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_DBG(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_INF(format, args...)    pr_info(PFX "[%s] " format, __FUNCTION__, ##args)
 #define LOG_ERR(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
-//FIXME:XXX
+
 #define MULTI_WRITE 1
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
@@ -70,7 +67,8 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.starty = 0,
 		.grabwindow_width = 4000,
 		.grabwindow_height = 3000,
-		.mipi_data_lp2hs_settle_dc = 19,	//unit(ns), 16/23/65/85 recommanded
+		.mipi_data_lp2hs_settle_dc = 85,	//unit(ns), 16/23/65/85 recommanded
+        .mipi_pixel_rate = 440000000,
 		.max_framerate = 300,
 		},
 	.cap = {
@@ -82,54 +80,56 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.grabwindow_width = 4000,
 		.grabwindow_height = 3000,
 		.mipi_data_lp2hs_settle_dc = 19,	//unit(ns), 16/23/65/85 recommanded
+        .mipi_pixel_rate = 440000000,
 		.max_framerate = 300,
 		},
 	/*size@15fps, same as capture */
 	.cap1 = {
-		 .pclk = 100000000,
-		 .linelength = 940,
-		 .framelength = 3510,
-		 .startx = 0,
-		 .starty = 0,
-		 .grabwindow_width = 4000,
-		 .grabwindow_height = 3000,
+		.pclk = 100000000,
+		.linelength = 940,
+		.framelength = 3510,
+		.startx = 0,
+		.starty = 0,
+		.grabwindow_width = 4000,
+		.grabwindow_height = 3000,
 		 .mipi_data_lp2hs_settle_dc = 19,	//unit(ns), 16/23/65/85 recommanded
-		 .max_framerate = 300,
-		 },
+		.max_framerate = 300,
+		},
 	.normal_video = {
-			 .pclk = 100000000,
-			 .linelength = 940,
-			 .framelength = 3510,
-			 .startx = 0,
-			 .starty = 0,
-			 .grabwindow_width = 4000,
-			 .grabwindow_height = 3000,
-			 .mipi_data_lp2hs_settle_dc = 19,	//unit(ns), 16/23/65/85 recommanded
-			 .max_framerate = 300,
-			 },
+		.pclk = 100000000,
+		.linelength = 940,
+		.framelength = 3510,
+		.startx = 0,
+		.starty = 0,
+		.grabwindow_width = 4000,
+		.grabwindow_height = 3000,
+		.mipi_data_lp2hs_settle_dc = 85,	//unit(ns), 16/23/65/85 recommanded
+        .mipi_pixel_rate = 440000000,
+		.max_framerate = 300,
+			},
 	.hs_video = {
-		     .pclk = 100000000,
-		     .linelength = 238,
-		     .framelength = 876,
-		     .startx = 0,
-		     .starty = 0,
-		     .grabwindow_width = 1280,
-		     .grabwindow_height = 720,
-		     .mipi_data_lp2hs_settle_dc = 19,
-		     .max_framerate = 4800,
+		.pclk = 100000000,
+		.linelength = 238,
+		.framelength = 876,
+		.startx = 0,
+		.starty = 0,
+		.grabwindow_width = 1280,
+		.grabwindow_height = 720,
+		.mipi_data_lp2hs_settle_dc = 19,
+		.max_framerate = 4800,
                 },
 	.slim_video = {
-		     .pclk = 100000000,
-		     .linelength = 243,
-		     .framelength = 1714,
-		     .startx = 0,
-		     .starty = 0,
-		     .grabwindow_width = 1920,
-		     .grabwindow_height = 1080,
+		.pclk = 100000000,
+		.linelength = 243,
+		.framelength = 1714,
+		.startx = 0,
+		.starty = 0,
+		.grabwindow_width = 1920,
+		.grabwindow_height = 1080,
 		     .mipi_data_lp2hs_settle_dc = 19,	//unit(ns), 16/23/65/85 recommanded
-		     .max_framerate = 2400,
-		       },
-	 .custom1 = {
+		.max_framerate = 2400,
+		},
+	.custom1 = {
 			.pclk = 100000000,
 			.linelength = 1975,
 			.framelength = 3375,
@@ -161,9 +161,9 @@ static struct imgsensor_info_struct imgsensor_info = {
 	.isp_driving_current = ISP_DRIVING_4MA,	//8MA
 	.sensor_interface_type = SENSOR_INTERFACE_TYPE_MIPI,
 	.mipi_sensor_type = MIPI_OPHY_NCSI2,
-	.mipi_settle_delay_mode = 1,
-	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_B,
-	.mclk = 24,		//mclk value, suggest 24 or 26 for 24Mhz or 26Mhz
+	.mipi_settle_delay_mode = 0,
+	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gb,
+	.mclk = 12,		//mclk value, suggest 24 or 26 for 24Mhz or 26Mhz
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,	//mipi lane num
 	.i2c_addr_table = {0x20, 0x21, 0xff},
 	.i2c_speed = 400,
@@ -1608,7 +1608,7 @@ kal_uint16 addr_data_pair_preview_OV48D[] = {
 	0x3502, 0x8a,
 	0x3508, 0x02,
 	0x360c, 0x03,
-	0x3684, 0x03,
+	0x3684, 0x00,
 	0x369b, 0x10,
 	0x369d, 0x40,
 	0x37b0, 0x32,
@@ -1733,7 +1733,7 @@ static void preview_setting(void)
 	write_cmos_sensor(0x3502, 0x8a);
 	write_cmos_sensor(0x3508, 0x02);
 	write_cmos_sensor(0x360c, 0x03);
-	write_cmos_sensor(0x3684, 0x03);
+	write_cmos_sensor(0x3684, 0x00);
 	write_cmos_sensor(0x369b, 0x10);
 	write_cmos_sensor(0x369d, 0x40);
 	write_cmos_sensor(0x37b0, 0x32);
@@ -3404,7 +3404,8 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		}
 #endif
 		do {
-			if (0x07 == vendor_id) {
+			//if (0x07 == vendor_id) {
+                if (1) {
 				*sensor_id = return_sensor_id();
 				if (*sensor_id == imgsensor_info.sensor_id) {
 					pr_info
