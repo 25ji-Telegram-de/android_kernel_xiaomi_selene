@@ -157,7 +157,10 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 
 	if (info->atm_enabled == true && (info->chr_type == STANDARD_HOST ||
 	    info->chr_type == CHARGING_HOST)) {
-		pdata->input_current_limit = 100000; /* 100mA */
+	/*K19A HQ-123218 K19A charger by wangqi at 2021/4/8 start*/
+		pdata->input_current_limit = 500000;
+		pdata->charging_current_limit = 500000;
+	/*K19A HQ-123218 K19A charger by wangqi at 2021/4/8 end*/
 		goto done;
 	}
 
