@@ -344,8 +344,16 @@
 };
 /*K19A code for WXYFB-1001 by zhangpeng at 2021.3.19 end*/
 
-/*K19A WXYFB-996 K19A charger bq25890 bring up by miaozhichao at 2021/3/20 start*/
+/*K19A WXYFB-996 K19A charger bring up by miaozhichao at 2021/3/20 start*/
 &i2c5 {
+/*K19A-104 fusb302 bring up by wangchao at 2021/4/8 start*/
+	fusb302@22 {
+		status = "okay";
+		compatible = "fairchild,fusb302";
+		reg = <0x22>;
+		fairchild,int_n = <&pio 41 0>;
+	};
+/*K19A-104 fusb302 bring up by wangchao at 2021/4/8 end*/
 	fusb303@21 {
 		status = "okay";
 		compatible = "on,fusb303";
@@ -366,7 +374,7 @@
 		status = "okay";
 	};
 };
-/*K19A WXYFB-996 K19A charger bq25890 bring up by miaozhichao at 2021/3/20 end*/
+/*K19A WXYFB-996 K19A charger bring up by miaozhichao at 2021/3/20 end*/
 
 &i2c7 {
 	sc8551-charger@66{

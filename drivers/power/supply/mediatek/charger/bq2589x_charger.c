@@ -823,7 +823,9 @@ static int bq2589x_get_charger_type(struct bq2589x *bq, enum charger_type *type)
 
 	*type = chg_type;
 	g_charger_type = chg_type;
-
+	/*K19A-104 charge by wangchao at 2021/4/8 start*/
+	pr_err("vbus_stat:%d ,chg_type:%d\n", vbus_stat,chg_type);
+	/*K19A-104 charge by wangchao at 2021/4/8 end*/
 	return 0;
 }
 
@@ -894,14 +896,15 @@ static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 
 	bq->power_good = !!(reg_val & BQ2589X_PG_STAT_MASK);
 
-	if (!prev_pg && bq->power_good)
-		pr_notice("adapter/usb inserted\n");
 /* Huaqin modify for WXYFB-592 by miaozhichao at 2021/3/29 start */
+	if (!prev_pg && bq->power_good)
+		pr_err("adapter/usb inserted\n");
 	else if (prev_pg && !bq->power_good){
 		hvdcp_type_tmp = HVDCP_NULL;
-		pr_notice("adapter/usb removed\n");
+		pr_err("adapter/usb removed\n");
 	}
 /* Huaqin modify for WXYFB-592 by miaozhichao at 2021/3/29 end */
+
 	prev_chg_type = bq->chg_type;
 
 	ret = bq2589x_get_charger_type(bq, &bq->chg_type);

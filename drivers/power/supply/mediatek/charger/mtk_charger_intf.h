@@ -48,14 +48,14 @@ struct charger_data;
 #define CHRLOG_DEBUG_LEVEL   2
 
 extern int chr_get_debug_level(void);
-
+/*K19A-104 wangchao modify debug log at 2021/4/8 start*/
 #define chr_err(fmt, args...)					\
 do {								\
 	if (chr_get_debug_level() >= CHRLOG_ERROR_LEVEL) {	\
-		pr_notice(fmt, ##args);				\
+		pr_err(fmt, ##args);				\
 	}							\
 } while (0)
-
+/*K19A-104 wangchao modify debug log at 2021/4/8 end*/
 #define chr_info(fmt, args...)					\
 do {								\
 	if (chr_get_debug_level() >= CHRLOG_ERROR_LEVEL) {	\
