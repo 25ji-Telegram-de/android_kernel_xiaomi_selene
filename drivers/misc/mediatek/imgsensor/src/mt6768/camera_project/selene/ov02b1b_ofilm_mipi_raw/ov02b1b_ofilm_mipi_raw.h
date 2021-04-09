@@ -31,7 +31,7 @@ enum{
 	IMGSENSOR_MODE_CUSTOM1,
 };
 
-/* 表示几种（不同工作模式状态下）的sensor参数信息 */
+/* 锟斤拷示锟斤拷锟街ｏ拷锟斤拷同锟斤拷锟斤拷模式状态锟铰ｏ拷锟斤拷sensor锟斤拷锟斤拷锟斤拷息 */
 struct imgsensor_mode_struct {
 	kal_uint32 pclk;	/* record different mode's pclk */
 	kal_uint32 linelength;	/* record different mode's linelength */

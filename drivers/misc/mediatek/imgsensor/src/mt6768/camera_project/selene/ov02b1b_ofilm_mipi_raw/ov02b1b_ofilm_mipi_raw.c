@@ -345,8 +345,7 @@ static void set_shutter(kal_uint32 shutter)
 }
 
 static void set_shutter_frame_length(kal_uint16 shutter,
-			kal_uint16 frame_length,
-			kal_bool auto_extend_en)
+			kal_uint16 frame_length)
 {
 	unsigned long flags;
 	kal_uint16 realtime_fps = 0;
@@ -403,7 +402,68 @@ static void set_shutter_frame_length(kal_uint16 shutter,
 	 write_cmos_sensor(0xfe, 0x02);
 
 	//LOG_INF("shutter =%d, framelength =%d, realtime_fps =%d\n",shutter, imgsensor.frame_length, realtime_fps);
-}				/* set_shutter_frame_length */
+}
+
+// static void set_shutter_frame_length(kal_uint16 shutter,
+// 			kal_uint16 frame_length,
+// 			kal_bool auto_extend_en)
+// {
+// 	unsigned long flags;
+// 	kal_uint16 realtime_fps = 0;
+// 	kal_int32 dummy_line = 0;
+
+// 	spin_lock_irqsave(&imgsensor_drv_lock, flags);
+// 	imgsensor.shutter = shutter;
+// 	spin_unlock_irqrestore(&imgsensor_drv_lock, flags);
+
+// 	spin_lock(&imgsensor_drv_lock);
+// 	if (frame_length > 1)
+// 		dummy_line = frame_length - imgsensor.frame_length;
+// 	imgsensor.frame_length = imgsensor.frame_length + dummy_line;
+
+// 	if (shutter > imgsensor.frame_length - imgsensor_info.margin)
+// 		imgsensor.frame_length = shutter + imgsensor_info.margin;
+
+// 	if (imgsensor.frame_length > imgsensor_info.max_frame_length)
+// 		imgsensor.frame_length = imgsensor_info.max_frame_length;
+
+// 	spin_unlock(&imgsensor_drv_lock);
+
+// 	shutter = (shutter < imgsensor_info.min_shutter) ?
+// 		imgsensor_info.min_shutter : shutter;
+// 	shutter =
+// 		(shutter > (imgsensor_info.max_frame_length -
+// 		imgsensor_info.margin)) ? (imgsensor_info.max_frame_length -
+// 		imgsensor_info.margin) : shutter;
+
+// 	//frame_length and shutter should be an even number.
+// 	shutter = (shutter >> 1) << 1;
+// 	imgsensor.frame_length = (imgsensor.frame_length >> 1) << 1;
+// 	//auroflicker:need to avoid 15fps and 30 fps
+// 	if (imgsensor.autoflicker_en) {
+// 		realtime_fps = imgsensor.pclk /
+// 			imgsensor.line_length * 10 / imgsensor.frame_length;
+// 		if (realtime_fps >= 297 && realtime_fps <= 305) {
+// 			realtime_fps = 296;
+// 	    		set_max_framerate(realtime_fps, 0);
+// 		} else if (realtime_fps >= 147 && realtime_fps <= 150) {
+// 			realtime_fps = 146;
+// 	   		set_max_framerate(realtime_fps, 0);
+// 		} else {
+// 			set_dummy();
+// 		}
+// 	} else {
+// 		set_dummy();
+// 	}
+
+// 	/* Update Shutter */
+// 	 write_cmos_sensor(0xfd, 0x01);
+// 	 write_cmos_sensor(0x0e, (shutter >> 8) & 0xFF);
+// 	 write_cmos_sensor(0x0f, shutter  & 0xFF);
+// 	 write_cmos_sensor(0xfe, 0x02);
+
+// 	//LOG_INF("shutter =%d, framelength =%d, realtime_fps =%d\n",shutter, imgsensor.frame_length, realtime_fps);
+// }				/* set_shutter_frame_length */
 
 /*************************************************************************
  * FUNCTION
@@ -2314,8 +2374,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 	break;
     case SENSOR_FEATURE_SET_SHUTTER_FRAME_TIME:
 		set_shutter_frame_length((UINT16) *feature_data,
-	            (UINT16) *(feature_data + 1),
-		    (BOOL) (*(feature_data + 2)));
+	            (UINT16) *(feature_data + 1));
 		break;
     case SENSOR_FEATURE_GET_FRAME_CTRL_INFO_BY_SCENARIO:
 		/*
