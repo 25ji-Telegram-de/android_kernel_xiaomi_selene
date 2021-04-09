@@ -49,7 +49,12 @@ static int mv_proc_show(struct seq_file *file, void*data)
 	} else{
 		status = sprintf(RAM_size, "%d", round_kbytes_to_readable_mbytes(K(i.totalram)));
 	}
-
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/09 start */
+	if(strcmp("K19A_Micro_9S9",part_num) == 0)
+	{
+		sprintf(part_num,"%s","MT29VZZZAD9GQFSM_046W_9S9");
+	}
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/09 end */
 	manfidd = mmc_get_manfid();
 	snprintf(manfid, 5,"0x%x", manfidd);
 
