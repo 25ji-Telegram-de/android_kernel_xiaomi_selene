@@ -43,6 +43,8 @@ obj-$(CONFIG_SMB1351_USB_CHARGER) += smb1351-charger.o
 #obj-y += smb1351-charger.o
 obj-y += sc8551_charger.o
 obj-y += pd_policy_manager.o
-
+#K19A-104 ln8000 bringup by wangchao at 2021/4/10 start
+obj-y += ln8000_charger.o
+#K19A-104 ln8000 bringup by wangchao at 2021/4/10 end
 obj-$(CONFIG_LOAD_SWITCH_RT9750) += rt9750.o
 obj-$(CONFIG_CHARGER_MT6362) += mt6362-chg.o

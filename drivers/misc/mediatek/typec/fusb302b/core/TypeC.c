@@ -1512,6 +1512,9 @@ void SetStateAudioAccessory(struct Port *port)
     TimerDisable(&port->StateTimer);
 }
 #endif /* FSC_HAVE_ACCMODE */
+/*K19A-104 add by wangchao at 2021/4/10 start*/
+extern	uint8_t     typec_cc_orientation;
+/*K19A-104 add by wangchao at 2021/4/10 end*/
 
 #if (defined(FSC_HAVE_SNK) && defined(FSC_HAVE_ACCMODE))
 void SetStatePoweredAccessory(struct Port *port)
@@ -1537,7 +1540,9 @@ void SetStatePoweredAccessory(struct Port *port)
 
     notify_observers((port->CCPin == CC1) ? CC1_ORIENT : CC2_ORIENT,
                      port->I2cAddr, 0);
-
+    /*K19A-104 add by wangchao at 2021/4/10 start*/
+    typec_cc_orientation = (port->CCPin == CC1) ? CC1_ORIENT : CC2_ORIENT;
+    /*K19A-104 add by wangchao at 2021/4/10 end*/
     USBPDEnable(port, TRUE, SOURCE);
 
     TimerStart(&port->StateTimer, tAMETimeout);

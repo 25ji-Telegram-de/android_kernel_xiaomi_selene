@@ -445,6 +445,44 @@
 		interrupt-names = "chr_stat";
 	};
 /*K19A WXYFB-996 K19A charger bq25890 bring up by miaozhichao at 2021/3/20 end*/
+/*K19A-104 ln8000 bringup by wangchao at 2021/4/10 start*/
+	ln8000_charger@51 {
+		compatible = "lionsemi,ln8000";
+		reg = <0x51>;
+		/* bank <bit-idx> <flags: active-low> */
+
+		interrupt-parent = <&pio>;
+		interrupts = <20 IRQ_TYPE_EDGE_FALLING 20 0>;
+		ti,irq-gpio = <&pio 20 0>;
+
+		/* device configuration */
+		ln8000_charger,bat-ovp-threshold = <4550>;
+		ln8000_charger,bat-ovp-alarm-threshold = <4525>;
+		ln8000_charger,bus-ovp-threshold = <13000>;
+		ln8000_charger,bus-ovp-alarm-threshold = <11000>;
+		ln8000_charger,bus-ocp-threshold = <3750>;
+		ln8000_charger,bus-ocp-alarm-threshold = <3500>;
+		ln8000_charger,ntc-alarm-cfg  = <226>;
+		/* protection enable/disable flags
+		 *   vbat-ovp-disable
+		 *   vbat-reg-disable
+		 *   iin-ocp-disable
+		 *   iin-reg-disable
+		 *   tbus-mon-disable
+		 *   tbat-mon-disable
+		 *   tdie-prot-disable
+		 *   tdie-reg-disable
+		 *   revcurr-prot-disable
+		 */
+		ln8000_charger,tdie-prot-disable;
+		ln8000_charger,tbus-mon-disable;
+		ln8000_charger,tbat-mon-disable;
+		ln8000_charger,iin-ocp-disable;
+		ln8000_charger,iin-reg-disable;
+		ln8000_charger,tdie-reg-disable;
+		ln8000_charger,vbat-reg-disable;
+	};
+/*K19A-104 ln8000 bringup by wangchao at 2021/4/10 end*/
 };
 &lk_charger  {
 	/* charging current */

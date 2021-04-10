@@ -37,6 +37,9 @@
 //#include <mt-plat/mtk_charger.h>
 #include <mtk_charger.h>
 
+/*K19A-104 add by wangchao at 2021/4/10 start*/
+extern bool g_pd_is_present;
+/*K19A-104 add by wangchao at 2021/4/10 end*/
 /******************************************************************************
 * Driver functions
 ******************************************************************************/
@@ -428,7 +431,9 @@ static int fusb30x_probe (struct i2c_client* client,
         return -EIO;
     }
     pr_debug("FUSB  %s - Device check passed!\n", __func__);
-
+    /*K19A-104 add by wangchao at 2021/4/10 start*/
+    g_pd_is_present = true;
+    /*K19A-104 add by wangchao at 2021/4/10 end*/
     /* Initialize the chip lock */
     mutex_init(&chip->lock);
 
