@@ -28,6 +28,10 @@
 #include "Log.h"
 #endif /* FSC_DEBUG */
 
+/*K19A-104 add by wangchao at 2021/4/10 start*/
+extern	uint8_t     typec_cc_orientation;
+/*K19A-104 add by wangchao at 2021/4/10 end*/
+
 void StateMachineTypeC(struct Port *port)
 {
     do
@@ -1286,7 +1290,9 @@ void SetStateAttachedSource(struct Port *port)
 	if (!port->IsPRSwap)
 		notify_observers((port->CCPin == CC1) ? CC1_ORIENT : CC2_ORIENT,
 			port->I2cAddr, 0);
-
+    /*K19A-104 add by wangchao at 2021/4/10 start*/
+    typec_cc_orientation = (port->CCPin == CC1) ? CC1_ORIENT : CC2_ORIENT;
+    /*K19A-104 add by wangchao at 2021/4/10 end*/
     USBPDEnable(port, TRUE, SOURCE);
 
     /* Start delay to check for illegal cable looping */
@@ -1312,6 +1318,9 @@ void SetStateAttachedSink(struct Port *port)
     if (!port->IsPRSwap)
 		notify_observers((port->CCPin == CC1) ? CC1_ORIENT : CC2_ORIENT,
 			port->I2cAddr, 0);
+    /*K19A-104 add by wangchao at 2021/4/10 start*/
+    typec_cc_orientation = (port->CCPin == CC1) ? CC1_ORIENT : CC2_ORIENT;
+    /*K19A-104 add by wangchao at 2021/4/10 end*/
 
     port->CCTerm = DecodeCCTerminationSink(port);
     UpdateSinkCurrent(port, port->CCTerm);
@@ -1512,9 +1521,6 @@ void SetStateAudioAccessory(struct Port *port)
     TimerDisable(&port->StateTimer);
 }
 #endif /* FSC_HAVE_ACCMODE */
-/*K19A-104 add by wangchao at 2021/4/10 start*/
-extern	uint8_t     typec_cc_orientation;
-/*K19A-104 add by wangchao at 2021/4/10 end*/
 
 #if (defined(FSC_HAVE_SNK) && defined(FSC_HAVE_ACCMODE))
 void SetStatePoweredAccessory(struct Port *port)
