@@ -264,13 +264,13 @@ static void wusb3801_irq_work_handler(struct kthread_work *work)
 		pr_err("%s: failed to read reg status\n", __func__);
 		return;
 	}
-	//pr_info("%s WUSB3801_REG_STATUS : 0x%02x\n", __func__, rc);
+	pr_info("%s WUSB3801_REG_STATUS : 0x%02x\n", __func__, rc);
 
-	//pr_info("%s: int_sts[0x%02x]\n", __func__, int_sts);
+	pr_info("%s: int_sts[0x%02x]\n", __func__, int_sts);
 		status = (rc & WUSB3801_ATTACH) ? true : false;
 	type = status ? \
 			rc & WUSB3801_TYPE_MASK : WUSB3801_TYPE_INVALID;
-	//pr_info("sts[0x%02x], type[0x%02x]\n", status, type);
+	pr_info("sts[0x%02x], type[0x%02x]\n", status, type);
 	if (int_sts & WUSB3801_INT_DETACH) {
 		#ifdef __TEST_CC_PATCH__
 		if (chip->cc_test_flag == 1) {
@@ -416,11 +416,11 @@ static int wusb3801_init_alert(struct tcpc_device *tcpc)
 		pr_err("wusb3801 [%s]enter error recovery :0x%x\n", __func__, ret);
 		wusb3801_i2c_write8(chip->tcpc, WUSB3801_REG_TEST_02, 0x00);
 	}
-	/*K19A WXYFB-996 K19A charger cclogic bring up by miaozhichao at 2021/3/23 start*/
+	/*K19A-108 mdify by wangchao at 2021/4/12 start*/
 	ret = request_irq(chip->irq, wusb3801_intr_handler,
-		IRQF_TRIGGER_LOW | IRQF_NO_THREAD |
+		IRQF_TRIGGER_FALLING | IRQF_NO_THREAD |
 		IRQF_NO_SUSPEND, name, chip);
-  	/*K19A WXYFB-996 K19A charger cclogic bring up by miaozhichao at 2021/3/23 end*/
+	/*K19A-108 mdify by wangchao at 2021/4/12 end*/
 	if (ret < 0) {
 		pr_err("Error: failed to request irq%d (gpio = %d, ret = %d)\n",
 			chip->irq, chip->irq_gpio, ret);
