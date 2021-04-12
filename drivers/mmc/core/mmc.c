@@ -1675,6 +1675,12 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 	u32 rocr;
 
 	WARN_ON(!host->claimed);
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 start */
+#ifdef EXPORT_HR_INIT
+	char ext_csd[512] = {};
+	u32 i = 0;
+#endif
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 end */
 
 	/* Set correct bus mode for MMC before attempting init */
 	if (!mmc_host_is_spi(host))
@@ -1816,6 +1822,29 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 
 		/* Erase size depends on CSD and Extended CSD */
 		mmc_set_erase_size(card);
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 start */
+#ifdef EXPORT_HR_INIT
+		if (card->cid.manfid == CID_MANFID_HYNIX) {
+		err = mmc_send_vc_cmd(card, 60, 0x534D4900);
+		if (err) {
+			pr_err("%s: %s: vc cmd () fails %d\n", mmc_hostname(host), __func__, err);
+		}
+		err = mmc_send_vc_cmd(card, 60, 0x48525054);
+		if (err) {
+			pr_err("%s: %s: vc cmd () fails %d\n", mmc_hostname(host), __func__, err);
+		}
+		err = mmc_send_cxd_data(card, card->host, MMC_SEND_EXT_CSD, ext_csd, 512);
+		if (err) {
+			pr_err("%s: %s: ext csd fail %d\n", mmc_hostname(host), __func__, err);
+		}
+		for (i = 0; i < 512; i += 8) {
+			pr_err("[%d~%d]: %02x %02x %02x %02x %02x %02x %02x %02x\n", i, i+7
+				, ext_csd[i], ext_csd[i+1], ext_csd[i+2], ext_csd[i+3], ext_csd[i+4]
+				, ext_csd[i+5], ext_csd[i+6], ext_csd[i+7]);
+		}
+	}
+#endif
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 end */
 	}
 #if 0 //temp delete
 	/* Enable ERASE_GRP_DEF. This bit is lost after a reset or power off. */

@@ -1329,7 +1329,12 @@ static int mmc_blk_part_switch_post(struct mmc_card *card,
 
 	return ret;
 }
-
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 start */
+int mmc_cmd_switch(struct mmc_card *card, bool enable)
+{
+	return mmc_blk_cmdq_switch(card, enable);
+}
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 end */
 static inline int mmc_blk_part_switch(struct mmc_card *card,
 				      unsigned int part_type)
 {
@@ -4531,7 +4536,154 @@ static const struct file_operations mmc_dbg_ext_csd_fops = {
 	.release	= mmc_ext_csd_release,
 	.llseek		= default_llseek,
 };
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 start */
+extern int mmc_cmd_switch(struct mmc_card *card, bool enable);
+extern int mmc_get_ext_csd(struct mmc_card *card, u8 **new_ext_csd);
+static int
+mmc_hr_open(struct inode *inode, struct file *filp) {
+	struct mmc_card *card = inode->i_private;
+	u8 *buf;
+	ssize_t n = 0;
+	u8 *ext_csd;
+	int err = 0, i;
+	buf = kzalloc(EXT_CSD_STR_LEN/2 + 1, GFP_KERNEL);
+	if (!buf)
+		return -ENOMEM;
+	if (card->cid.manfid != CID_MANFID_HYNIX && card->cid.manfid != CID_MANFID_MICRON &&
+		card->cid.manfid != CID_MANFID_SAMSUNG) {
+		snprintf(buf, EXT_CSD_STR_LEN + 1, "NOT SUPPORTED\n");
+		filp->private_data = buf;
+		return 0;
+	}
+	mmc_get_card(card);
+	if (mmc_card_cmdq(card)) {
+		err = mmc_cmdq_halt_on_empty_queue(card->host);
+		if (err) {
+			pr_err("%s: halt failed while doing %s err (%d)\n",
+				mmc_hostname(card->host), __func__, err);
+			mmc_put_card(card);
+			goto out_free_halt;
+		}
+	}
+	if (card->cid.manfid == CID_MANFID_HYNIX) {
+		if (!strncmp(card->cid.prod_name, "hDEaP3", strlen("hDEaP3")) ||
+			!strncmp(card->cid.prod_name, "hC8aP>", strlen("hC8aP>")) ||
+			!strncmp(card->cid.prod_name, "hB8aP>", strlen("hB8aP>")) ||
+			!strncmp(card->cid.prod_name, " hB8aP?>", strlen(" hB8aP?>")) ||
+			!strncmp(card->cid.prod_name, "hC9aP3>", strlen("hC9aP3"))) {
+					err = mmc_send_cxd_witharg_data(card, card->host
+						, MMC_SEND_EXT_CSD, 0x53454852, buf, 512);
+			if (err) {
+				pr_err("%s: mmc_send_cxd_witharg_data fail %d\n"
+						, __func__, err);
+				goto out_free;
+			}
+		} else {
+			err = mmc_send_vc_cmd(card, 60, 0x534D4900);
+			if (err) {
+				pr_err("%s: vc 1st cmd failed %d\n", __func__, err);
+				goto out_free;
+			} else {
+				pr_err("%s: vc 1st cmd succeed\n", __func__);
+			}
 
+			err = mmc_send_vc_cmd(card, 60, 0x48525054);
+			if (err) {
+				pr_err("%s: vc  2nd cmd  failed %d\n", __func__, err);
+				goto out_free;
+			} else {
+				pr_err("%s: vc 2nd cmd succeed\n", __func__);
+			}
+
+			err = mmc_send_cxd_data(card, card->host, MMC_SEND_EXT_CSD, buf, 512);
+			if (err)
+				goto out_free;
+		}
+	} else if (card->cid.manfid == CID_MANFID_MICRON) {
+		err = mmc_send_cxd_witharg_data(card, card->host
+					, MMC_SEND_EXT_CSD, 0x0d, buf, 512);
+		if (err) {
+			pr_err("%s: mmc_send_cxd_witharg_data fail %d\n"
+					, __func__, err);
+			goto out_free;
+		}
+	} else if (card->cid.manfid == CID_MANFID_SAMSUNG) {
+		mmc_cmd_switch(card, false);
+		err = mmc_set_blocklen(card, 512);
+		if (err) {
+			pr_err("%s: set blocklen to 512 fail %d\n", __func__, err);
+			goto out_free;
+		}
+#ifdef OSV
+		pr_err("%s: %d \n", __func__, __LINE__);
+		err = mmc_get_osv_data(card, buf);
+		if (err) {
+			pr_err("%s: get osv data fail %d\n", __func__, err);
+			goto out_free;
+		}
+#else
+		err = mmc_get_nandinfo_data(card, buf);//hr
+		if (err) {
+			pr_err("%s: get nandinfo fail %d\n", __func__, err);
+			goto out_free;
+		}
+#endif
+		mmc_cmd_switch(card, true);
+	}
+	ext_csd = kzalloc(EXT_CSD_STR_LEN + 1, GFP_KERNEL);
+	if (!ext_csd)
+		goto out_free;
+
+	for (i = 0; i < 512; i++)
+		n += snprintf(ext_csd + n, EXT_CSD_STR_LEN + 1 - n
+					, "%02x", buf[i]);
+	n += snprintf(ext_csd + n, EXT_CSD_STR_LEN + 1 - n, "\n");
+	BUG_ON(n != EXT_CSD_STR_LEN);
+
+	filp->private_data = ext_csd;
+	if (mmc_card_cmdq(card)) {
+		if (mmc_cmdq_halt(card->host, false))
+			pr_err("%s: %s: cmdq unhalt failed\n"
+					, mmc_hostname(card->host), __func__);
+	}
+
+	mmc_put_card(card);
+	kfree(buf);
+	return 0;
+
+out_free:
+	if (mmc_card_cmdq(card)) {
+		if (mmc_cmdq_halt(card->host, false))
+			pr_err("%s: %s: cmdq unhalt failed\n"
+				, mmc_hostname(card->host), __func__);
+	}
+	mmc_put_card(card);
+
+out_free_halt:
+	kfree(buf);
+	return err;
+}
+
+static ssize_t mmc_hr_read(struct file *filp, char __user *ubuf
+							, size_t cnt, loff_t *ppos) {
+	char *buf = filp->private_data;
+
+	return simple_read_from_buffer(ubuf, cnt, ppos, buf, EXT_CSD_STR_LEN);
+}
+
+static int mmc_hr_release(struct inode *inode, struct file *file)
+{
+	kfree(file->private_data);
+	return 0;
+}
+
+static const struct file_operations mmc_dbg_hr_fops = {
+	.open		= mmc_hr_open,
+	.read		= mmc_hr_read,
+	.release	= mmc_hr_release,
+	.llseek		= default_llseek,
+};
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 end */
 static int mmc_blk_add_debugfs(struct mmc_card *card, struct mmc_blk_data *md)
 {
 	struct dentry *root;
@@ -4551,12 +4703,17 @@ static int mmc_blk_add_debugfs(struct mmc_card *card, struct mmc_blk_data *md)
 
 	if (mmc_card_mmc(card)) {
 		md->ext_csd_dentry =
-			debugfs_create_file("ext_csd", S_IRUSR, root, card,
+			debugfs_create_file("ext_csd", S_IRUGO, root, card,
 					    &mmc_dbg_ext_csd_fops);
 		if (!md->ext_csd_dentry)
 			return -EIO;
 	}
-
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 start */
+	if (mmc_card_mmc(card)) {
+		if(!debugfs_create_file("hr", S_IRUGO, root, card, &mmc_dbg_hr_fops))
+			return -EIO;
+	}
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 end */
 	return 0;
 }
 
