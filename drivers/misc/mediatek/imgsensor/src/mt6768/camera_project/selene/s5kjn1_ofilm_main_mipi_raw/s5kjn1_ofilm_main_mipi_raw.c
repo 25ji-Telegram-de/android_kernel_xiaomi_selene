@@ -160,7 +160,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 	.sensor_interface_type = SENSOR_INTERFACE_TYPE_MIPI,
 	.mipi_sensor_type = MIPI_OPHY_NCSI2,
 	.mipi_settle_delay_mode = 1,
-	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gr,
+	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gb,
 	.mclk = 24,
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,
 	.i2c_addr_table = {0x20, 0x5A, 0xff},
@@ -168,7 +168,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 };
 
 static struct imgsensor_struct imgsensor = {
-	.mirror = IMAGE_V_MIRROR,
+	.mirror = IMAGE_NORMAL,
 	.sensor_mode = IMGSENSOR_MODE_INIT,
 	.shutter = 0x0200,
 	.gain = 0x0100,
@@ -294,7 +294,7 @@ static kal_uint16 read_cmos_sensor(kal_uint32 addr)
 static void write_cmos_sensor_byte(kal_uint32 addr, kal_uint32 para)
 {
 	char pu_send_cmd[3] = {
-	 (char)(addr >> 8), (char)(addr & 0xFF), (char)(para & 0xFF) };
+	(char)(addr >> 8), (char)(addr & 0xFF), (char)(para & 0xFF) };
 
 	iWriteRegI2C(pu_send_cmd, 3, imgsensor.i2c_write_id);
 }
@@ -368,7 +368,7 @@ static kal_uint32 streaming_control(kal_bool enable)
 	if (enable) {
 
 //		write_cmos_sensor(0x6028, 0x4000);
-		write_cmos_sensor(0x0100, 0X0100);
+		write_cmos_sensor_byte(0x0100, 0X01);
 		for (i = 0; i < 5; i++) {
 			pr_err("%s streaming check is %d", __func__,
 					 read_cmos_sensor_8(0x0005));
@@ -380,7 +380,7 @@ static kal_uint32 streaming_control(kal_bool enable)
 		}
 	} else {
 //		write_cmos_sensor(0x6028, 0x4000);
-		write_cmos_sensor(0x0100, 0x0000);
+		write_cmos_sensor_byte(0x0100, 0x00);
 		check_streamoff();
 	}
 	return ERROR_NONE;
@@ -486,7 +486,7 @@ static void set_shutter(kal_uint64 shutter)
 		if (bNeedSetNormalMode) {
 			LOG_INF("exit long shutter\n");
 			write_cmos_sensor(0x6028, 0x4000);
-			write_cmos_sensor(0x0100, 0x0000); //stream off
+			write_cmos_sensor_byte(0x0100, 0x00); //stream off
 			write_cmos_sensor(0x0334, 0x0000);
 			write_cmos_sensor(0x0E0A, 0x0000);
 			write_cmos_sensor(0x0E0C, 0x0000);
@@ -496,7 +496,7 @@ static void set_shutter(kal_uint64 shutter)
 			write_cmos_sensor(0x0E14, 0x0000);
 			write_cmos_sensor(0x0E16, 0x0000);
 			write_cmos_sensor(0x0704, 0x0000);
-			write_cmos_sensor(0x0100, 0x0100); //stream on
+			write_cmos_sensor_byte(0x0100, 0x01); //stream on
 			bNeedSetNormalMode = KAL_FALSE;
 			imgsensor.current_ae_effective_frame = 2;
 		}
@@ -551,7 +551,7 @@ static void set_shutter(kal_uint64 shutter)
 		imgsensor.current_ae_effective_frame = 2;
 
 		write_cmos_sensor(0x6028, 0x4000);
-		write_cmos_sensor(0x0100, 0x0000); //stream off
+		write_cmos_sensor_byte(0x0100, 0x00); //stream off
 		check_output_stream_off();
 		write_cmos_sensor(0x0334, 0x0001);
 		write_cmos_sensor(0x0E0A, 0x0002);
@@ -594,7 +594,7 @@ static void set_shutter(kal_uint64 shutter)
 		write_cmos_sensor(0x0E16, 0x0050); //aGain 2nd frame
 		write_cmos_sensor(0x0704, 0x0600); //shifter for shutter
 
-		write_cmos_sensor(0x0100, 0x0100); //stream on
+		write_cmos_sensor_byte(0x0100, 0x01); //stream on
 		pre_shutter = 0;
 	}
 
@@ -754,7 +754,7 @@ static void set_mirror_flip(kal_uint8 image_mirror)
 	spin_unlock(&imgsensor_drv_lock);
 	switch (image_mirror) {
 	case IMAGE_NORMAL:
-		write_cmos_sensor_byte(0x0101, 0x00);
+        write_cmos_sensor_byte(0x0101, 0x03);
 		break;
 	case IMAGE_H_MIRROR:
 		write_cmos_sensor_byte(0x0101, 0x01);
@@ -763,7 +763,7 @@ static void set_mirror_flip(kal_uint8 image_mirror)
 		write_cmos_sensor_byte(0x0101, 0x02);
 		break;
 	case IMAGE_HV_MIRROR:
-		write_cmos_sensor_byte(0x0101, 0x03);
+        write_cmos_sensor_byte(0x0101, 0x00);
 		break;
 	default:
 		LOG_INF("Error image_mirror setting\n");
