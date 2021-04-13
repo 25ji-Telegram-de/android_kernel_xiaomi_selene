@@ -282,7 +282,9 @@ int swtp_init(int md_id)
 	if (ret1) {
 		pr_err("gpio_request_one get_swtp_gpio(%d)=%d\n",get_swtp_gpio, ret1);
 	}
-	swtp_gpio_status = proc_create("SWTP_GOIP_STATUS", 0644, NULL, &swtp_gpio_status_ops);
+	/*Huaqin add for HQ-130137 by wangrui at 2021.4.13 start*/
+	swtp_gpio_status = proc_create("gpio_status", 0644, NULL, &swtp_gpio_status_ops);
+	/*Huaqin add for HQ-130137 by wangrui at 2021.4.13 end*/
 	if (swtp_gpio_status == NULL) {
 		printk("tpd, create_proc_entry swtp_gpio_status_ops failed\n");
 	}
