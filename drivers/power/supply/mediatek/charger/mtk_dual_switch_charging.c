@@ -287,6 +287,24 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 					info->data.ac_charger_input_current;
 		pdata->charging_current_limit =
 					info->data.ac_charger_current;
+          /*K19A K19A-137 K19A  smb1351 kernel charger by wangqi at 2021/4/14 start*/
+		switch (info->usb_psy->desc->type) {
+		case POWER_SUPPLY_TYPE_USB_HVDCP:
+				pdata->input_current_limit = 2000000;
+				pdata->charging_current_limit = 3000000;
+				break;
+		case POWER_SUPPLY_TYPE_USB_HVDCP_3:
+				pdata->input_current_limit = 3000000;
+				pdata->charging_current_limit = 3000000;
+				break;
+		case POWER_SUPPLY_TYPE_USB_DCP:
+		default:
+				pdata->input_current_limit =
+				info->data.ac_charger_input_current;
+				pdata->charging_current_limit = 2000000;
+				break;
+		}
+          /*K19A K19A-137 K19A  smb1351 kernel charger by wangqi at 2021/4/14 end*/
 		mtk_pe20_set_charging_current(info,
 					&pdata->charging_current_limit,
 					&pdata->input_current_limit);
@@ -448,8 +466,6 @@ done:
 		pdata->input_current_limit = pdata->input_current_limit / 2;
 		pdata2->input_current_limit = pdata2->input_current_limit / 2;
 	}
-	pdata->charging_current_limit = 5000000;
-	pdata2->charging_current_limit = 5000000;
 	pr_err("force:%d %d thermal:(%d %d,%d %d)(%d %d %d)setting:(%d %d)(%d %d)",
 		_uA_to_mA(pdata->force_charging_current),
 		_uA_to_mA(pdata2->force_charging_current),
