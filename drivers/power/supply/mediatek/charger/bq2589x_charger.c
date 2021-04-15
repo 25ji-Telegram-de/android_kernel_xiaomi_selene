@@ -780,6 +780,9 @@ static int bq2589x_get_charger_type(struct bq2589x *bq, enum charger_type *type)
 	int vbus_stat = 0;
 	enum charger_type chg_type = CHARGER_UNKNOWN;
 
+	/*K19A k19A-143 K19A charger_type by wangqi at 2021/4/15 start*/
+	hvdcp_type_tmp = HVDCP_NULL;
+	/*K19A k19A-143 K19A charger_type by wangqi at 2021/4/15 end*/
 	ret = bq2589x_read_byte(bq, BQ2589X_REG_0B, &reg_val);
 
 	if (ret)
