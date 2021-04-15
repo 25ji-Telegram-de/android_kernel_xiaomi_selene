@@ -1077,6 +1077,22 @@ static int bq2589x_charging(struct charger_device *chg_dev, bool enable)
 	return ret;
 }
 
+/*K19A-75 charge by wangchao at 2021/4/15 start*/
+static int bq2589x_enable_hiz(struct charger_device *chg_dev, bool enable)
+{
+	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
+	int ret = 0;
+	pr_err("bq2589x_enable_hiz : %d\n", enable);
+
+	if(enable)
+		ret = bq2589x_enter_hiz_mode(bq);
+	else
+		ret = bq2589x_exit_hiz_mode(bq);
+
+	return ret;
+}
+/*K19A-75 charge by wangchao at 2021/4/15 end*/
+
 static int bq2589x_plug_in(struct charger_device *chg_dev)
 {
 
@@ -1309,6 +1325,9 @@ static struct charger_ops bq2589x_chg_ops = {
 	.plug_out = bq2589x_plug_out,
 	.dump_registers = bq2589x_dump_register,
 	.enable = bq2589x_charging,
+	/*K19A-75 charge by wangchao at 2021/4/15 start*/
+	.enable_hz = bq2589x_enable_hiz,
+	/*K19A-75 charge by wangchao at 2021/4/15 start*/
 	.is_enabled = bq2589x_is_charging_enable,
 	.get_charging_current = bq2589x_get_ichg,
 	.set_charging_current = bq2589x_set_ichg,

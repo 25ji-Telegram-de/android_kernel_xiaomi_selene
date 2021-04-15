@@ -886,6 +886,27 @@ int charger_manager_set_input_suspend(int suspend)
 	return 0;
 }
 
+/*K19A-75 charge by wangchao at 2021/4/15 start*/
+int charger_manager_set_hiz_enable(int hiz_enable)
+{
+	pr_info("%s : %d.\n", __func__, hiz_enable);
+
+	if (pinfo == NULL)
+		return false;
+
+	if (hiz_enable) {
+		charger_dev_enable_hz(pinfo->chg1_dev, true);
+		pinfo->is_input_suspend = true;
+	} else {
+		charger_dev_enable_hz(pinfo->chg1_dev, false);
+		pinfo->is_input_suspend = false;
+	}
+	// if (pinfo->usb_psy)
+	// 	power_supply_changed(pinfo->usb_psy);
+	return 0;
+}
+/*K19A-75 charge by wangchao at 2021/4/15 end*/
+
 int charger_manager_is_input_suspend(void)
 {
 	if (pinfo == NULL)

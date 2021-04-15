@@ -321,6 +321,9 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(resistance_id),
 	POWER_SUPPLY_ATTR(battery_id_voltage),
 	POWER_SUPPLY_ATTR(input_suspend),
+	/*K19A-75 charge by wangchao at 2021/4/15 start*/
+	POWER_SUPPLY_ATTR(hiz_enable),
+	/*K19A-75 charge by wangchao at 2021/4/15 end*/
 	POWER_SUPPLY_ATTR(ra_detected),
 	POWER_SUPPLY_ATTR(tx_adapter),
 	POWER_SUPPLY_ATTR(connector_temp),

@@ -137,6 +137,9 @@ static enum power_supply_property battery_props[] = {
 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
 	POWER_SUPPLY_PROP_TEMP,
 	POWER_SUPPLY_PROP_INPUT_SUSPEND,
+	/*K19A-75 charge by wangchao at 2021/4/15 start*/
+	POWER_SUPPLY_PROP_HIZ_ENABLE,
+	/*K19A-75 charge by wangchao at 2021/4/15 end*/
 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
 	POWER_SUPPLY_PROP_BATT_ID,
 	POWER_SUPPLY_PROP_BATTERY_TYPE,
@@ -591,6 +594,9 @@ static int battery_get_property(struct power_supply *psy,
 		val->intval = gm.tbat_precise;
 		break;
 	case POWER_SUPPLY_PROP_INPUT_SUSPEND:
+	/*K19A-75 charge by wangchao at 2021/4/15 start*/
+	case POWER_SUPPLY_PROP_HIZ_ENABLE:
+	/*K19A-75 charge by wangchao at 2021/4/15 end*/
 		val->intval = charger_manager_is_input_suspend();
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT:
@@ -634,6 +640,11 @@ static int battery_set_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_INPUT_SUSPEND:
 		charger_manager_set_input_suspend(val->intval);
 		break;
+	/*K19A-75 charge by wangchao at 2021/4/15 start*/
+	case POWER_SUPPLY_PROP_HIZ_ENABLE:
+		charger_manager_set_hiz_enable(val->intval);
+		break;
+	/*K19A-75 charge by wangchao at 2021/4/15 end*/
 	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT:
 		charger_manager_set_prop_system_temp_level(val->intval);
 		break;
@@ -671,6 +682,9 @@ static int battery_prop_is_writeable(struct power_supply *psy,
 {
 	switch (psp) {
 	case POWER_SUPPLY_PROP_INPUT_SUSPEND:
+	/*K19A-75 charge by wangchao at 2021/4/15 start*/
+	case POWER_SUPPLY_PROP_HIZ_ENABLE:
+	/*K19A-75 charge by wangchao at 2021/4/15 end*/
 		return 1;
 	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT:
 		return 1;
