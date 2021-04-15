@@ -54,7 +54,6 @@
 #define MULTI_WRITE 1
 #define VENDOR_ID 0X06
 #define VENDOR_ID_TEMP 0X01
-#define RAW_SIZE_4080_3072 1
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
 static struct imgsensor_info_struct imgsensor_info = {
@@ -68,13 +67,8 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.framelength = 3174,
 		.startx = 0,
 		.starty = 0,
-#if RAW_SIZE_4080_3072
-		.grabwindow_width = 4080,
-		.grabwindow_height = 3072,
-#else
 		.grabwindow_width = 4096,
 		.grabwindow_height = 3072,
-#endif
 		.mipi_data_lp2hs_settle_dc = 85,	//unit(ns), 16/23/65/85 recommanded
         .mipi_pixel_rate = 768000000,
 		.max_framerate = 300,
@@ -85,13 +79,8 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.framelength = 3174,
 		.startx = 0,
 		.starty = 0,
-#if RAW_SIZE_4080_3072
-		.grabwindow_width = 4080,
-		.grabwindow_height = 3072,
-#else
 		.grabwindow_width = 4096,
 		.grabwindow_height = 3072,
-#endif
 		.mipi_data_lp2hs_settle_dc = 19,	//unit(ns), 16/23/65/85 recommanded
         .mipi_pixel_rate = 768000000,
 		.max_framerate = 300,
@@ -203,7 +192,7 @@ static struct imgsensor_struct imgsensor = {
 
 /* Sensor output window information */
 static struct SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[6] = {
-#if RAW_SIZE_4080_3072
+#ifdef FACTORY_CAMERA_MODE
  	// Preview
 	{8224, 6176,    0,    8, 8224, 6160, 4112, 3080,  16, 4, 4080, 3072, 0, 0, 4080, 3072},
      //capture
@@ -225,7 +214,7 @@ static struct SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[6] = {
 };
 
 static struct SENSOR_VC_INFO_STRUCT SENSOR_VC_INFO[6] = {
-#if RAW_SIZE_4080_3072
+#ifdef FACTORY_CAMERA_MODE
 	/* preview mode setting */
     {
         0x02, 0x0a, 0x0000, 0x0008, 0x40, 0x00,
@@ -1840,7 +1829,7 @@ static void sensor_init(void)
 
 #if MULTI_WRITE
 kal_uint16 addr_data_pair_preview_qtech_OV50C40[] = {
-#if RAW_SIZE_4080_3072
+#ifdef FACTORY_CAMERA_MODE
 	0x0304, 0x01,
 	0x0305, 0xe0,
 	0x0307, 0x00,
@@ -2354,7 +2343,7 @@ static void preview_setting(void)
 
 #if MULTI_WRITE
 kal_uint16 addr_data_pair_capture_15fps_qtech_OV50C40[] = {
-#if RAW_SIZE_4080_3072
+#ifdef FACTORY_CAMERA_MODE
 	0x0304, 0x01,
 	0x0305, 0xe0,
 	0x0307, 0x00,
@@ -2690,7 +2679,7 @@ kal_uint16 addr_data_pair_capture_15fps_qtech_OV50C40[] = {
 };
 
 kal_uint16 addr_data_pair_capture_30fps_qtech_OV50C40[] = {
-#if RAW_SIZE_4080_3072
+#ifdef FACTORY_CAMERA_MODE
 	0x0304, 0x01,
 	0x0305, 0xe0,
 	0x0307, 0x00,
@@ -5120,6 +5109,13 @@ static kal_uint32 custom1(
 }
 static kal_uint32 get_resolution(MSDK_SENSOR_RESOLUTION_INFO_STRUCT *sensor_resolution)
 {
+#ifdef FACTORY_CAMERA_MODE
+	sensor_resolution->SensorFullWidth = 4080;
+	sensor_resolution->SensorFullHeight = 3072;
+
+	sensor_resolution->SensorPreviewWidth = 4080;
+	sensor_resolution->SensorPreviewHeight = 3072;
+#else
 	sensor_resolution->SensorFullWidth =
 	    imgsensor_info.cap.grabwindow_width;
 	sensor_resolution->SensorFullHeight =
@@ -5129,7 +5125,7 @@ static kal_uint32 get_resolution(MSDK_SENSOR_RESOLUTION_INFO_STRUCT *sensor_reso
 	    imgsensor_info.pre.grabwindow_width;
 	sensor_resolution->SensorPreviewHeight =
 	    imgsensor_info.pre.grabwindow_height;
-
+#endif
 	sensor_resolution->SensorVideoWidth =
 	    imgsensor_info.normal_video.grabwindow_width;
 	sensor_resolution->SensorVideoHeight =

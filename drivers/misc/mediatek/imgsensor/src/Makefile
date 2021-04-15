@@ -39,6 +39,15 @@ subdir-ccflags-y += $(CUSTOM_KERNEL_FLAGS)
 
 obj-y += $(subst ",,$(CONFIG_MTK_PLATFORM_SENSOR))/
 
+ifeq ($(strip $(FACTORY_VERSION_MODE)),true)
+KBUILD_CFLAGS += -DFACTORY_CAMERA_MODE
+else
+KBUILD_CFLAGS += -D__XIAOMI_CAMERA__
+ifeq ($(strip $(TARGET_PRODUCT)),selene)
+KBUILD_CFLAGS += -D__SELENE_COMMON__
+endif
+endif
+
 ifeq ($(TARGET_PRODUCT),$(filter $(TARGET_PRODUCT),merlin merlinin merlinnfc))
 KBUILD_CFLAGS += -DMERLIN_MSM_CAMERA_HW_INFO
 else ifeq ($(TARGET_PRODUCT),$(filter $(TARGET_PRODUCT),lancelot lanclotin lancelotnfc))
