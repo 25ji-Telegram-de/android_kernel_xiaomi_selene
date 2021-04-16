@@ -138,14 +138,24 @@ enum {
  * T3: 45 degree Celsius
  * T4: 50 degree Celsius
  */
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
 enum sw_jeita_state_enum {
-	TEMP_BELOW_T0 = 0,
+	TEMP_BELOW_NEG_T0 = 0,
+	TEMP_BELOW_T0,
 	TEMP_T0_TO_T1,
 	TEMP_T1_TO_T2,
 	TEMP_T2_TO_T3,
 	TEMP_T3_TO_T4,
 	TEMP_ABOVE_T4
 };
+
+enum hq_config {
+	K19A = 0,
+	K19B,
+	K19C,
+	K19D,
+};
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
 
 struct sw_jeita_data {
 	int sm;
@@ -202,6 +212,9 @@ struct charger_custom_data {
 	int jeita_temp_t2_to_t3_cc;
 	int jeita_temp_t1_to_t2_cc;
 	int jeita_temp_t0_to_t1_cc;
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+	int jeita_temp_below_t0_cc;
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
 
 	int jeita_temp_above_t4_cv;
 	int jeita_temp_t3_to_t4_cv;

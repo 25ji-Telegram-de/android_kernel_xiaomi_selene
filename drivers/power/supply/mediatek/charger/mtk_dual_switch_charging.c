@@ -370,7 +370,12 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 			}
 		}
 	}
-
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+	if (info->enable_sw_jeita){
+		if (pdata->charging_current_limit > info->sw_jeita.cc)
+			pdata->charging_current_limit = info->sw_jeita.cc;
+	}
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
 	/*
 	 * If thermal current limit is less than charging IC's minimum
 	 * current setting, disable the charger by setting its current

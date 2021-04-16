@@ -80,6 +80,11 @@
 bool thermal_is_500;
 static struct charger_manager *pinfo;
 static struct list_head consumer_head = LIST_HEAD_INIT(consumer_head);
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+extern hq_selene_pcba_config;
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
+
+
 static DEFINE_MUTEX(consumer_mutex);
 
 #if defined(TARGET_PRODUCT_LANCELOT) || defined(TARGET_PRODUCT_SHIVA)
@@ -937,7 +942,6 @@ void charger_manager_set_prop_system_temp_level(int temp_level)
 
 	if (pinfo == NULL)
 		return ;
-	return;
 	pcba_to_thermal = get_huaqin_pcba_config();
 
 #if defined(TARGET_PRODUCT_LANCELOT) || defined(TARGET_PRODUCT_SHIVA)
@@ -1259,6 +1263,52 @@ int charger_get_vbus(void)
 	return vchr;
 }
 
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+int hq_config()
+{
+	int config;
+
+	if(hq_selene_pcba_config >= 0 && hq_selene_pcba_config <= 2)
+		config = K19A;
+	else if(hq_selene_pcba_config == 3 || hq_selene_pcba_config == 4)
+		config = K19B;
+	else
+		config = K19D;
+	printk("%s: config = %d",__func__,config);
+	return config;
+}
+void hq_jeita_config(struct charger_manager *info)
+{
+	struct sw_jeita_data *sw_jeita;
+	sw_jeita = &info->sw_jeita;
+
+	if(hq_config() == K19B){
+		switch(sw_jeita->sm){
+			case TEMP_BELOW_T0:
+				info->data.jeita_temp_below_t0_cc = JEITA_TEMP_BELOW_T0_CC_CN;
+				break;
+			case TEMP_T0_TO_T1:
+				info->data.jeita_temp_t0_to_t1_cc = JEITA_TEMP_T0_TO_T1_CC_CN;
+				break;
+			case TEMP_T1_TO_T2:
+				info->data.jeita_temp_t1_to_t2_cc = JEITA_TEMP_T1_TO_T2_CC_CN;
+				break;
+			case TEMP_T2_TO_T3:
+				info->data.jeita_temp_t2_to_t3_cc = JEITA_TEMP_T2_TO_T3_CC_CN;
+				break;
+			case TEMP_T3_TO_T4:
+				info->data.jeita_temp_t3_to_t4_cc = JEITA_TEMP_T3_TO_T4_CC_CN;
+				break;
+			default:
+				break;
+		}
+		printk("%s: temp_level = %d",__func__,sw_jeita->sm);
+	}
+	else
+		return;
+
+}
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
 /* internal algorithm common function end */
 
 /* sw jeita */
@@ -1277,7 +1327,9 @@ void do_sw_jeita_state_machine(struct charger_manager *info)
 
 		sw_jeita->sm = TEMP_ABOVE_T4;
 		sw_jeita->charging = false;
-	} else if (info->battery_temp > info->data.temp_t3_thres) {
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+	} else if (info->battery_temp >= info->data.temp_t3_thres) {
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
 		/* control 45 degree to normal behavior */
 		if ((sw_jeita->sm == TEMP_ABOVE_T4)
 		    && (info->battery_temp
@@ -1322,7 +1374,6 @@ void do_sw_jeita_state_machine(struct charger_manager *info)
 				chr_err("[SW_JEITA] Battery Temperature between %d and %d,not allow charging yet!!\n",
 					info->data.temp_t1_thres,
 					info->data.temp_t1_thres_plus_x_degree);
-				sw_jeita->charging = false;
 			}
 		} else {
 			chr_err("[SW_JEITA] Battery Temperature between %d and %d !!\n",
@@ -1338,8 +1389,6 @@ void do_sw_jeita_state_machine(struct charger_manager *info)
 			chr_err("[SW_JEITA] Battery Temperature between %d and %d,not allow charging yet!!\n",
 				info->data.temp_t0_thres,
 				info->data.temp_t0_thres_plus_x_degree);
-
-			sw_jeita->charging = false;
 		} else {
 			chr_err("[SW_JEITA] Battery Temperature between %d and %d !!\n",
 				info->data.temp_t0_thres,
@@ -1347,13 +1396,22 @@ void do_sw_jeita_state_machine(struct charger_manager *info)
 
 			sw_jeita->sm = TEMP_T0_TO_T1;
 		}
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/	
+	} else if (info->battery_temp >= info->data.temp_neg_10_thres) {
+			chr_err("[SW_JEITA] Battery Temperature between %d and %d !!\n",
+				info->data.temp_neg_10_thres,
+				info->data.temp_t0_thres);
+
+			sw_jeita->sm = TEMP_BELOW_T0;
 	} else {
 		chr_err("[SW_JEITA] Battery below low Temperature(%d) !!\n",
-			info->data.temp_t0_thres);
-		sw_jeita->sm = TEMP_BELOW_T0;
+			info->data.temp_neg_10_thres);
+
+		sw_jeita->sm = TEMP_BELOW_NEG_T0;
 		sw_jeita->charging = false;
 	}
-
+	hq_jeita_config(info);
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
 	/* set CV after temperature changed */
 	/* In normal range, we adjust CV dynamically */
 	if (sw_jeita->sm != TEMP_T2_TO_T3) {
@@ -1371,9 +1429,14 @@ void do_sw_jeita_state_machine(struct charger_manager *info)
 		} else if (sw_jeita->sm == TEMP_T0_TO_T1) {
 			sw_jeita->cc = info->data.jeita_temp_t0_to_t1_cc;
 			sw_jeita->cv = info->data.jeita_temp_t0_to_t1_cv;
-		} else if (sw_jeita->sm == TEMP_BELOW_T0)
+		/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+		} else if (sw_jeita->sm == TEMP_BELOW_T0) {
+			sw_jeita->cc = info->data.jeita_temp_below_t0_cc;
 			sw_jeita->cv = info->data.jeita_temp_below_t0_cv;
-		else
+		} else if (sw_jeita->sm == TEMP_BELOW_NEG_T0) {
+			sw_jeita->cv = info->data.jeita_temp_below_t0_cv;
+		/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
+		}else
 			sw_jeita->cv = info->data.battery_cv;
 	} else {
 		sw_jeita->cc = info->data.jeita_temp_t2_to_t3_cc;
@@ -2440,6 +2503,13 @@ static int mtk_charger_parse_dt(struct charger_manager *info,
 		chr_err("use default JEITA_TEMP_T0_TO_T1_CC:%d\n",
 			info->data.jeita_temp_t0_to_t1_cc);
 	}
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+	if (of_property_read_u32(np, "jeita_temp_below_t0_cc", &val) >= 0) {
+		info->data.jeita_temp_below_t0_cc = val;
+		chr_err("use default jeita_temp_below_t0_cc:%d\n",
+			info->data.jeita_temp_below_t0_cc);
+	}
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
 
 	if (of_property_read_u32(np, "jeita_temp_above_t4_cv", &val) >= 0)
 		info->data.jeita_temp_above_t4_cv = val;
@@ -2575,7 +2645,9 @@ static int mtk_charger_parse_dt(struct charger_manager *info,
 	}
 
 	if (of_property_read_u32(np, "temp_neg_10_thres", &val) >= 0)
-		info->data.temp_neg_10_thres = val;
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+		info->data.temp_neg_10_thres = -10;
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
 	else {
 		chr_err("use default TEMP_NEG_10_THRES:%d\n",
 			TEMP_NEG_10_THRES);

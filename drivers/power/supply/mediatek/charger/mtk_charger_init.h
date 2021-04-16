@@ -53,6 +53,13 @@
 #define TEMP_T0_THRES  0
 #define TEMP_T0_THRES_PLUS_X_DEGREE  0
 #define TEMP_NEG_10_THRES 0
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+#define JEITA_TEMP_T3_TO_T4_CC_CN	2880000
+#define JEITA_TEMP_T2_TO_T3_CC_CN	3008000
+#define JEITA_TEMP_T1_TO_T2_CC_CN	2880000
+#define JEITA_TEMP_T0_TO_T1_CC_CN	1152000
+#define JEITA_TEMP_BELOW_T0_CC_CN	576000
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
 
 /* Battery Temperature Protection */
 #define MIN_CHARGE_TEMP  0
