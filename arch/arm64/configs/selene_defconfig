@@ -460,3 +460,6 @@ CONFIG_MEDIA_POWER_SUPPLY=y
 CONFIG_ONEWIRE_GPIO=y
 CONFIG_BATT_VERIFY_BY_DS28E16=y
 #/*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 end*/
+#/*K19A HQ-123203 K19A config thermal farmework by denggang at 2021/04/16 start*/
+CONFIG_CPU_THERMAL=y
+#/*K19A HQ-123203 K19A config thermal farmework by denggang at 2021/04/16 end*/
