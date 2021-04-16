@@ -720,7 +720,7 @@ void get_tp_info(void)
 	} else if (is_ft_lcm == 4) {
 		sprintf(tp_version_info, "[Vendor]Tianma,[TP-IC]:NT36672C,[FW]0x%x,PID=%04X\n", tp_fw_version, ts->nvt_pid);
 	} else if (is_ft_lcm == 5) {
-		sprintf(tp_version_info, "[Vendor]Xinli,[TP-IC]:NT36672C,[FW]0x%x,PID=%04X\n", tp_fw_version, ts->nvt_pid);
+		sprintf(tp_version_info, "[Vendor]Truly,[TP-IC]:NT36672C,[FW]0x%x,PID=%04X\n", tp_fw_version, ts->nvt_pid);
 	}
 
 	printk("[%s]: tp_version %s\n", __func__, tp_version_info);
