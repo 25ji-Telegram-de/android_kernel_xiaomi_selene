@@ -187,20 +187,7 @@
 
 };
 
-&spi1 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	p61@31 {
-		compatible = "nxp,p61";
-		reg = <0>;
-		spi-max-frequency = <8000000>;
-		status = "okay";
-	};
-};
-
-
 /* add goodix fingerprint start*/
-
 
 &spi2 {
 	status = "ok";
