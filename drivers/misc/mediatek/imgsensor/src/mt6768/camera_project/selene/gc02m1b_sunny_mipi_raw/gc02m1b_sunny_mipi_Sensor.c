@@ -124,17 +124,15 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.max_framerate = 300,
 	},
 	.custom1 = {
-		.pclk = 84000000,            //record different mode's pclk
-		.linelength = 2192,            //record different mode's linelength
-		.framelength = 1276,            //record different mode's framelength
-		.startx = 0,                    //record different mode's startx of grabwindow
-		.starty = 0,                    //record different mode's starty of grabwindow
-		.grabwindow_width = 1600,        //record different mode's width of grabwindow
-		.grabwindow_height = 1200,        //record different mode's height of grabwindow
-		/*     following for MIPIDataLowPwr2HighSpeedSettleDelayCount by different scenario    */
-		.mipi_data_lp2hs_settle_dc = 85,//unit , ns
+		.pclk = 84000000,
+		.linelength = 2192,
+		.framelength = 1276,
+		.startx = 0,
+		.starty = 0,
+		.grabwindow_width = 1600,
+		.grabwindow_height = 1200,
+		.mipi_data_lp2hs_settle_dc = 85,
 		.mipi_pixel_rate = 67200000,
-		/*     following for GetDefaultFramerateByScenario()    */
 		.max_framerate = 300,
 	},
 
@@ -153,8 +151,8 @@ static struct imgsensor_info_struct imgsensor_info = {
 	.video_delay_frame = 2,
 	.hs_video_delay_frame = 2,
 	.slim_video_delay_frame = 2,
-	.custom1_delay_frame = 2,
-	.frame_time_delay_frame = 2,
+	.custom1_delay_frame = 1,
+	.frame_time_delay_frame = 1,
 
 	.isp_driving_current = ISP_DRIVING_6MA,
 	.sensor_interface_type = SENSOR_INTERFACE_TYPE_MIPI,
@@ -341,8 +339,7 @@ static void set_shutter_frame_length(kal_uint16 shutter,
 
 	if (shutter > imgsensor.frame_length - imgsensor_info.margin)
 		imgsensor.frame_length = shutter + imgsensor_info.margin;
-	else
-		imgsensor.frame_length = imgsensor.min_frame_length;
+
 	if (imgsensor.frame_length > imgsensor_info.max_frame_length)
 		imgsensor.frame_length = imgsensor_info.max_frame_length;
 	spin_unlock(&imgsensor_drv_lock);
