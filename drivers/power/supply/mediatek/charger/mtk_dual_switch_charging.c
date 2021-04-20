@@ -19,6 +19,10 @@
 #include <mt-plat/mtk_boot.h>
 #include "mtk_charger_intf.h"
 #include "mtk_dual_switch_charging.h"
+/*K19A K19A-159 K19A charger by wangqi at 2021/4/20 start*/
+extern enum hvdcp_status hvdcp_type_tmp;
+/*K19A K19A-159 K19A charger by wangqi at 2021/4/20 end*/
+
 
 static int _uA_to_mA(int uA)
 {
@@ -297,13 +301,15 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 				pdata->input_current_limit = 3000000;
 				pdata->charging_current_limit = 3000000;
 				break;
-		case POWER_SUPPLY_TYPE_USB_DCP:
 		default:
-				pdata->input_current_limit =
-				info->data.ac_charger_input_current;
-				pdata->charging_current_limit = 2000000;
 				break;
 		}
+		/*K19A K19A-159 K19A charger by wangqi at 2021/4/20 start*/
+		if(hvdcp_type_tmp == HVDCP){
+				pdata->input_current_limit = 2000000;
+				pdata->charging_current_limit = 3000000;
+		}
+		/*K19A K19A-159 K19A charger by wangqi at 2021/4/20 end*/
           /*K19A K19A-137 K19A  smb1351 kernel charger by wangqi at 2021/4/14 end*/
 		mtk_pe20_set_charging_current(info,
 					&pdata->charging_current_limit,
