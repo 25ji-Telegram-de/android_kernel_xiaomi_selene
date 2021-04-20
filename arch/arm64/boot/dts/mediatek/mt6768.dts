@@ -1417,9 +1417,11 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 		compatible = "xiaomi,simtray-status";
 		status-gpio = <&pio 46 0>;
 	};
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/20 start*/
 #if (CONFIG_MTK_GAUGE_VERSION == 30)
-	#include "mediatek/bat_setting/mt6768_battery_prop.dtsi"
+	#include "mediatek/bat_setting/mt6769_battery_prop_ext.dtsi"
 #endif
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/20 end*/
 
 	md_ccif3@1023f000 {
 		compatible = "mediatek,md_ccif3";
