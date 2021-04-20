@@ -443,7 +443,9 @@ static int alshub_factory_get_raw_data(int32_t *data)
 	err = sensor_get_data_from_hub(ID_LIGHT, &data_t);
 	if (err < 0)
 		return -1;
-	*data = data_t.light;
+	 /*Huaqin modify for HQ-123572 by luozeng at 2021.4.20 start*/
+	*data = data_t.data[1];
+	 /*Huaqin modify for HQ-123572 by luozeng at 2021.4.20 end*/
 	return 0;
 }
 static int alshub_factory_enable_calibration(void)
@@ -511,6 +513,9 @@ static int pshub_factory_enable_sensor(bool enable_disable,
 {
 	int err = 0;
 	struct alspshub_ipi_data *obj = obj_ipi_data;
+     /*Huaqin modify for HQ-123572 by luozeng at 2021.4.20 start*/
+	int android_enable = 0;
+	 /*Huaqin modify for HQ-123572 by luozeng at 2021.4.20 end*/
 
 	if (enable_disable == true) {
 		err = sensor_set_delay_to_hub(ID_PROXIMITY, sample_periods_ms);
@@ -519,11 +524,19 @@ static int pshub_factory_enable_sensor(bool enable_disable,
 			return -1;
 		}
 	}
-	err = sensor_enable_to_hub(ID_PROXIMITY, enable_disable);
-	if (err) {
-		pr_err("sensor_enable_to_hub failed!\n");
-		return -1;
-	}
+	 /*Huaqin modify for HQ-123572 by luozeng at 2021.4.20 start*/
+    android_enable = READ_ONCE(obj->ps_android_enable);
+    if (android_enable == false) {
+        pr_err("%s: android_enable[%u] execute power request[%s]\n", __func__, android_enable, (enable_disable == true)?("on"):("off"));
+        err = sensor_enable_to_hub(ID_PROXIMITY, enable_disable);
+        if (err) {
+            pr_err("sensor_enable_to_hub failed!\n");
+            return -1;
+        }
+    }else {
+        pr_err("%s: android_enable[%u] ignore power request[%s]\n", __func__, android_enable, (enable_disable == true)?("on"):("off"));
+    }
+	 /*Huaqin modify for HQ-123572 by luozeng at 2021.4.20 end*/
 	mutex_lock(&alspshub_mutex);
 	if (enable_disable)
 		set_bit(CMC_BIT_PS, &obj->enable);
