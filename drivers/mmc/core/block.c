@@ -4600,6 +4600,8 @@ mmc_hr_open(struct inode *inode, struct file *filp) {
 				goto out_free;
 		}
 	} else if (card->cid.manfid == CID_MANFID_MICRON) {
+	/*Huaqin modify for HQ-123324 by luocheng at 2021/04/21 start */
+#if 0
 		err = mmc_send_cxd_witharg_data(card, card->host
 					, MMC_SEND_EXT_CSD, 0x0d, buf, 512);
 		if (err) {
@@ -4607,6 +4609,22 @@ mmc_hr_open(struct inode *inode, struct file *filp) {
 					, __func__, err);
 			goto out_free;
 		}
+#else
+		/* Get the Extended Health Roport for Micron */
+		/* 1. Set blocklen of 512bytes using CMD16 */
+		err = mmc_set_blocklen(card, 512);
+		if (err) {
+			pr_err("%s: Set blocklen failed %d\n", __func__, err);
+			goto out_free;
+		}
+
+		/* 2. Get HR data using CMD56 */
+		err = mmc_send_micron_hr(card, card->host,
+				MMC_GEN_CMD, buf, 512);
+		if (err)
+			goto out_free;
+#endif
+	/*Huaqin modify for HQ-123324 by luocheng at 2021/04/21 end */
 	} else if (card->cid.manfid == CID_MANFID_SAMSUNG) {
 		mmc_cmd_switch(card, false);
 		err = mmc_set_blocklen(card, 512);
