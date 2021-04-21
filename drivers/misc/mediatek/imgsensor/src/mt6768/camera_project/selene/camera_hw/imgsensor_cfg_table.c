@@ -205,24 +205,22 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 #if defined(GC02M1_MACRO_AAC_MIPI_RAW)
 	{SENSOR_DRVNAME_GC02M1_MACRO_AAC_MIPI_RAW,
 		{
-			{RST, Vol_Low, 0},
-			{DOVDD, Vol_1800, 1},
-			{DVDD, Vol_1800, 1},
-			{AVDD, Vol_2800, 1},
 			{SensorMCLK, Vol_High, 1},
-			{RST, Vol_High, 1},
+			{RST, Vol_Low, 1},
+			{DOVDD, Vol_1800, 1},
+			{AVDD, Vol_2800, 1},
+			{RST, Vol_High, 5},
 		},
 	},
 #endif
 #if defined(GC02M1_MACRO_SY_MIPI_RAW)
 	{SENSOR_DRVNAME_GC02M1_MACRO_SY_MIPI_RAW,
 		{
-			{RST, Vol_Low, 0},
-			{DOVDD, Vol_1800, 1},
-			{DVDD, Vol_1800, 1},
-			{AVDD, Vol_2800, 1},
 			{SensorMCLK, Vol_High, 1},
-			{RST, Vol_High, 1},
+			{RST, Vol_Low, 1},
+			{DOVDD, Vol_1800, 1},
+			{AVDD, Vol_2800, 1},
+			{RST, Vol_High, 5},
 		},
 	},
 #endif
@@ -280,11 +278,11 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
     {
 		SENSOR_DRVNAME_GC02M1B_SUNNY_MIPI_RAW,
 		{
+			{SensorMCLK, Vol_High, 1},
 			{RST, Vol_Low, 1},
 			{DOVDD, Vol_1800, 1},
 			{AVDD, Vol_2800, 0},
 			{RST, Vol_High, 2},
-			{SensorMCLK, Vol_High, 1},
 		},
     },
 #endif
