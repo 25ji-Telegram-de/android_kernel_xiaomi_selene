@@ -443,9 +443,9 @@ static int alshub_factory_get_raw_data(int32_t *data)
 	err = sensor_get_data_from_hub(ID_LIGHT, &data_t);
 	if (err < 0)
 		return -1;
-	 /*Huaqin modify for HQ-123572 by luozeng at 2021.4.20 start*/
-	*data = data_t.data[1];
-	 /*Huaqin modify for HQ-123572 by luozeng at 2021.4.20 end*/
+	 /*Huaqin modify for HQ-123572 by luozeng at 2021.4.21start*/
+	*data = data_t.light;
+	 /*Huaqin modify for HQ-123572 by luozeng at 2021.4.21end*/
 	return 0;
 }
 static int alshub_factory_enable_calibration(void)
