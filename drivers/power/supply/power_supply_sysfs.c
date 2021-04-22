@@ -65,15 +65,14 @@ static const char * const power_supply_technology_text[] = {
 	"Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe", "NiCd",
 	"LiMn"
 };
-
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
 static const char * const power_supply_battery_type_text[] = {
-	"NVT_68k", "COSMX_100K", "Unknown"
+	"SWD_5000_330K", "COSMX_100K","SWD_6000_330K","NVT_68K","secret","Unknown"
 };
-/*K19A WXYFB-996 K19A charger battery id and informs by miaozhichao at 2021/3/28 start*/
 static const char * const power_supply_battery_vendor_text[] = {
-    "SWD_330K", "COSMX_100K","NVT_68k","secret"
+	"SWD_5000_330K", "COSMX_100K","SWD_6000_330K","NVT_68K","secret","Unknown"
 };
-/*K19A WXYFB-996 K19A charger battery id and informs by miaozhichao at 2021/3/28 end*/
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 end*/
 static const char * const power_supply_capacity_level_text[] = {
 	"Unknown", "Critical", "Low", "Normal", "High", "Full"
 };

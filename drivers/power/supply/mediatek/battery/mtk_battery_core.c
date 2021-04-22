@@ -92,6 +92,10 @@ int mtk_qmax_aging;
 /* ============================================================ */
 /* gauge hal interface */
 /* ============================================================ */
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
+extern int hq_config(void);
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
+
 bool gauge_get_current(int *bat_current)
 {
 	bool is_charging = false;
@@ -408,17 +412,21 @@ void fgauge_get_profile_id(void)
 	pr_err("[%s]battery_id_voltage is %d\n", __func__, id_volt);
 
 	my_battery_id_voltage = id_volt;
-/*K19A WXYFB-996 K19A charger battery id and informs by miaozhichao at 2021/3/28 start*/
+	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
 	if (id_volt >= SWD_MIN_VOLTAGE && id_volt <= SWD_MAX_VOLTAGE) {
 		gm.battery_id = 0;
+	if(hq_config()== 1)
+		gm.battery_id = 2;
 	}else if (id_volt >= COSMX_MIN_VOLTAGE && id_volt <= COSMX_MAX_VOLTAGE) {
 		gm.battery_id = 1;
 	} else if (id_volt >= NVT_MIN_VOLTAGE && id_volt <= NVT_MAX_VOLTAGE) {
-		gm.battery_id = 2;
-	}else {
 		gm.battery_id = 3;
+	}else if (id_volt >= SECRET_MIN_VOLTAGE && id_volt <= SECRET_MAX_VOLTAGE) {
+		gm.battery_id = 4;
+	}else {
+		gm.battery_id = 5;
 	}
-/*K19A WXYFB-996 K19A charger battery id and informs by miaozhichao at 2021/3/28 end*/
+	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 end*/
 	pr_err("[%s]Battery id (%d) volt (%d)\n",
 		__func__, gm.battery_id, id_volt);
 
@@ -926,12 +934,12 @@ void fg_custom_init_from_dts(struct platform_device *dev)
 
 	fgauge_get_profile_id();
 	bat_id = gm.battery_id;
-	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/20 start*/
-	if (bat_id == 1 )
+	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
+	if (bat_id == 1)
 		bat_id = 0;
-	else
+	if (bat_id >= 3)
 		bat_id = 2;
-	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/20 end*/
+	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 end*/
 	bm_err("%s bat_id = %d\n", __func__, bat_id);
 
 	fg_read_dts_val(np, "MULTI_BATTERY", &(multi_battery), 1);
