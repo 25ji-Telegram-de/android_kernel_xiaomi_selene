@@ -894,7 +894,7 @@ static int bq2589x_inform_charger_type(struct bq2589x *bq)
 	return ret;
 }
 
-/*K19A WXYFB-996 K19A charger by wangchao at 2021/4/2 start*/
+/*K19A WXYFB-996 K19A charger by wangchao at 2021/4/22 start*/
 static int bq2589x_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 {
 	int ret;
@@ -904,10 +904,12 @@ static int bq2589x_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 	if (!ret)
 		bq2589x_inform_charger_type(bq);
 
-	pr_err("bq2589x_enable_chg_type_det end,bq->chg_type = %d\n",bq->chg_type);
+	bq2589x_force_dpdm(bq);
+
+	pr_err("end,bq->chg_type = %d\n",bq->chg_type);
 	return 0;
 }
-/*K19A WXYFB-996 K19A charger by wangchao at 2021/4/2 end*/
+/*K19A WXYFB-996 K19A charger by wangchao at 2021/4/22 end*/
 
 static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 {
@@ -1107,21 +1109,24 @@ static int bq2589x_charging(struct charger_device *chg_dev, bool enable)
 	return ret;
 }
 
-/*K19A-75 charge by wangchao at 2021/4/15 start*/
+/*K19A-75 charge by wangchao at 2021/4/22 start*/
 static int bq2589x_enable_hiz(struct charger_device *chg_dev, bool enable)
 {
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
 	int ret = 0;
 	pr_err("bq2589x_enable_hiz : %d\n", enable);
 
-	if(enable)
+	if(enable){
 		ret = bq2589x_enter_hiz_mode(bq);
-	else
+	}else{
 		ret = bq2589x_exit_hiz_mode(bq);
+		ret = bq2589x_enable_charger(bq);
+		ret = bq2589x_force_dpdm(bq);
+	}
 
 	return ret;
 }
-/*K19A-75 charge by wangchao at 2021/4/15 end*/
+/*K19A-75 charge by wangchao at 2021/4/22 end*/
 
 static int bq2589x_plug_in(struct charger_device *chg_dev)
 {
