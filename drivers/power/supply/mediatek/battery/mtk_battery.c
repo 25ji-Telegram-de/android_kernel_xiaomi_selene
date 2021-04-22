@@ -566,7 +566,12 @@ static int battery_get_property(struct power_supply *psy,
 			val->intval = data->BAT_CAPACITY;
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-		val->intval = 5020000;
+		/*K19A HQ-124115 K19A charger of charge_full_design by wangqi at 2021/4/22 start*/
+		if(gm.battery_id == 0 || gm.battery_id == 1)
+			val->intval = 5000000;
+		else
+			val->intval = 6000000;
+		/*K19A HQ-124115 K19A charger of charge_full_design by wangqi at 2021/4/22 end*/
 		break;
 	case POWER_SUPPLY_PROP_CURRENT_NOW:
 		b_ischarging = gauge_get_current(&fgcurrent);
