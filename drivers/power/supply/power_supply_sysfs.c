@@ -67,10 +67,10 @@ static const char * const power_supply_technology_text[] = {
 };
 /*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
 static const char * const power_supply_battery_type_text[] = {
-	"SWD_5000_330K", "COSMX_100K","SWD_6000_330K","NVT_68K","secret","Unknown"
+	"SWD_68K", "COSMX_100K","NVT_68K","SWD_330K","secret","Unknown"
 };
 static const char * const power_supply_battery_vendor_text[] = {
-	"SWD_5000_330K", "COSMX_100K","SWD_6000_330K","NVT_68K","secret","Unknown"
+	"SWD_68K", "COSMX_100K","NVT_68K","SWD_330K","secret","Unknown"
 };
 /*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 end*/
 static const char * const power_supply_capacity_level_text[] = {
