@@ -779,7 +779,22 @@ static int bq2589x_get_charger_type(struct bq2589x *bq, enum charger_type *type)
 	u8 reg_val = 0;
 	int vbus_stat = 0;
 	enum charger_type chg_type = CHARGER_UNKNOWN;
-
+	/*K19A HQ-129052 K19A charger of thermal by wangqi at 2021/4/22 start*/
+	static struct power_supply * usb_psy = NULL;
+	static struct mt_charger *mt_chg = NULL;
+	static const enum power_supply_type const smblib_apsd_results[] = {
+		POWER_SUPPLY_TYPE_UNKNOWN,
+		POWER_SUPPLY_TYPE_USB,
+		POWER_SUPPLY_TYPE_USB_CDP,
+		POWER_SUPPLY_TYPE_USB_FLOAT,
+		POWER_SUPPLY_TYPE_USB_DCP,
+		POWER_SUPPLY_TYPE_USB_FLOAT,
+		POWER_SUPPLY_TYPE_USB_FLOAT,
+		POWER_SUPPLY_TYPE_USB_FLOAT,
+		POWER_SUPPLY_TYPE_USB_FLOAT,
+		POWER_SUPPLY_TYPE_USB_HVDCP,
+	};
+	/*K19A HQ-129052 K19A charger of thermal by wangqi at 2021/4/22 end*/
 	/*K19A k19A-143 K19A charger_type by wangqi at 2021/4/15 start*/
 	hvdcp_type_tmp = HVDCP_NULL;
 	/*K19A k19A-143 K19A charger_type by wangqi at 2021/4/15 end*/
@@ -826,6 +841,16 @@ static int bq2589x_get_charger_type(struct bq2589x *bq, enum charger_type *type)
 
 	*type = chg_type;
 	g_charger_type = chg_type;
+	/*K19A HQ-129052 K19A charger of thermal by wangqi at 2021/4/22 start*/
+	if(usb_psy == NULL)
+		usb_psy = power_supply_get_by_name("usb");
+
+	if(usb_psy != NULL)
+		mt_chg = power_supply_get_drvdata(usb_psy);
+
+	if(mt_chg != NULL)
+		mt_chg->usb_desc.type = smblib_apsd_results[chg_type];
+	/*K19A HQ-129052 K19A charger of thermal by wangqi at 2021/4/22 end*/
 	/*K19A-104 charge by wangchao at 2021/4/8 start*/
 	pr_err("vbus_stat:%d ,chg_type:%d\n", vbus_stat,chg_type);
 	/*K19A-104 charge by wangchao at 2021/4/8 end*/
