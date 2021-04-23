@@ -973,7 +973,9 @@ static int bq2589x_init_device(struct bq2589x *bq)
 	if (ret)
 		pr_err("Failed to set prechg current, ret = %d\n", ret);
 
-	ret = bq2589x_set_term_current(bq, bq->platform_data->iterm);
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/23 start*/
+	ret = bq2589x_set_term_current(bq, 200);
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/23 end*/
 	if (ret)
 		pr_err("Failed to set termination current, ret = %d\n", ret);
 
