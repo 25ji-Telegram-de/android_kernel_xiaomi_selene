@@ -494,3 +494,4 @@ CONFIG_CPU_THERMAL=y
 # Huaqin add for HQ-123513 by liunianliang at 2021/04/25 start
 CONFIG_SWTP_DRIVER_SELENE=y
 # Huaqin add for HQ-123513 by liunianliang at 2021/04/25 end
+CONFIG_RTMM=y
