@@ -102,3 +102,19 @@ int primary_display_set_refresh_rate(unsigned int refresh_rate)
 	return ret;
 }
 
+#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+int disp_register_fps_chg_callback(FPS_CHG_CALLBACK fps_chg_cb)
+{
+	/* Only for build pass */
+	/* SS don't use FPSGO */
+	return 0;
+}
+
+int disp_unregister_fps_chg_callback(FPS_CHG_CALLBACK fps_chg_cb)
+{
+	/* Only for build pass */
+	/* SS don't use FPSGO */
+	return 0;
+}
+#endif
+

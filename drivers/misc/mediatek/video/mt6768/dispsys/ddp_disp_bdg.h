@@ -19,7 +19,7 @@
 #include "ddp_info.h"
 #include "lcm_drv.h"
 
-#define SPI_SPEED		(10000000)
+#define SPI_SPEED		(27000000)
 #define HW_NUM			(1)
 
 enum DISP_BDG_ENUM {
@@ -58,7 +58,6 @@ enum MIPI_TX_PAD_VALUE {
 int bdg_tx_init(enum DISP_BDG_ENUM module,
 		   struct disp_ddp_path_config *config, void *cmdq);
 int bdg_tx_deinit(enum DISP_BDG_ENUM module, void *cmdq);
-int bdg_common_deinit(enum DISP_BDG_ENUM module, void *cmdq);
 int bdg_common_init(enum DISP_BDG_ENUM module,
 			struct disp_ddp_path_config *config, void *cmdq);
 int bdg_common_init_for_rx_pat(enum DISP_BDG_ENUM module,
@@ -92,4 +91,3 @@ int mtk_spi_write(u32 addr, unsigned int regval);
 int mtk_spi_mask_write(u32 addr, u32 msk, u32 value);
 
 #endif
-

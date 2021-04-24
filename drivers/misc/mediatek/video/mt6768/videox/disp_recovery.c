@@ -368,7 +368,6 @@ int do_lcm_vdo_lp_read(struct ddp_lcm_read_cmd_table *read_table)
 	int ret = 0;
 	int i = 0;
 	struct cmdqRecStruct *handle;
-
 	static cmdqBackupSlotHandle read_Slot[2] = {0, 0};
 	int h = 0;
 
@@ -854,6 +853,11 @@ int primary_display_esd_recovery(void)
 		cmdqCoreSetEvent(CMDQ_SYNC_TOKEN_CONFIG_DIRTY);
 		mdelay(40);
 	}
+
+#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+	primary_display_update_cfg_id(0);
+	DISPCHECK("%s,cfg_id = 0\n", __func__);
+#endif
 
 done:
 	primary_display_manual_unlock();

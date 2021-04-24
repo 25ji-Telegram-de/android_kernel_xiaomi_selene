@@ -229,7 +229,6 @@ void bdg_tx_pull_6382_reset_pin(void)
 }
 void bdg_tx_set_6382_reset_pin(unsigned int value)
 {
-	DISPMSG("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	if (value)
 		disp_dts_gpio_select_state(DTS_GPIO_STATE_6382_RST_OUT1);
 	else
@@ -238,11 +237,8 @@ void bdg_tx_set_6382_reset_pin(unsigned int value)
 
 void bdg_tx_set_test_pattern(void)
 {
-	//[DENNIS] TEST PATTERN
-		DSI_OUTREG32(NULL, TX_REG[0]->DSI_TX_SELF_PAT_CON0, 0x11);
-		DSI_OUTREG32(NULL, TX_REG[0]->DSI_TX_INTSTA, 0x0);
-	//[DENNIS] TEST PATTERN
-
+	DSI_OUTREG32(NULL, TX_REG[0]->DSI_TX_SELF_PAT_CON0, 0x11);
+	DSI_OUTREG32(NULL, TX_REG[0]->DSI_TX_INTSTA, 0x0);
 }
 
 struct lcm_setting_table nt36672c_60hz[] = {
@@ -1027,7 +1023,7 @@ int bdg_mipi_tx_dphy_clk_setting(enum DISP_BDG_ENUM module,
 				AD_DSI_PLL_SDM_ISO_EN, 0);
 
 		if (data_Rate > 2500) {
-			DISPERR("mipitx Data Rate exceed limitation(%d)\n",
+			DISPINFO("mipitx Data Rate exceed limitation(%d)\n",
 				    data_Rate);
 			ASSERT(0);
 			return -2;
@@ -1052,7 +1048,7 @@ int bdg_mipi_tx_dphy_clk_setting(enum DISP_BDG_ENUM module,
 			posdiv    = 4;
 			prediv    = 0;
 		} else {
-			DISPERR("dataRate is too low(%d)\n", data_Rate);
+			DISPINFO("dataRate is too low(%d)\n", data_Rate);
 			ASSERT(0);
 			return -3;
 		}
@@ -1130,12 +1126,12 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 	DISPFUNCSTART();
 
 	if (tx_params->data_rate != 0) {
-		ui = 1000 / tx_params->data_rate + 0x01;
-		cycle_time = 8000 / tx_params->data_rate + 0x01;
+		ui = 1000 / tx_params->data_rate;
+		cycle_time = 8000 / tx_params->data_rate;
 		tx_data_rate = tx_params->data_rate;
 	} else if (tx_params->PLL_CLOCK) {
-		ui = 1000 / (tx_params->PLL_CLOCK * 2) + 0x01;
-		cycle_time = 8000 / (tx_params->PLL_CLOCK * 2) + 0x01;
+		ui = 1000 / (tx_params->PLL_CLOCK * 2);
+		cycle_time = 8000 / (tx_params->PLL_CLOCK * 2);
 		tx_data_rate = tx_params->PLL_CLOCK * 2;
 	} else {
 		DISPMSG("PLL clock should not be 0!!!\n");
@@ -1285,13 +1281,13 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 	DISPINFO(
 		"%s, bg_tx_data_phy_cycle=%d, LPX=%d, HS_PRPR=%d, HS_ZERO=%d, HS_TRAIL=%d, DA_HS_EXIT=%d\n",
 		__func__, bg_tx_data_phy_cycle, timcon0.LPX, timcon0.HS_PRPR,
-		timcon0.HS_ZERO, timcon0.HS_TRAIL, timcon1.DA_HS_EXIT);
+		 timcon0.HS_ZERO, timcon0.HS_TRAIL, timcon1.DA_HS_EXIT);
 
 	DISPINFO(
 		"%s, TA_GO=%d, TA_GET=%d, TA_SURE=%d, CLK_HS_PRPR=%d, CLK_ZERO=%d, CLK_TRAIL=%d, CLK_HS_EXIT=%d, CLK_HS_POST=%d\n",
 		__func__, timcon1.TA_GO, timcon1.TA_GET, timcon1.TA_SURE,
 		timcon3.CLK_HS_PRPR, timcon2.CLK_ZERO, timcon2.CLK_TRAIL,
-		timcon3.CLK_HS_EXIT, timcon3.CLK_HS_POST);
+		 timcon3.CLK_HS_EXIT, timcon3.CLK_HS_POST);
 
 	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++) {
 		DSI_OUTREGBIT(cmdq, struct DSI_TX_PHY_TIMCON0_REG,
@@ -1342,7 +1338,7 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 			mtk_spi_read((unsigned long)(&TX_REG[i]->DSI_TX_PHY_TIMECON0)),
 			mtk_spi_read((unsigned long)(&TX_REG[i]->DSI_TX_PHY_TIMECON1)));
 		DISPINFO("%s, PHY_TIMECON2=0x%08x,PHY_TIMECON3=0x%08x\n",
-				__func__,
+			__func__,
 			mtk_spi_read((unsigned long)(&TX_REG[i]->DSI_TX_PHY_TIMECON2)),
 			mtk_spi_read((unsigned long)(&TX_REG[i]->DSI_TX_PHY_TIMECON3)));
 	}
@@ -1496,38 +1492,46 @@ int bdg_tx_vdo_timing_set(enum DISP_BDG_ENUM module,
 		case DSI_CMD_MODE:
 			break;
 		case DSI_SYNC_PULSE_VDO_MODE:
-			hsa_byte = (((tx_params->horizontal_sync_active *
-				dsi_buf_bpp) / 8) - 10);
-			hbp_byte = (((tx_params->horizontal_backporch *
-				dsi_buf_bpp) / 8) - 10);
-			hfp_byte = (((tx_params->horizontal_frontporch *
-				dsi_buf_bpp) / 8) - 12);
+			hsa_byte = (((tx_params->horizontal_sync_active * dsi_buf_bpp)
+					/ 8) - 10);
+			hbp_byte = (((tx_params->horizontal_backporch * dsi_buf_bpp)
+					/ 8) - 10);
+			hfp_byte = (((tx_params->horizontal_frontporch * dsi_buf_bpp)
+					/ 8) - 12);
 			break;
 		case DSI_SYNC_EVENT_VDO_MODE:
 			hsa_byte = 0;	/* don't care */
 			hbp_byte = (((tx_params->horizontal_backporch +
 					tx_params->horizontal_sync_active) *
 					dsi_buf_bpp) / 8) - 10;
-			hfp_byte = (((tx_params->horizontal_frontporch *
-				dsi_buf_bpp) / 8) - 12);
+			hfp_byte = (((tx_params->horizontal_frontporch * dsi_buf_bpp) / 8)
+					- 12);
 			break;
 		case DSI_BURST_VDO_MODE:
 			hsa_byte = 0;	/* don't care */
 			hbp_byte = (((tx_params->horizontal_backporch +
 					tx_params->horizontal_sync_active) *
 					dsi_buf_bpp) / 8) - 10;
-			hfp_byte = (((tx_params->horizontal_frontporch *
-				dsi_buf_bpp) / 8) - 12 - 6);
+			hfp_byte = (((tx_params->horizontal_frontporch * dsi_buf_bpp) / 8)
+					- 12 - 6);
 			break;
 		}
 
-		bllp_byte = tx_params->horizontal_bllp * dsi_buf_bpp / 8;
+		bllp_byte = 16 * tx_params->LANE_NUM;
 	}
 
 	if (hsa_byte < 0) {
 		DISPMSG("error!hsa = %d < 0!\n", hsa_byte);
 		hsa_byte = 0;
 		return -1;
+	}
+
+	if (hfp_byte > data_init_byte) {
+		hfp_byte -= data_init_byte;
+	} else {
+		hfp_byte = 4;
+		DISPMSG("hfp is too short!\n");
+		return -2;
 	}
 
 	DISPINFO(
@@ -1703,7 +1707,7 @@ int bdg_tx_start(enum DISP_BDG_ENUM module, void *cmdq)
 
 	DISPFUNCSTART();
 //	DISPINFO("%s, DSI_TX_START=0x%08x\n",__func__,
-//	mtk_spi_read((unsigned long)(&TX_REG[0]->DSI_TX_START)));
+//		mtk_spi_read((unsigned long)(&TX_REG[0]->DSI_TX_START)));
 
 	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++) {
 		DSI_OUTREGBIT(cmdq, struct DSI_TX_START_REG,
@@ -1808,6 +1812,8 @@ int bdg_tx_wait_for_idle(enum DISP_BDG_ENUM module)
 		while (timeout) {
 			udelay(1);
 			status = mtk_spi_read((unsigned long)(&TX_REG[i]->DSI_TX_INTSTA));
+//			DISPMSG("%s, i=%d, status=0x%x, timeout=%d\n",
+//				__func__, i, status, timeout);
 
 			if (!(status & 0x80000000))
 				break;
@@ -1838,7 +1844,6 @@ int bdg_dsi_line_timing_dphy_setting(enum DISP_BDG_ENUM module,
 	unsigned int rxtx_ratio = 0;
 //	unsigned int ap_tx_total_word_cnt = 0, ap_tx_total_word_cnt_no_hfp_wc = 0;
 
-
 	DISPFUNCSTART();
 	width = tx_params->horizontal_active_pixel / 1;
 	height = tx_params->vertical_active_line;
@@ -1849,8 +1854,7 @@ int bdg_dsi_line_timing_dphy_setting(enum DISP_BDG_ENUM module,
 	if (dsc_en) {
 //		ps_wc = width;
 		ps_wc = width * 24 / 8 / 3;	/* for 8bpp, 1/3 compression */
-		rxtx_ratio = 225;	/* ratio=2.25 */
-//		rxtx_ratio = 254;	/* ratio=2.54 */
+		rxtx_ratio = 230;	/* ratio=2.25 */
 	} else {
 		ps_wc = width * 24 / 8;	/* for 8bpp, 1/3 compression */
 		rxtx_ratio = 100;
@@ -1860,7 +1864,7 @@ int bdg_dsi_line_timing_dphy_setting(enum DISP_BDG_ENUM module,
 	DISPMSG("%s, dsc_en=%d, hsa_byte=%d, hbp_byte=%d\n",
 		__func__, dsc_en, hsa_byte, hbp_byte);
 	DISPMSG("%s, new_hfp_byte=%d, bllp_byte=%d, ps_wc=%d\n",
-	new_hfp_byte, bllp_byte, ps_wc);
+		__func__, new_hfp_byte, bllp_byte, ps_wc);
 
 	/* get lpx, hs_prep, hs_zero,... refer to bdg_tx_phy_config()*/
 
@@ -1910,9 +1914,9 @@ int bdg_dsi_line_timing_dphy_setting(enum DISP_BDG_ENUM module,
 	DISPMSG("disp_pipe_line_time=%d, bg_tx_line_time=%d\n",
 		disp_pipe_line_time, bg_tx_line_time);
 
-	if (disp_pipe_line_time > bg_tx_line_time) {
-		DISPMSG("error!! disp_pipe_line_time(%d) > disp_pipe_line_time(%d)\n",
-			disp_pipe_line_time, disp_pipe_line_time);
+	if ((tx_params->mode != CMD_MODE) && (disp_pipe_line_time > bg_tx_line_time)) {
+		DISPMSG("error!! disp_pipe_line_time(%d) > bg_tx_line_time(%d)\n",
+			disp_pipe_line_time, bg_tx_line_time);
 
 		return -1;
 	}
@@ -1969,11 +1973,13 @@ int bdg_dsi_line_timing_dphy_setting(enum DISP_BDG_ENUM module,
 		break;
 	}
 
-		ap_tx_hfp_wc = ap_tx_total_word_cnt - ap_tx_total_word_cnt_no_hfp_wc;
+	ap_tx_hfp_wc = ap_tx_total_word_cnt - ap_tx_total_word_cnt_no_hfp_wc;
 
-	DISPMSG("%s, ap_tx_hsa_wc=%d, ap_tx_hbp_wc=%d, ap_tx_bllp_wc=%d, ap_tx_data_phy_cycle=%d\n",
+	DISPMSG(
+		"%s, ap_tx_hsa_wc=%d, ap_tx_hbp_wc=%d, ap_tx_bllp_wc=%d, ap_tx_data_phy_cycle=%d\n",
 		__func__, ap_tx_hsa_wc, ap_tx_hbp_wc, ap_tx_bllp_wc, ap_tx_data_phy_cycle);
-	DISPMSG("%s, ap_tx_hfp_wc=%d, ap_tx_total_word_cnt=%d, ap_tx_total_word_cnt_no_hfp_wc=%d\n",
+	DISPMSG(
+		"%s, ap_tx_hfp_wc=%d, ap_tx_total_word_cnt=%d, ap_tx_total_word_cnt_no_hfp_wc=%d\n",
 		__func__, ap_tx_hfp_wc, ap_tx_total_word_cnt, ap_tx_total_word_cnt_no_hfp_wc);
 
 #endif
@@ -2030,10 +2036,12 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 	mtk_spi_write(0x00021000, 0x00000000); //DSI_START
 	mtk_spi_write(0x00021000, 0x00000001); //DSI_START
 	while ((mtk_spi_read(0x0002100c) & 0x2) != 0x2) { //wait dsi is not busy
+		DISPMSG("%s, status=0x%x\n",
+			__func__, mtk_spi_read((unsigned long)(&TX_REG[0]->DSI_TX_INTSTA)));
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0xFB, 0x01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2041,10 +2049,12 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 	mtk_spi_write(0x00021000, 0x00000000); //DSI_START
 	mtk_spi_write(0x00021000, 0x00000001); //DSI_START
 	while ((mtk_spi_read(0x0002100c) & 0x2) != 0x2) { //wait dsi is not busy
+		DISPMSG("%s, status=0x%x\n",
+			__func__, mtk_spi_read((unsigned long)(&TX_REG[0]->DSI_TX_INTSTA)));
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	DISPMSG("%s, dsc_en=%d, tx_data_rate=%d\n", __func__, dsc_on, tx_data_rate);
 	//DSC ON && set PPS
@@ -2074,33 +2084,36 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(0);
 	}
 
-		//lcm_dcs_write_seq_static(ctx, 0xC1, 0x89, 0x28, 0x00, 0x08, 0x00, 0xAA,
-		//0x02, 0x0E, 0x00, 0x2B, 0x00, 0x07, 0x0D, 0xB7,
-		//0x0C, 0xB7);
-		mtk_spi_write(0x00021d00, 0x00112902);
-		mtk_spi_write(0x00021d04, 0x002889c1);
-		mtk_spi_write(0x00021d08, 0x02aa0008);
-		mtk_spi_write(0x00021d0c, 0x002b000e);
-		mtk_spi_write(0x00021d10, 0x0cb70d07);
-		mtk_spi_write(0x00021d14, 0x000000b7);
-		mtk_spi_write(0x00021060, 0x00000006); //DSI_CMDQ_CON
-		mtk_spi_write(0x00021000, 0x00000000); //DSI_START
-		mtk_spi_write(0x00021000, 0x00000001); //DSI_START
-		while ((mtk_spi_read(0x0002100c) & 0x2) != 0x2) { //wait dsi is not busy
-			udelay(DELAY_US);
-		}
-		mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
+	//lcm_dcs_write_seq_static(ctx, 0xC1, 0x89, 0x28, 0x00, 0x08, 0x00, 0xAA,
+	//0x02, 0x0E, 0x00, 0x2B, 0x00, 0x07, 0x0D, 0xB7,
+	//0x0C, 0xB7);
+	mtk_spi_write(0x00021d00, 0x00112902);
+	mtk_spi_write(0x00021d04, 0x002889c1);
+	mtk_spi_write(0x00021d08, 0x02aa0008);
+	mtk_spi_write(0x00021d0c, 0x002b000e);
+	mtk_spi_write(0x00021d10, 0x0cb70d07);
+	mtk_spi_write(0x00021d14, 0x000000b7);
+	mtk_spi_write(0x00021060, 0x00000006); //DSI_CMDQ_CON
+	mtk_spi_write(0x00021000, 0x00000000); //DSI_START
+	mtk_spi_write(0x00021000, 0x00000001); //DSI_START
+	while ((mtk_spi_read(0x0002100c) & 0x2) != 0x2) { //wait dsi is not busy
+		DISPMSG("%s, status=0x%x\n",
+			__func__, mtk_spi_read((unsigned long)(&TX_REG[0]->DSI_TX_INTSTA)));
+		udelay(DELAY_US);
+	}
+	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
+	udelay(0);
 
-		//lcm_dcs_write_seq_static(ctx, 0xC2, 0x1B, 0XA0);
-		mtk_spi_write(0x00021d00, 0x00032902);
-		mtk_spi_write(0x00021d04, 0x00a01bc2);
-		mtk_spi_write(0x00021060, 0x00000002); //DSI_CMDQ_CON
-		mtk_spi_write(0x00021000, 0x00000000); //DSI_START
-		mtk_spi_write(0x00021000, 0x00000001); //DSI_START
-		while ((mtk_spi_read(0x0002100c) & 0x2) != 0x2) { //wait dsi is not busy
-			udelay(DELAY_US);
-		}
-		mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
+	//lcm_dcs_write_seq_static(ctx, 0xC2, 0x1B, 0XA0);
+	mtk_spi_write(0x00021d00, 0x00032902);
+	mtk_spi_write(0x00021d04, 0x00a01bc2);
+	mtk_spi_write(0x00021060, 0x00000002); //DSI_CMDQ_CON
+	mtk_spi_write(0x00021000, 0x00000000); //DSI_START
+	mtk_spi_write(0x00021000, 0x00000001); //DSI_START
+	while ((mtk_spi_read(0x0002100c) & 0x2) != 0x2) { //wait dsi is not busy
+		udelay(DELAY_US);
+	}
+	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
 	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0xFF, 0X20);
@@ -2112,7 +2125,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0xFB, 0x01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2123,7 +2136,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X01, 0X66);
 	mtk_spi_write(0x00021d00, 0x66011500);
@@ -2134,7 +2147,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X32, 0X4D);
 	mtk_spi_write(0x00021d00, 0x4d321500);
@@ -2145,7 +2158,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X69, 0XD1);
 	mtk_spi_write(0x00021d00, 0xd1691500);
@@ -2156,7 +2169,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XF2, 0X64);
 	mtk_spi_write(0x00021d00, 0x64f22300);
@@ -2167,7 +2180,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XF4, 0X64);
 	mtk_spi_write(0x00021d00, 0x64f42300);
@@ -2178,7 +2191,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XF6, 0X64);
 	mtk_spi_write(0x00021d00, 0x64f62300);
@@ -2189,7 +2202,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XF9, 0X64);
 	mtk_spi_write(0x00021d00, 0x64f92300);
@@ -2200,7 +2213,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0X26);
 	mtk_spi_write(0x00021d00, 0x26ff2300);
@@ -2211,7 +2224,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2222,7 +2235,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X81, 0X0E);
 	mtk_spi_write(0x00021d00, 0x0e811500);
@@ -2233,7 +2246,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X84, 0X03);
 	mtk_spi_write(0x00021d00, 0x03841500);
@@ -2244,7 +2257,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X86, 0X03);
 	mtk_spi_write(0x00021d00, 0x03861500);
@@ -2255,7 +2268,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X88, 0X07);
 	mtk_spi_write(0x00021d00, 0x07881500);
@@ -2266,7 +2279,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0X27);
 	mtk_spi_write(0x00021d00, 0x27ff2300);
@@ -2277,7 +2290,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2288,7 +2301,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XE3, 0X01);
 	mtk_spi_write(0x00021d00, 0x01e32300);
@@ -2299,7 +2312,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XE4, 0XEC);
 	mtk_spi_write(0x00021d00, 0xece42300);
@@ -2310,7 +2323,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XE5, 0X02);
 	mtk_spi_write(0x00021d00, 0x02e52300);
@@ -2321,7 +2334,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XE6, 0XE3);
 	mtk_spi_write(0x00021d00, 0xe3e62300);
@@ -2332,7 +2345,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XE7, 0X01);
 	mtk_spi_write(0x00021d00, 0x01e72300);
@@ -2343,7 +2356,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XE8, 0XEC);
 	mtk_spi_write(0x00021d00, 0xece82300);
@@ -2354,7 +2367,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XE9, 0X02);
 	mtk_spi_write(0x00021d00, 0x02e92300);
@@ -2365,7 +2378,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XEA, 0X22);
 	mtk_spi_write(0x00021d00, 0x22ea2300);
@@ -2376,7 +2389,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XEB, 0X03);
 	mtk_spi_write(0x00021d00, 0x03eb2300);
@@ -2387,7 +2400,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XEC, 0X32);
 	mtk_spi_write(0x00021d00, 0x32ec2300);
@@ -2398,7 +2411,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XED, 0X02);
 	mtk_spi_write(0x00021d00, 0x02ed2300);
@@ -2409,7 +2422,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XEE, 0X22);
 	mtk_spi_write(0x00021d00, 0x22ee2300);
@@ -2420,7 +2433,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0X2A);
 	mtk_spi_write(0x00021d00, 0x2aff2300);
@@ -2431,7 +2444,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2442,7 +2455,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X0C, 0X04);
 	mtk_spi_write(0x00021d00, 0x040c1500);
@@ -2453,7 +2466,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X0F, 0X01);
 	mtk_spi_write(0x00021d00, 0x010f1500);
@@ -2464,7 +2477,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X11, 0XE0);
 	mtk_spi_write(0x00021d00, 0xe0111500);
@@ -2475,7 +2488,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X15, 0X0E);
 	mtk_spi_write(0x00021d00, 0x0e151500);
@@ -2486,7 +2499,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X16, 0X78);
 	mtk_spi_write(0x00021d00, 0x78161500);
@@ -2497,7 +2510,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X19, 0X0D);
 	mtk_spi_write(0x00021d00, 0x0d191500);
@@ -2508,7 +2521,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X1A, 0XF4);
 	mtk_spi_write(0x00021d00, 0xf41a1500);
@@ -2519,7 +2532,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X37, 0X6E);
 	mtk_spi_write(0x00021d00, 0x6e371500);
@@ -2530,7 +2543,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X88, 0X76);
 	mtk_spi_write(0x00021d00, 0x76881500);
@@ -2541,7 +2554,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0X2C);
 	mtk_spi_write(0x00021d00, 0x2cff2300);
@@ -2552,7 +2565,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2563,7 +2576,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X4D, 0X1E);
 	mtk_spi_write(0x00021d00, 0x1e4d1500);
@@ -2574,7 +2587,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X4E, 0X04);
 	mtk_spi_write(0x00021d00, 0x044e1500);
@@ -2585,7 +2598,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X4F, 0X00);
 	mtk_spi_write(0x00021d00, 0x004f1500);
@@ -2596,7 +2609,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X9D, 0X1E);
 	mtk_spi_write(0x00021d00, 0x1e9d1500);
@@ -2607,7 +2620,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X9E, 0X04);
 	mtk_spi_write(0x00021d00, 0x049e1500);
@@ -2618,7 +2631,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X9F, 0X17);
 	mtk_spi_write(0x00021d00, 0x179f1500);
@@ -2629,7 +2642,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0XF0);
 	mtk_spi_write(0x00021d00, 0xf0ff2300);
@@ -2640,7 +2653,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2651,7 +2664,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X5A, 0X00);
 	mtk_spi_write(0x00021d00, 0x005a1500);
@@ -2662,7 +2675,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0XE0);
 	mtk_spi_write(0x00021d00, 0xe0ff2300);
@@ -2673,7 +2686,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2684,7 +2697,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X25, 0X02);
 	mtk_spi_write(0x00021d00, 0x02251500);
@@ -2695,7 +2708,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X4E, 0X02);
 	mtk_spi_write(0x00021d00, 0x024e1500);
@@ -2706,7 +2719,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X85, 0X02);
 	mtk_spi_write(0x00021d00, 0x02851500);
@@ -2717,7 +2730,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0XD0);
 	mtk_spi_write(0x00021d00, 0xd0ff2300);
@@ -2728,7 +2741,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2739,7 +2752,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X09, 0XAD);
 	mtk_spi_write(0x00021d00, 0xad091500);
@@ -2750,7 +2763,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0X20);
 	mtk_spi_write(0x00021d00, 0x20ff2300);
@@ -2761,7 +2774,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2772,7 +2785,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XF8, 0X64);
 	mtk_spi_write(0x00021d00, 0x64f82300);
@@ -2783,7 +2796,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0X2A);
 	mtk_spi_write(0x00021d00, 0x2aff2300);
@@ -2794,7 +2807,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2805,7 +2818,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X1A, 0XF0);
 	mtk_spi_write(0x00021d00, 0xf01a1500);
@@ -2816,7 +2829,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 	//lcm_dcs_write_seq_static(ctx, 0X30, 0X5E);
 	mtk_spi_write(0x00021d00, 0x5e301500);
 	mtk_spi_write(0x00021060, 0x00000001); //DSI_CMDQ_CON
@@ -2826,7 +2839,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X31, 0XCA);
 	mtk_spi_write(0x00021d00, 0xca311500);
@@ -2837,7 +2850,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X34, 0XFE);
 	mtk_spi_write(0x00021d00, 0xfe341500);
@@ -2848,7 +2861,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X35, 0X35);
 	mtk_spi_write(0x00021d00, 0x35351500);
@@ -2859,7 +2872,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X36, 0XA2);
 	mtk_spi_write(0x00021d00, 0xa2361500);
@@ -2870,7 +2883,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X37, 0XF8);
 	mtk_spi_write(0x00021d00, 0xf8371500);
@@ -2881,7 +2894,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X38, 0X37);
 	mtk_spi_write(0x00021d00, 0x37381500);
@@ -2892,7 +2905,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X39, 0XA0);
 	mtk_spi_write(0x00021d00, 0xa0391500);
@@ -2903,7 +2916,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X3A, 0X5E);
 	mtk_spi_write(0x00021d00, 0x5e3a1500);
@@ -2914,7 +2927,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X53, 0XD7);
 	mtk_spi_write(0x00021d00, 0xd7531500);
@@ -2925,7 +2938,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X88, 0X72);
 	mtk_spi_write(0x00021d00, 0x72881500);
@@ -2936,7 +2949,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X88, 0X72);
 	mtk_spi_write(0x00021d00, 0x72881500);
@@ -2947,7 +2960,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0X24);
 	mtk_spi_write(0x00021d00, 0x24ff2300);
@@ -2958,7 +2971,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -2969,7 +2982,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XC6, 0XC0);
 	mtk_spi_write(0x00021d00, 0xc0c62300);
@@ -2980,7 +2993,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0XE0);
 	mtk_spi_write(0x00021d00, 0xe0ff2300);
@@ -2991,7 +3004,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -3002,7 +3015,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X25, 0X00);
 	mtk_spi_write(0x00021d00, 0x00251500);
@@ -3013,7 +3026,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X4E, 0X02);
 	mtk_spi_write(0x00021d00, 0x024e1500);
@@ -3024,7 +3037,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X35, 0X82);
 	mtk_spi_write(0x00021d00, 0x82351500);
@@ -3035,7 +3048,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0XC0);
 	mtk_spi_write(0x00021d00, 0xc0ff2300);
@@ -3046,7 +3059,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -3057,7 +3070,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X9C, 0X11);
 	mtk_spi_write(0x00021d00, 0x119c1500);
@@ -3068,7 +3081,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0X9D, 0X11);
 	mtk_spi_write(0x00021d00, 0x119d1500);
@@ -3079,7 +3092,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	if (dsc_on) {
 		if (tx_data_rate < 600) {
@@ -3093,7 +3106,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 				udelay(DELAY_US);
 			}
 			mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-			udelay(10);
+			udelay(0);
 
 			//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 			mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -3104,7 +3117,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 				udelay(DELAY_US);
 			}
 			mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-			udelay(10);
+			udelay(0);
 
 			//lcm_dcs_write_seq_static(ctx, 0X18, 0X22);
 			mtk_spi_write(0x00021d00, 0x22181500);
@@ -3115,7 +3128,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 				udelay(DELAY_US);
 			}
 			mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-			udelay(10);
+			udelay(0);
 		} else if (tx_data_rate < 900) {
 		//90HZ
 			//lcm_dcs_write_seq_static(ctx, 0XFF, 0X25);
@@ -3127,7 +3140,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 				udelay(DELAY_US);
 			}
 			mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-			udelay(10);
+			udelay(0);
 
 			//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 			mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -3138,7 +3151,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 				udelay(DELAY_US);
 			}
 			mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-			udelay(10);
+			udelay(0);
 
 			//lcm_dcs_write_seq_static(ctx, 0X18, 0X21);
 			mtk_spi_write(0x00021d00, 0x21181500);
@@ -3149,7 +3162,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 				udelay(DELAY_US);
 			}
 			mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-			udelay(10);
+			udelay(0);
 		}
 	} else {
 		//60HZ
@@ -3162,7 +3175,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 			udelay(DELAY_US);
 		}
 		mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-		udelay(10);
+		udelay(0);
 
 		//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 		mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -3173,7 +3186,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 			udelay(DELAY_US);
 		}
 		mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-		udelay(10);
+		udelay(0);
 
 		//lcm_dcs_write_seq_static(ctx, 0X18, 0X22);
 		mtk_spi_write(0x00021d00, 0x22181500);
@@ -3184,9 +3197,8 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 			udelay(DELAY_US);
 		}
 		mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-		udelay(10);
+		udelay(0);
 	}
-
 
 	//lcm_dcs_write_seq_static(ctx, 0XFF, 0X10);
 	mtk_spi_write(0x00021d00, 0x10ff2300);
@@ -3197,7 +3209,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0XFB, 0X01);
 	mtk_spi_write(0x00021d00, 0x01fb2300);
@@ -3208,13 +3220,34 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
-	//lcm_dcs_write_seq_static(ctx, 0XC0, 0X03);
-	if (dsc_on)
+	//Set DSC ON/OFF
+	if (dsc_on) {
+		//lcm_dcs_write_seq_static(ctx, 0xC0, 0x03);
 		mtk_spi_write(0x00021d00, 0x03c02300);
-	else
+		mtk_spi_write(0x00021060, 0x00000001); //DSI_CMDQ_CON
+		mtk_spi_write(0x00021000, 0x00000000); //DSI_START
+		mtk_spi_write(0x00021000, 0x00000001); //DSI_START
+		while ((mtk_spi_read(0x0002100c) & 0x2) != 0x2) { //wait dsi is not busy
+			DISPMSG("%s, status=0x%x\n",
+				__func__, mtk_spi_read((unsigned long)(&TX_REG[0]->DSI_TX_INTSTA)));
+			udelay(DELAY_US);
+		}
+		mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
+		udelay(0);
+	} else {
+		//lcm_dcs_write_seq_static(ctx, 0xC0, 0x00);
 		mtk_spi_write(0x00021d00, 0x00c02300);
+		mtk_spi_write(0x00021060, 0x00000001); //DSI_CMDQ_CON
+		mtk_spi_write(0x00021000, 0x00000000); //DSI_START
+		mtk_spi_write(0x00021000, 0x00000001); //DSI_START
+		while ((mtk_spi_read(0x0002100c) & 0x2) != 0x2) { //wait dsi is not busy
+			udelay(DELAY_US);
+		}
+		mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
+		udelay(0);
+	}
 
 	mtk_spi_write(0x00021060, 0x00000001); //DSI_CMDQ_CON
 	mtk_spi_write(0x00021000, 0x00000000); //DSI_START
@@ -3223,7 +3256,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0x51, 0x00);
 	mtk_spi_write(0x00021d00, 0x00511500);
@@ -3234,7 +3267,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
 	mtk_spi_write(0x00021d00, 0x00351500);
@@ -3245,7 +3278,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0x53, 0x24);
 	mtk_spi_write(0x00021d00, 0x24531500);
@@ -3256,7 +3289,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0x55, 0x00);
 	mtk_spi_write(0x00021d00, 0x00551500);
@@ -3267,7 +3300,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0xFF, 0x10);
 	mtk_spi_write(0x00021d00, 0x10ff2300);
@@ -3278,7 +3311,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
 	//lcm_dcs_write_seq_static(ctx, 0x11);
 	mtk_spi_write(0x00021d00, 0x00110500);
@@ -3289,9 +3322,9 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 
-	msleep(130);
+	msleep(120);
 	//lcm_dcs_write_seq_static(ctx, 0x29);
 	mtk_spi_write(0x00021d00, 0x00290500);
 	mtk_spi_write(0x00021060, 0x00000001); //DSI_CMDQ_CON
@@ -3301,7 +3334,7 @@ void mt6382_nt36672c_fhd_vdo_init(bool dsc_on)
 		udelay(DELAY_US);
 	}
 	mtk_spi_write(0x0002100c, 0xfffd); //write 0 clear
-	udelay(10);
+	udelay(0);
 	DISPFUNCEND();
 }
 
@@ -3421,18 +3454,28 @@ int lcm_init(enum DISP_BDG_ENUM module)
 //	mt6382_nt36672c_fhd_vdo_init(dsc_en);
 	pr_err("tx_data_rate is %d\n", tx_data_rate);
 	if (dsc_en) {
-		if (tx_data_rate < 600)
+		if (tx_data_rate < 601)
 			push_table(nt36672c_60hz, sizeof(nt36672c_60hz) /
 				sizeof(struct lcm_setting_table), 1);
-		else if (tx_data_rate < 900)
+		else if (tx_data_rate < 901)
 			push_table(nt36672c_90hz, sizeof(nt36672c_90hz) /
 				sizeof(struct lcm_setting_table), 1);
 		else
 			push_table(nt36672c_120hz, sizeof(nt36672c_120hz) /
 				sizeof(struct lcm_setting_table), 1);
 	} else {
-		push_table(nt36672c_60hz, sizeof(nt36672c_60hz) /
-			sizeof(struct lcm_setting_table), 1);
+//		if (tx_data_rate < 1201)
+		if (tx_data_rate < 1401)
+			push_table(nt36672c_60hz, sizeof(nt36672c_60hz) /
+				sizeof(struct lcm_setting_table), 1);
+		else if (tx_data_rate < 1601)
+			push_table(nt36672c_90hz, sizeof(nt36672c_90hz) /
+				sizeof(struct lcm_setting_table), 1);
+		else
+			push_table(nt36672c_120hz, sizeof(nt36672c_120hz) /
+				sizeof(struct lcm_setting_table), 1);
+
+
 		push_table(nt36672c_wo_dsc, sizeof(nt36672c_wo_dsc) /
 			sizeof(struct lcm_setting_table), 1);
 	}
@@ -3441,6 +3484,7 @@ int lcm_init(enum DISP_BDG_ENUM module)
 
 	return 0;
 }
+
 int bdg_tx_init(enum DISP_BDG_ENUM module,
 		   struct disp_ddp_path_config *config, void *cmdq)
 {
@@ -3455,7 +3499,8 @@ int bdg_tx_init(enum DISP_BDG_ENUM module,
 	dsc_en = tx_params->bdg_dsc_enable;
 
 	DISPMSG("%s, tx_data_rate=%d, bdg_ssc_disable=%d, ssc_disable=%d, dsc_enable=%d\n",
-		__func__, tx_data_rate, tx_params->bdg_ssc_disable, tx_params->ssc_disable, dsc_en);
+		__func__, tx_data_rate, tx_params->bdg_ssc_disable,
+		tx_params->ssc_disable, dsc_en);
 
 	ret |= bdg_mipi_tx_dphy_clk_setting(module, cmdq, tx_params);
 	udelay(20);
@@ -3512,8 +3557,9 @@ void calculate_datarate_cfgs_rx(unsigned int data_rate)
 	unsigned int hs_clk_freq = data_rate * 1000 / 2;
 
 	DISPFUNCSTART();
-	ddl_cntr_ref_reg = timebase * hs_clk_freq *
-		2 * 10 / 1000000 / 2 / 16 / 23; //round up
+//	ddl_cntr_ref_reg = 5 * timebase * hs_clk_freq *
+//		2 / 1000000 / 2 / 16 / 2; //round up
+	ddl_cntr_ref_reg = 5 * hs_clk_freq / 1000 / 2 / 16;
 
 	if (data_rate >= 4500) {
 		sel_fast = 1;
@@ -3606,13 +3652,12 @@ void calculate_datarate_cfgs_rx(unsigned int data_rate)
 		hsrx_clk_div = 6;
 
 	hs_thssettle = 115 + 1000 * 6 / data_rate;
-	hs_thssettle = (hs_thssettle - T_DCO - (itminrx + 3) * T_DCO -
-		2 * T_DCO) / T_DCO - 1;
+	hs_thssettle = (hs_thssettle - T_DCO - (itminrx + 3) * T_DCO - 2 * T_DCO) / T_DCO - 1;
 	fjump_deskew_reg = max_phase / 10 / 4;
 	eye_open_deskew_reg = max_phase * 4 / 10 / 2;
 
-	DISPMSG("ddl_cntr_ref_reg=%d, hs_thssettle=%d, fjump_deskew_reg=%d\n",
-		ddl_cntr_ref_reg, hs_thssettle, fjump_deskew_reg);
+	DISPMSG("data_rate=%d, ddl_cntr_ref_reg=%d, hs_thssettle=%d, fjump_deskew_reg=%d\n",
+		data_rate, ddl_cntr_ref_reg, hs_thssettle, fjump_deskew_reg);
 
 	if (hs_clk_freq * 2 >= 900000)
 		cdr_coarse_trgt_reg = timebase * hs_clk_freq * 2 * 2 / 32 / 1000000 - 1;
@@ -3624,15 +3669,17 @@ void calculate_datarate_cfgs_rx(unsigned int data_rate)
 
 	post_rcvd_rst_val = 2 * T_DCO * hs_clk_freq * 2 / 7 / 1000000 - 1;
 	post_rcvd_rst_reg = (post_rcvd_rst_val > 0) ? post_rcvd_rst_val : 1;
-/*(real'(post_rcvd_rst_reg+1)*7.0*1000000.0/real'(hs_clk_freq)/2.0-7.0*`T_DCO)/`T_DCO;*/
-	post_det_dly_thresh_val = (203 - 9 * 7 * 1000000 / hs_clk_freq / 2) / T_DCO - 7;
-	post_det_dly_thresh_reg = (post_det_dly_thresh_val > 0) ? post_det_dly_thresh_val : 1;
+
+	post_det_dly_thresh_val = ((189 * 1000000 / hs_clk_freq / 2) -
+		(9 * 7 * 1000000 / hs_clk_freq / 2)) / T_DCO - 7;
+	post_det_dly_thresh_reg = (post_det_dly_thresh_val > 0) ?
+		post_det_dly_thresh_val : 1;
 
 	DISPMSG("cdr_coarse_trgt_reg=%d, post_rcvd_rst_val=%d, fjump_deskew_reg=%d\n",
 		cdr_coarse_trgt_reg, post_rcvd_rst_val, post_rcvd_rst_reg);
-	DISPMSG("en_dly_deass_thresh_reg=%d, post_det_dly_thresh_val=%d, post_det_dly_thresh_reg=%d\n",
-		en_dly_deass_thresh_reg, post_det_dly_thresh_val);
-	DISPMSG("post_det_dly_thresh_reg=%d\n", post_det_dly_thresh_reg);
+	DISPMSG(
+		"en_dly_deass_thresh_reg=%d, post_det_dly_thresh_val=%d, post_det_dly_thresh_reg=%d\n",
+		en_dly_deass_thresh_reg, post_det_dly_thresh_val, post_det_dly_thresh_reg);
 }
 
 void mipi_rx_enable(void *cmdq)
@@ -3694,13 +3741,16 @@ void startup_seq_common(void *cmdq)
 		PPI_CALIBCTRL_RW_COMMON_BG_0_BG_MAX_COUNTER_MASK, 500);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_TERMCAL_CFG_0 * 4,
-		PPI_RW_TERMCAL_CFG_0_TERMCAL_TIMER_MASK, 25); // cfg_clk = 26 MHz
+		PPI_RW_TERMCAL_CFG_0_TERMCAL_TIMER_MASK,
+		25); // cfg_clk = 26 MHz
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_OFFSETCAL_CFG_0 * 4,
-		PPI_RW_OFFSETCAL_CFG_0_OFFSETCAL_WAIT_THRESH_MASK, 5); // cfg_clk = 26 MHz
+		PPI_RW_OFFSETCAL_CFG_0_OFFSETCAL_WAIT_THRESH_MASK,
+		5); // cfg_clk = 26 MHz
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_LPDCOCAL_TIMEBASE * 4,
-		PPI_RW_LPDCOCAL_TIMEBASE_LPCDCOCAL_TIMEBASE_MASK, 103); // cfg_clk = 26 MHz
+		PPI_RW_LPDCOCAL_TIMEBASE_LPCDCOCAL_TIMEBASE_MASK,
+		103); // cfg_clk = 26 MHz
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_LPDCOCAL_NREF * 4,
 		PPI_RW_LPDCOCAL_NREF_LPDCOCAL_NREF_MASK, 800);
@@ -3712,10 +3762,12 @@ void startup_seq_common(void *cmdq)
 		PPI_RW_LPDCOCAL_TWAIT_CONFIG_LPDCOCAL_TWAIT_PON_MASK, 127);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_LPDCOCAL_TWAIT_CONFIG * 4,
-		PPI_RW_LPDCOCAL_TWAIT_CONFIG_LPDCOCAL_TWAIT_COARSE_MASK, 32); // cfg_clk = 26 MHz
+		PPI_RW_LPDCOCAL_TWAIT_CONFIG_LPDCOCAL_TWAIT_COARSE_MASK,
+		32); // cfg_clk = 26 MHz
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_LPDCOCAL_VT_CONFIG * 4,
-		PPI_RW_LPDCOCAL_VT_CONFIG_LPDCOCAL_TWAIT_FINE_MASK, 32); // cfg_clk = 26 MHz
+		PPI_RW_LPDCOCAL_VT_CONFIG_LPDCOCAL_TWAIT_FINE_MASK,
+		32); // cfg_clk = 26 MHz
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_LPDCOCAL_VT_CONFIG * 4,
 		PPI_RW_LPDCOCAL_VT_CONFIG_LPCDCOCAL_VT_NREF_RANGE_MASK, 15);
@@ -3729,8 +3781,10 @@ void startup_seq_common(void *cmdq)
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_LPDCOCAL_COARSE_CFG * 4,
 		PPI_RW_LPDCOCAL_COARSE_CFG_NCOARSE_START_MASK, 1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_CB_CTRL_2_6 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_CB_CTRL_2_6_OA_CB_HSTXLB_DCO_PON_OVR_EN_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_CB_CTRL_2_6 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_CB_CTRL_2_6_OA_CB_HSTXLB_DCO_PON_OVR_EN_MASK,
+		1);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_COMMON_CFG * 4,
 		PPI_RW_COMMON_CFG_CFG_CLK_DIV_FACTOR_MASK, 3);
@@ -3779,14 +3833,14 @@ int bdg_dsc_init(enum DISP_BDG_ENUM module,
 	height = tx_params->vertical_active_line;
 
 #ifdef _n36672c_
-/*
-Resolution = 1080x2400
-Slice width = 540
-Slice height = 8
-Format = RGB888
-DSC version = v1.1
-Compression rate = 1/3
-*/
+
+/*Resolution = 1080x2400*/
+/*Slice width = 540*/
+/*Slice height = 8*/
+/*Format = RGB888*/
+/*DSC version = v1.1*/
+/*Compression rate = 1/3*/
+
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_W, 0x01670438);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_H, 0x095f095f);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SLICE_W, 0x00b3021c);
@@ -3821,14 +3875,13 @@ Compression rate = 1/3
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[19], 0x0000d1ed);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SHADOW, 0x00000020);
 #else
-/*
-Resolution = 1080x2160
-Slice width = 1080
-Slice height = 20
-Format = RGB888
-DSC version = v1.2
-Compression rate = 1/3
-*/
+//Resolution = 1080x2160
+//Slice width = 1080
+//Slice height = 20
+//Format = RGB888
+//DSC version = v1.2
+//Compression rate = 1/3
+
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_W, 0x01670438);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_H, 0x086F086F);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SLICE_W, 0x01670438);
@@ -3875,8 +3928,7 @@ int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
 	unsigned int temp, frame_width;
 	unsigned int ipi_tx_delay_qst, t_ipi_tx_delay;
 	unsigned int t_ppi_clk, t_ipi_clk, t_hact_ppi, t_hact_ipi;
-	/* bit2: HSRX EoTp enable, bit1: LPTX EoTp enable, */
-	/*bit0: LPRX EoTp enable unsigned int timeout = 200;*/
+	/*bit2: HSRX EoTp enable, bit1: LPTX EoTp enable, bit0: LPRX EoTp enable*/
 	unsigned int eotp_cfg = 4;
 	unsigned int timeout = 5000;
 	unsigned int phy_ready = 0, count = 0;
@@ -3911,57 +3963,67 @@ int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_PHY_TEST_CTRL1_OS, 0);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_PHY_DATA_STATUS_OS, 0);
 //	if (out_type) {
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_LPTXRDY_TO_CNT_OS, 0);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_LPTX_TO_CNT_OS, 0);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_HSRX_TO_CNT_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_LPTXRDY_TO_CNT_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_LPTX_TO_CNT_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_HSRX_TO_CNT_OS, 0);
 //	}
 
 	//Interrupt Registers
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_PHY_FATAL_OS, 0);
-	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_PHY_FATAL_OS, 0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_PHY_FATAL_OS,
+		0xffffffff);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_PHY_FATAL_OS, 0);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_PHY_OS, 0);
-	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_PHY_OS, 0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_PHY_OS,
+		0xffffffff);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_PHY_OS, 0);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_DSI_FATAL_OS, 0);
-	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_DSI_FATAL_OS, 0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_DSI_FATAL_OS,
+		0xffffffff);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_DSI_FATAL_OS, 0);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_DSI_OS, 0);
-	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_DSI_OS, 0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_DSI_OS,
+		0xffffffff);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_DSI_OS, 0);
 
 //	if (out_type) {
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_DDI_FATAL_OS, 0);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_DDI_FATAL_OS, 0xffffffff);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_DDI_FATAL_OS, 0);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_DDI_OS, 0);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_DDI_OS, 0xffffffff);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_DDI_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_DDI_FATAL_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_DDI_FATAL_OS,
+		0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_DDI_FATAL_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_DDI_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_DDI_OS,
+		0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_DDI_OS, 0);
 //	}
-	//video mode/ipi
+//video mode/ipi
 //	if (!out_type) {
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_IPI_FATAL_OS, 0);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_IPI_FATAL_OS, 0xffffffff);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_IPI_FATAL_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_IPI_FATAL_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_IPI_FATAL_OS,
+		0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_IPI_FATAL_OS, 0);
 //	}
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_FIFO_FATAL_OS, 0);
-	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_FIFO_FATAL_OS, 0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_FIFO_FATAL_OS,
+		0xffffffff);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_FIFO_FATAL_OS, 0);
 
 //	if (out_type) {
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_ERR_RPT_OS, 0);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_ERR_RPT_OS, 0xffffffff);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_ERR_RPT_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_ERR_RPT_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_ERR_RPT_OS,
+		0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_ERR_RPT_OS, 0);
 //	}
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_ST_RX_TRIGGERS_OS, 0);
-	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_RX_TRIGGERS_OS, 0xffffffff);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_MASK_N_RX_TRIGGERS_OS,
+		0xffffffff);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_INT_FORCE_RX_TRIGGERS_OS, 0);
 
 //	if (out_type) {
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RDY_TO_CNT_OS, 0);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RESP_TO_CNT_OS, 0);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_VALID_VC_CFG_OS, 0xf);
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RDY_TO_CNT_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RESP_TO_CNT_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_VALID_VC_CFG_OS, 0xf);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0);
 //	}
 
 	//video mode/ipi
@@ -3978,26 +4040,26 @@ int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
 			temp = 7000;
 			t_ppi_clk = temp / ap_tx_data_rate;
 		//t_hact_ppi = ((6 + frame_width * 3) / (n_lanes + 1) / 2) * t_ppi_clk;
-			t_hact_ppi = ((6 + frame_width * 3) *
-						temp / ap_tx_data_rate / (lanes + 1) / 2);
+			t_hact_ppi = ((6 + frame_width * 3) * temp / ap_tx_data_rate /
+				(lanes + 1) / 2);
 		} else {
 			temp = 8000;
 			t_ppi_clk  = temp / ap_tx_data_rate;
 		//t_hact_ppi = ((6 + frame_width * 3) / (n_lanes + 1)) * t_ppi_clk;
-			t_hact_ppi = ((6 + frame_width * 3) * temp /
-						ap_tx_data_rate / (lanes + 1));
+			t_hact_ppi = ((6 + frame_width * 3) * temp / ap_tx_data_rate /
+				(lanes + 1));
 		}
 
 		if (t_hact_ppi > t_hact_ipi)
-/*ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) / t_ipi_clk + 20 * (t_ppi_clk / t_ipi_clk) + 4);*/
-//ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) * MM_CLK / 1000 +
-//20 * (temp * MM_CLK / tx_data_rate / 1000) + 4);
-			ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) *
-							MM_CLK + 20 * temp *
-							MM_CLK / ap_tx_data_rate) / 1000 + 4;
+//ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) / t_ipi_clk + 20 * (t_ppi_clk / t_ipi_clk) + 4);
+//ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) * MM_CLK / 1000 + 20 *
+//(temp * MM_CLK / tx_data_rate / 1000) + 4);
+			ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) * MM_CLK +
+					20 * temp * MM_CLK / ap_tx_data_rate) / 1000 + 4;
 		else
-//ipi_tx_delay_qst =  (20 * (temp * MM_CLK / tx_data_rate / 1000) + 4);
-			ipi_tx_delay_qst =  20 * temp * MM_CLK / ap_tx_data_rate / 1000 + 4;
+		//ipi_tx_delay_qst =  (20 * (temp * MM_CLK / tx_data_rate / 1000) + 4);
+			ipi_tx_delay_qst =  20 * temp * MM_CLK /
+				ap_tx_data_rate / 1000 + 4;
 
 		DISPINFO("ap_tx_data_rate=%d, temp=%d, t_ppi_clk=%d, t_ipi_clk=%d\n",
 			ap_tx_data_rate, temp, t_ppi_clk, t_ipi_clk);
@@ -4042,639 +4104,1081 @@ void startup_seq_dphy_specific(unsigned int data_rate)
 	DISPFUNCSTART();
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_RW_COMMON_7 * 4,
-		CORE_DIG_RW_COMMON_7_LANE0_HSRX_WORD_CLK_SEL_GATING_REG_MASK, 0);
+		CORE_DIG_RW_COMMON_7_LANE0_HSRX_WORD_CLK_SEL_GATING_REG_MASK,
+		0);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_RW_COMMON_7 * 4,
-		CORE_DIG_RW_COMMON_7_LANE1_HSRX_WORD_CLK_SEL_GATING_REG_MASK, 0);
+		CORE_DIG_RW_COMMON_7_LANE1_HSRX_WORD_CLK_SEL_GATING_REG_MASK,
+		0);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_RW_COMMON_7 * 4,
 		CORE_DIG_RW_COMMON_7_LANE2_HSRX_WORD_CLK_SEL_GATING_REG_MASK, 0);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_RW_COMMON_7 * 4,
-		CORE_DIG_RW_COMMON_7_LANE3_HSRX_WORD_CLK_SEL_GATING_REG_MASK, 0);
+		CORE_DIG_RW_COMMON_7_LANE3_HSRX_WORD_CLK_SEL_GATING_REG_MASK,
+		0);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_RW_COMMON_7 * 4,
+		CORE_DIG_RW_COMMON_7_LANE4_HSRX_WORD_CLK_SEL_GATING_REG_MASK,
+		0);
 
 	if (data_rate >= 1500)
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_STARTUP_RW_COMMON_DPHY_7 * 4,
-		PPI_STARTUP_RW_COMMON_DPHY_7_DPHY_DDL_CAL_addr_MASK, 40);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		PPI_STARTUP_RW_COMMON_DPHY_7 * 4,
+		PPI_STARTUP_RW_COMMON_DPHY_7_DPHY_DDL_CAL_addr_MASK,
+		40);
 	else
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_STARTUP_RW_COMMON_DPHY_7 * 4,
-		PPI_STARTUP_RW_COMMON_DPHY_7_DPHY_DDL_CAL_addr_MASK, 104);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		PPI_STARTUP_RW_COMMON_DPHY_7 * 4,
+		PPI_STARTUP_RW_COMMON_DPHY_7_DPHY_DDL_CAL_addr_MASK,
+		104);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_STARTUP_RW_COMMON_DPHY_8 * 4,
-		PPI_STARTUP_RW_COMMON_DPHY_8_CPHY_DDL_CAL_addr_MASK, 80);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		PPI_STARTUP_RW_COMMON_DPHY_8 * 4,
+		PPI_STARTUP_RW_COMMON_DPHY_8_CPHY_DDL_CAL_addr_MASK,
+		80);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_0 * 4,
-		PPI_RW_DDLCAL_CFG_0_DDLCAL_TIMEBASE_TARGET_MASK, 25); // cfg_clk = 26 MHz
+		PPI_RW_DDLCAL_CFG_0_DDLCAL_TIMEBASE_TARGET_MASK,
+		125); // cfg_clk = 26 MHz
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_7 * 4,
-		PPI_RW_DDLCAL_CFG_7_DDLCAL_DECR_WAIT_MASK, 34);
+		PPI_RW_DDLCAL_CFG_7_DDLCAL_DECR_WAIT_MASK,
+		34);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_1 * 4,
-		PPI_RW_DDLCAL_CFG_1_DDLCAL_DISABLE_TIME_MASK, 23);
+		PPI_RW_DDLCAL_CFG_1_DDLCAL_DISABLE_TIME_MASK,
+		25);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_2 * 4,
-		PPI_RW_DDLCAL_CFG_2_DDLCAL_WAIT_MASK, 4);
+		PPI_RW_DDLCAL_CFG_2_DDLCAL_WAIT_MASK,
+		4);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_2 * 4,
-		PPI_RW_DDLCAL_CFG_2_DDLCAL_TUNE_MODE_MASK, 2);
+		PPI_RW_DDLCAL_CFG_2_DDLCAL_TUNE_MODE_MASK,
+		2);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_2 * 4,
-		PPI_RW_DDLCAL_CFG_2_DDLCAL_DDL_DLL_MASK, 1);
+		PPI_RW_DDLCAL_CFG_2_DDLCAL_DDL_DLL_MASK,
+		1);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_2 * 4,
-		PPI_RW_DDLCAL_CFG_2_DDLCAL_ENABLE_WAIT_MASK, 25); // cfg_clk = 26 MHz
+		PPI_RW_DDLCAL_CFG_2_DDLCAL_ENABLE_WAIT_MASK,
+		25); // cfg_clk = 26 MHz
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_2 * 4,
-		PPI_RW_DDLCAL_CFG_2_DDLCAL_UPDATE_SETTINGS_MASK, 1);
+		PPI_RW_DDLCAL_CFG_2_DDLCAL_UPDATE_SETTINGS_MASK,
+		1);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_4 * 4,
-		PPI_RW_DDLCAL_CFG_4_DDLCAL_STUCK_THRESH_MASK, 10);
+		PPI_RW_DDLCAL_CFG_4_DDLCAL_STUCK_THRESH_MASK,
+		10);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_6 * 4,
-		PPI_RW_DDLCAL_CFG_6_DDLCAL_MAX_DIFF_MASK, 10);
+		PPI_RW_DDLCAL_CFG_6_DDLCAL_MAX_DIFF_MASK,
+		10);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_7 * 4,
-		PPI_RW_DDLCAL_CFG_7_DDLCAL_START_DELAY_MASK, 12); // cfg_clk = 26 MHz
+		PPI_RW_DDLCAL_CFG_7_DDLCAL_START_DELAY_MASK,
+		12); // cfg_clk = 26 MHz
 
 	if (data_rate > 1500) {
 		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_3 * 4,
-			PPI_RW_DDLCAL_CFG_3_DDLCAL_COUNTER_REF_MASK, ddl_cntr_ref_reg);
+			PPI_RW_DDLCAL_CFG_3_DDLCAL_COUNTER_REF_MASK,
+			ddl_cntr_ref_reg);
 
 		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_1 * 4,
 			PPI_RW_DDLCAL_CFG_1_DDLCAL_MAX_PHASE_MASK, max_phase);
 
 		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_5 * 4,
-			PPI_RW_DDLCAL_CFG_5_DDLCAL_DLL_FBK_MASK, dll_fbk);
+			PPI_RW_DDLCAL_CFG_5_DDLCAL_DLL_FBK_MASK,
+			dll_fbk);
 
 		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + PPI_RW_DDLCAL_CFG_5 * 4,
-			PPI_RW_DDLCAL_CFG_5_DDLCAL_DDL_COARSE_BANK_MASK, coarse_bank);
+			PPI_RW_DDLCAL_CFG_5_DDLCAL_DDL_COARSE_BANK_MASK,
+			coarse_bank);
 	}
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_8 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_8_OA_LANE0_HSRX_CDPHY_SEL_FAST_MASK, sel_fast);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_8 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_8_OA_LANE0_HSRX_CDPHY_SEL_FAST_MASK,
+		sel_fast);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_8 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_8_OA_LANE1_HSRX_CDPHY_SEL_FAST_MASK, sel_fast);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_8 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_8_OA_LANE1_HSRX_CDPHY_SEL_FAST_MASK,
+		sel_fast);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_8 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_8_OA_LANE2_HSRX_CDPHY_SEL_FAST_MASK, sel_fast);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_8 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_8_OA_LANE2_HSRX_CDPHY_SEL_FAST_MASK,
+		sel_fast);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_8 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_8_OA_LANE3_HSRX_CDPHY_SEL_FAST_MASK, sel_fast);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_8 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_8_OA_LANE3_HSRX_CDPHY_SEL_FAST_MASK,
+		sel_fast);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_8 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_8_OA_LANE4_HSRX_CDPHY_SEL_FAST_MASK,
+		sel_fast);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_LP_0 * 4,
-		CORE_DIG_DLANE_0_RW_LP_0_LP_0_TTAGO_REG_MASK, 6);
+		CORE_DIG_DLANE_0_RW_LP_0_LP_0_TTAGO_REG_MASK,
+		6);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_LP_0 * 4,
-		CORE_DIG_DLANE_1_RW_LP_0_LP_0_TTAGO_REG_MASK, 6);
+		CORE_DIG_DLANE_1_RW_LP_0_LP_0_TTAGO_REG_MASK,
+		6);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_LP_0 * 4,
-		CORE_DIG_DLANE_2_RW_LP_0_LP_0_TTAGO_REG_MASK, 6);
+		CORE_DIG_DLANE_2_RW_LP_0_LP_0_TTAGO_REG_MASK,
+		6);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_LP_0 * 4,
-		CORE_DIG_DLANE_3_RW_LP_0_LP_0_TTAGO_REG_MASK, 6);
+		CORE_DIG_DLANE_3_RW_LP_0_LP_0_TTAGO_REG_MASK,
+		6);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_2 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_2_OA_LANE0_SEL_LANE_CFG_MASK, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_2 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_2_OA_LANE0_SEL_LANE_CFG_MASK,
+		0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_2 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_2_OA_LANE1_SEL_LANE_CFG_MASK, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_2 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_2_OA_LANE1_SEL_LANE_CFG_MASK,
+		0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_2 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_2_OA_LANE2_SEL_LANE_CFG_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_2 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_2_OA_LANE2_SEL_LANE_CFG_MASK,
+		1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_2 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_2_OA_LANE3_SEL_LANE_CFG_MASK, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_2 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_2_OA_LANE3_SEL_LANE_CFG_MASK,
+		0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_2 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_2_OA_LANE4_SEL_LANE_CFG_MASK, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_2 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_2_OA_LANE4_SEL_LANE_CFG_MASK,
+		0);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_RW_COMMON_6 * 4,
-		CORE_DIG_RW_COMMON_6_DESERIALIZER_EN_DEASS_COUNT_THRESH_D_MASK, 1);
+		CORE_DIG_RW_COMMON_6_DESERIALIZER_EN_DEASS_COUNT_THRESH_D_MASK,
+		1);
 
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_RW_COMMON_6 * 4,
-		CORE_DIG_RW_COMMON_6_DESERIALIZER_DIV_EN_DELAY_THRESH_D_MASK, 1);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_12 * 4,
-	CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_12_OA_LANE0_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
-	0);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_12 * 4,
-	CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_12_OA_LANE1_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
-	0);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_12 * 4,
-	CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_12_OA_LANE2_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
-	0);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_12 * 4,
-	CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_12_OA_LANE3_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
-	0);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_13 * 4,
-	CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_13_OA_LANE0_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
-	0);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_13 * 4,
-	CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_13_OA_LANE1_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
-	0);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_13 * 4,
-	CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_13_OA_LANE2_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
-	0);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_13 * 4,
-	CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_13_OA_LANE3_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
-	0);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_9 * 4,
-		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_9_OA_LANE2_HSRX_HS_CLK_DIV_MASK, hsrx_clk_div);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_CLK_RW_HS_RX_0 * 4,
-		CORE_DIG_DLANE_CLK_RW_HS_RX_0_HS_RX_0_TCLKSETTLE_REG_MASK, 28);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_CLK_RW_HS_RX_7 * 4,
-		CORE_DIG_DLANE_CLK_RW_HS_RX_7_HS_RX_7_TCLKMISS_REG_MASK, 6);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_0 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_0_HS_RX_0_THSSETTLE_REG_MASK, hs_thssettle);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_0 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_0_HS_RX_0_THSSETTLE_REG_MASK, hs_thssettle);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_0 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_0_HS_RX_0_THSSETTLE_REG_MASK, hs_thssettle);
-
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_0 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_0_HS_RX_0_THSSETTLE_REG_MASK, hs_thssettle);
+		CORE_DIG_RW_COMMON_6_DESERIALIZER_DIV_EN_DELAY_THRESH_D_MASK,
+		1);
 
 	if (data_rate > 1500) {
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_0_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_12_OA_L0_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		0);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_1_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_12_OA_L1_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		0);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_2_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_12_OA_L2_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		0);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_3_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_12_OA_L3_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		0);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_0_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_12_OA_L4_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		0);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_1_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_13_OA_LANE0_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		0);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_2_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_13_OA_LANE1_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		0);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_3_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_13_OA_LANE2_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		0);
+
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_13_OA_LANE3_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		0);
+
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_13_OA_LANE4_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		0);
 	} else {
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_0_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_12_OA_L0_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		1);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_1_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_12_OA_L1_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		1);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_2_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_12_OA_L2_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		1);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_3_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_12_OA_L3_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		1);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_0_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_12 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_12_OA_L4_HSRX_DPHY_DDL_BYPASS_EN_OVR_VAL_MASK,
+		1);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_1_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_13_OA_LANE0_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		1);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_2_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_13_OA_LANE1_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		1);
 
-		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_CFG_1 * 4,
-			CORE_DIG_DLANE_3_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_13_OA_LANE2_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		1);
+
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_13_OA_LANE3_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		1);
+
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_13 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_13_OA_LANE4_HSRX_DPHY_DDL_BYPASS_EN_OVR_EN_MASK,
+		1);
 	}
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_9 * 4,
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_9_OA_LANE2_HSRX_HS_CLK_DIV_MASK,
+		hsrx_clk_div);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_CLK_RW_HS_RX_0 * 4,
+		CORE_DIG_DLANE_CLK_RW_HS_RX_0_HS_RX_0_TCLKSETTLE_REG_MASK,
+		28);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_CLK_RW_HS_RX_7 * 4,
+		CORE_DIG_DLANE_CLK_RW_HS_RX_7_HS_RX_7_TCLKMISS_REG_MASK,
+		6);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_0 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_0_HS_RX_0_THSSETTLE_REG_MASK,
+		hs_thssettle);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_2_HS_RX_2_UPDATE_SETTINGS_DESKEW_REG_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_0 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_0_HS_RX_0_THSSETTLE_REG_MASK,
+		hs_thssettle);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_2_HS_RX_2_UPDATE_SETTINGS_DESKEW_REG_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_0 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_0_HS_RX_0_THSSETTLE_REG_MASK,
+		hs_thssettle);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_2_HS_RX_2_UPDATE_SETTINGS_DESKEW_REG_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_0 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_0_HS_RX_0_THSSETTLE_REG_MASK,
+		hs_thssettle);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_2_HS_RX_2_UPDATE_SETTINGS_DESKEW_REG_MASK, 1);
+	if (data_rate > 1500) {
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_0_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_0_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_1 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_1_HS_RX_1_FILTER_SIZE_DESKEW_REG_MASK, 16);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_1_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_1_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_1 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_1_HS_RX_1_FILTER_SIZE_DESKEW_REG_MASK, 16);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_2_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_2_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_1 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_1_HS_RX_1_FILTER_SIZE_DESKEW_REG_MASK, 16);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_3_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_3_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_1 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_1_HS_RX_1_FILTER_SIZE_DESKEW_REG_MASK, 16);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_0_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_0_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_2_HS_RX_2_WINDOW_SIZE_DESKEW_REG_MASK, 3);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_1_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_1_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_2_HS_RX_2_WINDOW_SIZE_DESKEW_REG_MASK, 3);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_2_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_2_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_2_HS_RX_2_WINDOW_SIZE_DESKEW_REG_MASK, 3);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_3_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_3_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK,
+			0);
+	} else {
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_0_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_0_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_2 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_2_HS_RX_2_WINDOW_SIZE_DESKEW_REG_MASK, 3);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_1_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_1_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_3 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_3_HS_RX_3_STEP_SIZE_DESKEW_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_2_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_2_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_3 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_3_HS_RX_3_STEP_SIZE_DESKEW_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_3_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_3_RW_CFG_1_CFG_1_DESKEW_SUPPORTED_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_3 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_3_HS_RX_3_STEP_SIZE_DESKEW_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_0_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_0_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_3 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_3_HS_RX_3_STEP_SIZE_DESKEW_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_1_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_1_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_4 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_4_HS_RX_4_MAX_ITERATIONS_DESKEW_REG_MASK, 150);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_2_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_2_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_4 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_4_HS_RX_4_MAX_ITERATIONS_DESKEW_REG_MASK, 150);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_3_RW_CFG_1 * 4,
+			CORE_DIG_DLANE_3_RW_CFG_1_CFG_1_SOT_DETECTION_REG_MASK,
+			1);
+	}
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_4 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_4_HS_RX_4_MAX_ITERATIONS_DESKEW_REG_MASK, 150);
+	if (data_rate > 2500) {
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_0_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_0_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_4 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_4_HS_RX_4_MAX_ITERATIONS_DESKEW_REG_MASK, 150);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_1_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_1_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_5 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_5_HS_RX_5_DDL_LEFT_INIT_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_2_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_2_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_5 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_5_HS_RX_5_DDL_LEFT_INIT_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_3_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_3_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			0);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_5 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_5_HS_RX_5_DDL_LEFT_INIT_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_CLK_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_CLK_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			0);
+	} else {
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_0_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_0_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_5 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_5_HS_RX_5_DDL_LEFT_INIT_REG_MASK, 0);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_1_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_1_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_5 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_5_HS_RX_5_DDL_MID_INIT_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_2_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_2_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_5 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_5_HS_RX_5_DDL_MID_INIT_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_3_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_3_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_5 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_5_HS_RX_5_DDL_MID_INIT_REG_MASK, 1);
+		mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+			CORE_DIG_DLANE_CLK_RW_HS_RX_2 * 4,
+			CORE_DIG_DLANE_CLK_RW_HS_RX_2_HS_RX_2_IGNORE_ALTERNCAL_REG_MASK,
+			1);
+	}
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_5 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_5_HS_RX_5_DDL_MID_INIT_REG_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_2_HS_RX_2_UPDATE_SETTINGS_DESKEW_REG_MASK,
+		1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_6 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_6_HS_RX_6_DDL_RIGHT_INIT_REG_MASK, 2);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_2_HS_RX_2_UPDATE_SETTINGS_DESKEW_REG_MASK,
+		1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_6 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_6_HS_RX_6_DDL_RIGHT_INIT_REG_MASK, 2);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_2_HS_RX_2_UPDATE_SETTINGS_DESKEW_REG_MASK,
+		1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_6 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_6_HS_RX_6_DDL_RIGHT_INIT_REG_MASK, 2);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_2_HS_RX_2_UPDATE_SETTINGS_DESKEW_REG_MASK,
+		1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_6 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_6_HS_RX_6_DDL_RIGHT_INIT_REG_MASK, 2);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_CLK_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_CLK_RW_HS_RX_2_HS_RX_2_UPDATE_SETTINGS_DESKEW_REG_MASK,
+		1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_7 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_7_HS_RX_7_DESKEW_AUTO_ALGO_SEL_REG_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_1 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_1_HS_RX_1_FILTER_SIZE_DESKEW_REG_MASK,
+		16);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_7 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_7_HS_RX_7_DESKEW_AUTO_ALGO_SEL_REG_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_1 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_1_HS_RX_1_FILTER_SIZE_DESKEW_REG_MASK,
+		16);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_7 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_7_HS_RX_7_DESKEW_AUTO_ALGO_SEL_REG_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_1 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_1_HS_RX_1_FILTER_SIZE_DESKEW_REG_MASK,
+		16);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_7 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_7_HS_RX_7_DESKEW_AUTO_ALGO_SEL_REG_MASK, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_1 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_1_HS_RX_1_FILTER_SIZE_DESKEW_REG_MASK,
+		16);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_3 * 4,
-		CORE_DIG_DLANE_0_RW_HS_RX_3_HS_RX_3_FJUMP_DESKEW_REG_MASK, fjump_deskew_reg);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_2_HS_RX_2_WINDOW_SIZE_DESKEW_REG_MASK,
+		3);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_3 * 4,
-		CORE_DIG_DLANE_1_RW_HS_RX_3_HS_RX_3_FJUMP_DESKEW_REG_MASK, fjump_deskew_reg);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_2_HS_RX_2_WINDOW_SIZE_DESKEW_REG_MASK,
+		3);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_3 * 4,
-		CORE_DIG_DLANE_2_RW_HS_RX_3_HS_RX_3_FJUMP_DESKEW_REG_MASK, fjump_deskew_reg);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_2_HS_RX_2_WINDOW_SIZE_DESKEW_REG_MASK,
+		3);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_3 * 4,
-		CORE_DIG_DLANE_3_RW_HS_RX_3_HS_RX_3_FJUMP_DESKEW_REG_MASK, fjump_deskew_reg);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_2_HS_RX_2_WINDOW_SIZE_DESKEW_REG_MASK,
+		3);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_0_RW_HS_RX_6 * 4,
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_CLK_RW_HS_RX_2 * 4,
+		CORE_DIG_DLANE_CLK_RW_HS_RX_2_HS_RX_2_WINDOW_SIZE_DESKEW_REG_MASK,
+		3);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_3 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_3_HS_RX_3_STEP_SIZE_DESKEW_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_3 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_3_HS_RX_3_STEP_SIZE_DESKEW_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_3 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_3_HS_RX_3_STEP_SIZE_DESKEW_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_3 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_3_HS_RX_3_STEP_SIZE_DESKEW_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_4 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_4_HS_RX_4_MAX_ITERATIONS_DESKEW_REG_MASK,
+		150);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_4 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_4_HS_RX_4_MAX_ITERATIONS_DESKEW_REG_MASK,
+		150);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_4 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_4_HS_RX_4_MAX_ITERATIONS_DESKEW_REG_MASK,
+		150);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_4 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_4_HS_RX_4_MAX_ITERATIONS_DESKEW_REG_MASK,
+		150);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_5 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_5_HS_RX_5_DDL_LEFT_INIT_REG_MASK,
+		0);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_5 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_5_HS_RX_5_DDL_LEFT_INIT_REG_MASK,
+		0);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_5 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_5_HS_RX_5_DDL_LEFT_INIT_REG_MASK,
+		0);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_5 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_5_HS_RX_5_DDL_LEFT_INIT_REG_MASK,
+		0);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_5 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_5_HS_RX_5_DDL_MID_INIT_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_5 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_5_HS_RX_5_DDL_MID_INIT_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_5 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_5_HS_RX_5_DDL_MID_INIT_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_5 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_5_HS_RX_5_DDL_MID_INIT_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_6 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_6_HS_RX_6_DDL_RIGHT_INIT_REG_MASK,
+		2);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_6 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_6_HS_RX_6_DDL_RIGHT_INIT_REG_MASK,
+		2);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_6 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_6_HS_RX_6_DDL_RIGHT_INIT_REG_MASK,
+		2);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_6 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_6_HS_RX_6_DDL_RIGHT_INIT_REG_MASK,
+		2);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_7 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_7_HS_RX_7_DESKEW_AUTO_ALGO_SEL_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_7 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_7_HS_RX_7_DESKEW_AUTO_ALGO_SEL_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_7 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_7_HS_RX_7_DESKEW_AUTO_ALGO_SEL_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_7 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_7_HS_RX_7_DESKEW_AUTO_ALGO_SEL_REG_MASK,
+		1);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_3 * 4,
+		CORE_DIG_DLANE_0_RW_HS_RX_3_HS_RX_3_FJUMP_DESKEW_REG_MASK,
+		fjump_deskew_reg);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_3 * 4,
+		CORE_DIG_DLANE_1_RW_HS_RX_3_HS_RX_3_FJUMP_DESKEW_REG_MASK,
+		fjump_deskew_reg);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_3 * 4,
+		CORE_DIG_DLANE_2_RW_HS_RX_3_HS_RX_3_FJUMP_DESKEW_REG_MASK,
+		fjump_deskew_reg);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_3 * 4,
+		CORE_DIG_DLANE_3_RW_HS_RX_3_HS_RX_3_FJUMP_DESKEW_REG_MASK,
+		fjump_deskew_reg);
+
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_0_RW_HS_RX_6 * 4,
 		CORE_DIG_DLANE_0_RW_HS_RX_6_HS_RX_6_MIN_EYE_OPENING_DESKEW_REG_MASK,
 		eye_open_deskew_reg);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_1_RW_HS_RX_6 * 4,
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_1_RW_HS_RX_6 * 4,
 		CORE_DIG_DLANE_1_RW_HS_RX_6_HS_RX_6_MIN_EYE_OPENING_DESKEW_REG_MASK,
 		eye_open_deskew_reg);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_2_RW_HS_RX_6 * 4,
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_2_RW_HS_RX_6 * 4,
 		CORE_DIG_DLANE_2_RW_HS_RX_6_HS_RX_6_MIN_EYE_OPENING_DESKEW_REG_MASK,
 		eye_open_deskew_reg);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + CORE_DIG_DLANE_3_RW_HS_RX_6 * 4,
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_DLANE_3_RW_HS_RX_6 * 4,
 		CORE_DIG_DLANE_3_RW_HS_RX_6_HS_RX_6_MIN_EYE_OPENING_DESKEW_REG_MASK,
 		eye_open_deskew_reg);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0404);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0404);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x040C);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x040C);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0414);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0414);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x041C);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x041C);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0423);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0423);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0429);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0429);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0430);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0430);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x043A);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x043A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0445);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0445);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x044A);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x044A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0450);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0450);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x045A);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x045A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0465);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0465);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0469);
+	mtk_spi_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0469);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0472);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0472);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x047A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x047A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0485);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0485);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0489);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0489);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0490);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0490);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x049A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x049A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04A4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04A4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04AC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04AC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04B4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04B4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04BC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04BC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04C4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04C4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04CC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04CC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04D4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04D4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04DC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04DC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04E4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04E4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04EC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04EC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04F4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04F4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x04FC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x04FC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0504);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0504);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x050C);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x050C);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0514);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0514);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x051C);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x051C);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0523);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0523);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0529);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0529);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0530);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0530);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x053A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x053A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0545);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0545);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x054A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x054A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0550);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0550);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x055A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x055A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0565);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0565);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0569);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0569);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0572);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0572);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x057A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x057A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0585);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0585);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0589);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0589);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0590);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0590);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x059A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x059A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05A4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05A4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05AC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05AC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05B4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05B4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05BC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05BC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05C4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05C4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05CC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05CC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05D4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05D4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05DC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05DC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05E4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05E4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05EC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05EC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05F4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05F4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x05FC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x05FC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0604);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0604);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x060C);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x060C);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0614);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0614);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x061C);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x061C);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0623);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0623);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0629);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0629);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0632);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0632);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x063A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x063A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0645);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0645);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x064A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x064A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0650);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0650);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x065A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x065A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0665);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0665);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0669);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0669);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0672);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0672);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x067A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x067A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0685);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0685);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0689);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0689);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0690);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0690);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x069A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x069A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06A4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06A4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06AC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06AC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06B4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06B4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06BC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06BC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06C4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06C4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06CC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06CC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06D4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06D4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06DC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06DC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06E4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06E4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06EC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06EC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06F4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06F4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x06FC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x06FC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0704);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0704);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x070C);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x070C);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0714);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0714);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x071C);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x071C);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0723);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0723);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x072A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x072A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0730);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0730);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x073A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x073A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0745);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0745);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x074A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x074A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0750);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0750);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x075A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x075A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0765);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0765);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0769);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0769);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0772);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0772);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x077A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x077A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0785);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0785);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0789);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0789);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x0790);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x0790);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x079A);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x079A);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07A4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07A4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07AC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07AC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07B4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07B4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07BC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07BC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07C4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07C4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07CC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07CC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07D4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07D4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07DC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07DC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07E4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07E4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07EC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07EC);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07F4);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07F4);
 
-	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4, 0x07FC);
+	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
+		0x07FC);
 /* force delay en */
-/*
-	mtk_spi_write(0x000440B0, 0x00000A00);
-	mtk_spi_write(0x000448B0, 0x00000A00);
-	mtk_spi_write(0x000450B0, 0x00000A00);
-	mtk_spi_write(0x000458B0, 0x00000A00);
-	mtk_spi_write(0x000460B0, 0x00000A00);
+//	mtk_spi_write(0x000440B0, 0x00000A00);
+//	mtk_spi_write(0x000448B0, 0x00000A00);
+//	mtk_spi_write(0x000450B0, 0x00000A00);
+//	mtk_spi_write(0x000458B0, 0x00000A00);
+//	mtk_spi_write(0x000460B0, 0x00000A00);
 
-	mtk_spi_write(0x000440B4, 0x00000100);
-	mtk_spi_write(0x000448B4, 0x00000100);
-	mtk_spi_write(0x000450B4, 0x00000000);
-	mtk_spi_write(0x000458B4, 0x00000100);
-	mtk_spi_write(0x000460B4, 0x00000100);
-*/
+//	mtk_spi_write(0x000440B4, 0x00000100);
+//	mtk_spi_write(0x000448B4, 0x00000100);
+//	mtk_spi_write(0x000450B4, 0x00000000);
+//	mtk_spi_write(0x000458B4, 0x00000100);
+//	mtk_spi_write(0x000460B4, 0x00000100);
+
 	DISPFUNCEND();
 }
 
@@ -4703,31 +5207,6 @@ void output_debug_signal(void)
 	mtk_spi_write(0x00007310, 0x17711111);
 	mtk_spi_write(0x00007300, 0x77701111);
 }
-
-int bdg_common_deinit(enum DISP_BDG_ENUM module, void *cmdq)
-{
-	int ret = 0;
-
-	DISPFUNCSTART();
-
-	// DSI-TX setting
-	bdg_tx_deinit(module, NULL);
-/* Huaqin add for HQ-123491 by caogaojie at 2021/3/30 start */
-	clk_buf_disp_ctrl(true);
-/* Huaqin add for HQ-123491 by caogaojie at 2021/3/30 end */
-	set_subsys_off(cmdq);
-	ana_macro_off(cmdq);
-	set_mtcmos_off(cmdq);
-	set_LDO_off(cmdq);
-/* Huaqin add for HQ-123491 by caogaojie at 2021/3/30 start */
-	clk_buf_disp_ctrl(false);
-/* Huaqin add for HQ-123491 by caogaojie at 2021/3/30 end */
-
-	DISPFUNCEND();
-
-	return ret;
-}
-
 
 int bdg_common_init(enum DISP_BDG_ENUM module,
 			struct disp_ddp_path_config *config, void *cmdq)
@@ -4832,10 +5311,13 @@ int bdg_common_init(enum DISP_BDG_ENUM module,
 	calculate_datarate_cfgs_rx(ap_tx_data_rate);
 	startup_seq_common(cmdq);
 
-//	if (tx_params->IsCphy)
+	if (tx_params->IsCphy) {
+		DISPMSG("%s: RX cphy\n", __func__);
 //		startup_seq_cphy_specific();
-//	else
+	} else
 		startup_seq_dphy_specific(ap_tx_data_rate);
+
+	output_debug_signal();
 
 	DISPFUNCEND();
 
@@ -4955,6 +5437,8 @@ int bdg_common_init_for_rx_pat(enum DISP_BDG_ENUM module,
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_IPI_PG_VACTIVE_LINES_OS, 2400);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_IPI_PG_EN_OS, 1);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_SOFT_RSTN_OS, 1);
+
+//	output_debug_signal();
 
 	DISPFUNCEND();
 

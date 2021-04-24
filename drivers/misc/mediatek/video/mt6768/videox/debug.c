@@ -69,7 +69,9 @@
 #endif
 #include "layering_rule.h"
 #include "ddp_clkmgr.h"
+#ifdef CONFIG_MTK_MT6382_BDG
 #include "ddp_disp_bdg.h"
+#endif
 
 #if IS_ENABLED(CONFIG_DEBUG_FS)
 static struct dentry *mtkfb_dbgfs;
@@ -80,7 +82,7 @@ static struct proc_dir_entry *mtkfb_procfs;
 static struct proc_dir_entry *disp_lowpower_proc;
 #endif
 
-unsigned int g_mobilelog = 1;
+unsigned int g_mobilelog;
 int bypass_blank;
 int lcm_mode_status;
 int layer_layout_allow_non_continuous;
@@ -957,7 +959,7 @@ static void process_dbg_opt(const char *opt)
 			primary_display_manual_unlock();
 			return;
 		}
-
+#ifdef CONFIG_MTK_MT6382_BDG
 	} else if (strncmp(opt, "set_data_rate:", 14) == 0) {
 		unsigned int data_rate = 0;
 		int ret = -1;
@@ -1049,7 +1051,7 @@ static void process_dbg_opt(const char *opt)
 
 		data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
 		memcpy(&(data_config->dispif_config), lcm_param,
-		       sizeof(struct LCM_PARAMS));
+			sizeof(struct LCM_PARAMS));
 
 		bdg_common_init_for_rx_pat(DISP_BDG_DSI0, data_config, NULL);
 
@@ -1116,7 +1118,7 @@ static void process_dbg_opt(const char *opt)
 			bdg_tx_start(DISP_BDG_DSI0, NULL);
 		mdelay(100);
 		return;
-
+#endif
 	} else if (strncmp(opt, "mobile:", 7) == 0) {
 		if (strncmp(opt + 7, "on", 2) == 0)
 			g_mobilelog = 1;
@@ -1689,8 +1691,52 @@ static void process_dbg_opt(const char *opt)
 			save_bmp("/sdcard/dump_output.bmp", composed_buf, w, h);
 		} else
 			DISPERR("error to parse cmd %s\n", opt);
-	}
+#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+	} else if (!strncmp(opt, "set_cfg_id:", 11)) {
+		char *p = (char *)opt + 11;
+		unsigned int cfg_id = 0;
 
+		ret = kstrtouint(p, 10, &cfg_id);
+		if (ret) {
+			DISPWARN("%d error to parse cmd %s\n", __LINE__, opt);
+			return;
+		}
+
+		DDPMSG("debug:set_cfg_id:%d start\n", cfg_id);
+		primary_display_dynfps_chg_fps(cfg_id);
+		g_force_cfg_id = cfg_id;
+		DDPMSG("debug:set_cfg_id:%d end\n", cfg_id);
+	} else if (!strncmp(opt, "enable_force_fps:", 17)) {
+		char *p = (char *)opt + 17;
+		unsigned int enable_force_fps = 0;
+
+		ret = kstrtouint(p, 10, &enable_force_fps);
+
+		if (ret) {
+			DISPWARN("%d error to parse cmd %s\n", __LINE__, opt);
+			return;
+		}
+
+		g_force_cfg = !!enable_force_fps;
+		DDPMSG("debug:g_force_cfg:%d\n", g_force_cfg);
+
+	} else if (!strncmp(opt, "get_multi_cfg", 13)) {
+		struct multi_configs cfgs;
+		unsigned int i = 0;
+		struct dyn_config_info *dyn_info = NULL;
+
+		memset(&cfgs, 0, sizeof(cfgs));
+		primary_display_get_multi_configs(&cfgs);
+
+		DISPMSG("debug:get_multi_cfg:=%d\n", cfgs.config_num);
+
+		for (i = 0; i < cfgs.config_num &&
+			cfgs.config_num <= MULTI_CONFIG_NUM; i++) {
+			dyn_info = &(cfgs.dyn_cfgs[i]);
+			DISPMSG("debug:%d,%dfps\n", i, dyn_info->vsyncFPS);
+		}
+#endif
+	}
 #ifdef CONFIG_MTK_ENG_BUILD
 	if (strncmp(opt, "rdma_threshold:", 15) == 0) {
 		ret = sscanf(opt, "rdma_threshold:%d,%d,%d,%d,%d\n",

@@ -126,7 +126,11 @@ struct DSI_TX_TXRX_CON_REG {
 	unsigned LANE_NUM : 4;
 	unsigned DIS_EOT : 1;
 	unsigned BLLP_EN : 1;
-	unsigned RSV_08 : 8;
+	unsigned TE_FREERUN : 1;
+	unsigned EXT_TE_EN : 1;
+	unsigned EXT_TE_EDGE_SEL : 1;
+	unsigned TE_AUTO_SYNC : 1;
+	unsigned MAX_RTN_SIZE : 4;
 	unsigned HSTX_CKLP_EN : 1;
 	unsigned RSV_17 : 12;
 	unsigned BTA_TIMEOUT_CHK_EN : 1;
@@ -403,16 +407,22 @@ struct DSI_TX_SHADOW_STA_REG {
 	unsigned RSV_02 : 30;
 };
 struct DSI_VM_CMD_CON0_REG {
-	unsigned int VM_CMD_EN	:1;
-	unsigned int LONG_PKT	:1;
-	unsigned int TIME_SEL	:1;
-	unsigned int TS_VSA_EN	:1;
-	unsigned int TS_VBP_EN	:1;
-	unsigned int TS_VFP_EN	:1;
-	unsigned int RSV_07	:2;
-	unsigned int CM_DATA_ID :8;
-	unsigned int CM_DATA_0	:8;
-	unsigned int CM_DATA_1	:8;
+	unsigned VM_CMD_EN : 1;
+	unsigned LONG_PKT : 1;
+	unsigned TIME_SEL : 1;
+	unsigned TS_VSA_EN : 1;
+	unsigned TS_VBP_EN : 1;
+	unsigned TS_VFP_EN : 1;
+	unsigned RSV_07 : 2;
+	unsigned CM_DATA_ID : 8;
+	unsigned CM_DATA_0 : 8;
+	unsigned CM_DATA_1 : 8;
+};
+
+struct DSI_VM_CMD_CON1_REG {
+	unsigned VM_CMD_NEW_WC_SEL : 1;
+	unsigned RSV_01 : 15;
+	unsigned VM_CMD_NEW_WC : 16;
 };
 
 struct DSI_TX_BUF_CON0_REG {
@@ -539,7 +549,9 @@ struct BDG_TX_REGS {
 	unsigned int DSI_TX_VM_CMD_DATA8;			/* 013C */
 	unsigned int DSI_TX_VM_CMD_DATAC;			/* 0140 */
 	struct DSI_TX_CKSM_OUT_REG DSI_TX_CKSM_OUT;		/* 0144 */
-	unsigned int RSV_0148[10];				/* 0148..016C */
+	unsigned int RSV_0148[7];				/* 0148..0160 */
+	struct DSI_TX_TIME_CON1_REG DSI_TX_STATE_DBG7;		/* 0164 */
+	unsigned int RSV_0168[2];				/* 0168..016C */
 	struct DSI_TX_DEBUG_SEL_REG DSI_TX_DEBUG_SEL;		/* 0170 */
 	unsigned int RSV_0174;					/* 0174 */
 	struct DSI_TX_SELF_PAT_CON0_REG DSI_TX_SELF_PAT_CON0;	/* 0178 */
@@ -563,7 +575,8 @@ struct BDG_TX_REGS {
 	struct DSI_RESYNC_CON_REG DSI_RESYNC_CON;		/* 01F0 */
 	unsigned int RSV_01F4[3];				/* 01F4..01FC */
 	struct DSI_VM_CMD_CON0_REG DSI_VM_CMD_CON0;		/* 0200 */
-	unsigned int RSV_204[127];				/* 0204..03FC */
+	struct DSI_VM_CMD_CON1_REG DSI_VM_CMD_CON1;		/* 0204 */
+	unsigned int RSV_208[126];				/* 0208..03FC */
 	struct DSI_TX_BUF_CON0_REG DSI_TX_BUF_CON0;		/* 0400 */
 	struct DSI_TX_BUF_CON1_REG DSI_TX_BUF_CON1;		/* 0404 */
 	unsigned int RSV_0408[2];				/* 0408..040C */
@@ -601,6 +614,7 @@ struct BDG_DISPSYS_CONFIG_REGS {
 	struct MMSYS_CON_REG MMSYS_HW_DCM_2ND_DIS0;		/* 0140 */
 	unsigned int RSV_0144[11];				/* 0144..016C */
 	struct MIPI_RX_POST_CTRL_REG MIPI_RX_POST_CTRL;		/* 0170 */
+	struct MMSYS_CON_REG DDI_POST_CTRL;			/* 0174 */
 };
 
 struct DISP_DSC_CON_REG {
@@ -779,6 +793,7 @@ struct BDG_SYSREG_CTRL_REGS {
 	unsigned int RSV_0088[7];				/* 0088..00A0 */
 	struct SYSREG_LDO_CTRL0_REG SYSREG_LDO_CTRL0;		/* 00A4 */
 	struct SYSREG_LDO_CTRL1_REG SYSREG_LDO_CTRL1;		/* 00A8 */
+	struct DISP_SYSREG_REG LDO_STATUS;			/* 00AC */
 };
 
 struct CLK_CFG_REG {
@@ -809,7 +824,8 @@ struct BDG_APMIXEDSYS_REGS {
 struct GPIO_MODE1_REG {
 	unsigned RSV_00 : 16;
 	unsigned GPIO12 : 3;
-	unsigned RSV_19 : 13;
+	unsigned RSV_19 : 5;
+	unsigned RSV_24 : 8;
 };
 
 struct BDG_GPIO_REGS {
@@ -817,13 +833,19 @@ struct BDG_GPIO_REGS {
 	struct GPIO_MODE1_REG GPIO_MODE1;			/* 0310 */
 };
 
-struct DCM_ON_REG {
+struct EFUSE_REG {
 	unsigned RSV_00 : 32;
 };
 
 struct BDG_EFUSE_REGS {
-	unsigned int RSV_0000[288];				/* 0000..047C */
-	struct DCM_ON_REG DCM_ON;				/* 0480 */
+	unsigned int RSV_0000[74];				/* 0000..0124 */
+	struct EFUSE_REG STATUS;				/* 0128 */
+	unsigned int RSV_012C[213];				/* 012C..047C */
+	struct EFUSE_REG DCM_ON;				/* 0480 */
+	unsigned int RSV_0484[279];				/* 0484..08DC */
+	struct EFUSE_REG TRIM1;					/* 08E0 */
+	struct EFUSE_REG TRIM2;					/* 08E4 */
+	struct EFUSE_REG TRIM3;					/* 08E8 */
 };
 
 struct DISP_RDMA_GLOBAL_CON_REG {
