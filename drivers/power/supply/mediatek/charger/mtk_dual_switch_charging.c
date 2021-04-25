@@ -884,9 +884,65 @@ int mtk_dual_switch_chr_err(struct charger_manager *info)
 	return 0;
 }
 
+/*K19A HQ-124101 K19A charger by wangqi at 2021/4/25 start*/
+static int change_recharge_status(struct charger_manager *info)
+{
+	bool recharge_flag = false;
+	unsigned int battery_uisoc = 0;
+	long int battery_volt = 0;
+	int battery_health = 0;
+	int ret;
+	int recharger_uisoc_limit;
+	struct power_supply *psy;
+	union power_supply_propval val;
+
+	recharger_uisoc_limit = 99;
+	psy = power_supply_get_by_name("battery");
+	if (!psy) {
+		pr_err("%s : power_supply_get_by_name error!\n", __func__);
+	}
+
+	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_HEALTH, &val);
+	if (ret) {
+		pr_err("%s : power_supply_get_property error!\n", __func__);
+	}
+	battery_health = val.intval;
+
+	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &val);
+	if (ret) {
+		pr_err("%s : power_supply_get_property error!\n", __func__);
+	}
+	battery_volt = val.intval;
+
+	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_CAPACITY, &val);
+	if (ret) {
+		pr_err("%s : power_supply_get_property error!\n", __func__);
+	}
+	battery_uisoc = val.intval;
+
+	pr_err("%s : battery_health = %d, battery_volt = %d, battery_uisoc = %d, recharger_uisoc_limit = %d\n", __func__,
+						battery_health, battery_volt, battery_uisoc, recharger_uisoc_limit);
+
+	if (battery_health  == POWER_SUPPLY_HEALTH_OVERHEAT) {
+			chr_err("over heat , battery recharging!\n");
+			recharge_flag = true;
+	} else {
+		if (battery_uisoc < recharger_uisoc_limit) {
+			chr_err("not over heat , battery recharging!\n");
+			recharge_flag = true;
+		}
+	}
+	return recharge_flag;
+}
+/*K19A HQ-124101 K19A charger by wangqi at 2021/4/25 end*/
+
+
 int mtk_dual_switch_chr_full(struct charger_manager *info)
 {
 	bool chg_done = false;
+	/*K19A HQ-124101 K19A charger by wangqi at 2021/4/25 start*/
+	bool recharge_flag = false;
+	/*K19A HQ-124101 K19A charger by wangqi at 2021/4/25 end*/
 	struct dual_switch_charging_alg_data *swchgalg = info->algorithm_data;
 
 	/* turn off LED */
@@ -898,7 +954,10 @@ int mtk_dual_switch_chr_full(struct charger_manager *info)
 	swchg_select_cv(info);
 	info->polling_interval = CHARGING_FULL_INTERVAL;
 	charger_dev_is_charging_done(info->chg1_dev, &chg_done);
-	if (!chg_done) {
+	/*K19A HQ-124101 K19A charger by wangqi at 2021/4/25 start*/
+	recharge_flag = change_recharge_status(info);
+	if (!chg_done && recharge_flag) {
+	/*K19A HQ-124101 K19A charger by wangqi at 2021/4/25 end*/
 		swchgalg->state = CHR_CC;
 		charger_dev_do_event(info->chg1_dev, EVENT_RECHARGE, 0);
 		mtk_pe20_set_to_check_chr_type(info, true);
