@@ -80,6 +80,9 @@ static char aw87xxx_support_product[][AW87XXX_PRODUCT_NAME_LEN] = {
 static LIST_HEAD(g_aw87xxx_device_list);
 static DEFINE_MUTEX(g_aw87xxx_mutex_lock);
 static unsigned int g_aw87xxx_dev_cnt;
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 start*/
+static unsigned int g_reg_update_cnt = 0;
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 end*/
 
 /**********************************************************
 * i2c write and read
@@ -137,25 +140,44 @@ static void aw87xxx_hw_on(struct aw87xxx *aw87xxx)
 {
 	aw_dev_info(aw87xxx->dev, "%s enter\n", __func__);
 
-	if (gpio_is_valid(aw87xxx->reset_gpio)) {
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 start*/
+	g_reg_update_cnt++;
+
+	if(g_reg_update_cnt == 1) {
+		if (gpio_is_valid(aw87xxx->reset_gpio)) {
 		gpio_set_value_cansleep(aw87xxx->reset_gpio, 0);
 		mdelay(2);
 		gpio_set_value_cansleep(aw87xxx->reset_gpio, 1);
 		mdelay(2);
+		}
+		aw87xxx->hwen_flag = 1;
 	}
-	aw87xxx->hwen_flag = 1;
 
+	aw_dev_info(aw87xxx->dev, "%s :g_reg_update_cnt=%d\n", __func__, g_reg_update_cnt);
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 end*/
 }
 
 static void aw87xxx_hw_off(struct aw87xxx *aw87xxx)
 {
 	aw_dev_info(aw87xxx->dev, "%s enter\n", __func__);
 
-	if (gpio_is_valid(aw87xxx->reset_gpio)) {
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 start*/
+	if(g_reg_update_cnt != 0)
+	{
+		g_reg_update_cnt--;
+	}
+
+	if(g_reg_update_cnt == 0)
+	{
+		if (gpio_is_valid(aw87xxx->reset_gpio)) {
 		gpio_set_value_cansleep(aw87xxx->reset_gpio, 0);
 		mdelay(2);
+		}
+		aw87xxx->hwen_flag = 0;
 	}
-	aw87xxx->hwen_flag = 0;
+
+	aw_dev_info(aw87xxx->dev, "%s :g_reg_update_cnt=%d\n", __func__, g_reg_update_cnt);
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 ends*/
 
 }
 
@@ -181,23 +203,24 @@ static int aw87xxx_audio_off(struct aw87xxx *aw87xxx)
 	int i;
 	struct aw87xxx_scene_param *aw_off = &aw87xxx->aw87xxx_scene_ls.aw_off;
 
-	if (aw87xxx->hwen_flag) {
-		mutex_lock(&aw87xxx->lock);
-		if (aw_off->cfg_update_flag == AW87XXX_CFG_OK) {
-			/*send firmware data */
-			for (i = 0; i < aw_off->scene_cnt->len; i = i + 2) {
-				aw_dev_dbg(aw87xxx->dev,
-					   "%s: reg=0x%02x, val = 0x%02x\n",
-					   __func__, aw_off->scene_cnt->data[i],
-					   aw_off->scene_cnt->data[i + 1]);
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 start*/
+	mutex_lock(&aw87xxx->lock);
+	if (aw_off->cfg_update_flag == AW87XXX_CFG_OK) {
+		/*send firmware data */
+		for (i = 0; i < aw_off->scene_cnt->len; i = i + 2) {
+			aw_dev_dbg(aw87xxx->dev,
+				   "%s: reg=0x%02x, val = 0x%02x\n",
+				   __func__, aw_off->scene_cnt->data[i],
+				   aw_off->scene_cnt->data[i + 1]);
 
-				aw87xxx_i2c_write(aw87xxx,
-						aw_off->scene_cnt->data[i],
-						aw_off->scene_cnt->data[i + 1]);
-			}
+			aw87xxx_i2c_write(aw87xxx,
+					aw_off->scene_cnt->data[i],
+					aw_off->scene_cnt->data[i + 1]);
 		}
-		mutex_unlock(&aw87xxx->lock);
 	}
+
+	mutex_unlock(&aw87xxx->lock);
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 end*/
 
 	aw87xxx_hw_off(aw87xxx);
 
@@ -214,8 +237,9 @@ static int aw87xxx_reg_cnt_update(struct aw87xxx *aw87xxx,
 
 	aw_dev_info(aw87xxx->dev, "%s enter, mode:%d\n",
 		    __func__, scene_param->scene_mode);
-	if (!aw87xxx->hwen_flag)
-		aw87xxx_hw_on(aw87xxx);
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 start*/
+	aw87xxx_hw_on(aw87xxx);
+/*K19A code for WXYFB-1013 by xuqingli at 2021.4.25 end*/
 
 	mutex_lock(&aw87xxx->lock);
 	if (scene_param->cfg_update_flag == AW87XXX_CFG_OK) {
