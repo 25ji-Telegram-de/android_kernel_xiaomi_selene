@@ -25,6 +25,9 @@
 extern  round_kbytes_to_readable_mbytes(unsigned int k);
 extern	ssize_t hq_emmcinfo(char *buf);
 extern char kernel_fwrew[10];
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 start */
+extern ddr_id[10];
+/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 end */
 static struct proc_dir_entry *mv_proc;
 static struct proc_dir_entry *memory_type;
 char part_num[30];
@@ -40,6 +43,9 @@ static int mv_proc_show(struct seq_file *file, void*data)
 	char emmc_ssize[8];
 	uint32_t manfidd;
 	char manfid[32];
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 start */
+	char ddrid[10];
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 end */
 	char *product_version;
 
 	status = hq_emmcinfo(emmc_size);
@@ -55,11 +61,11 @@ static int mv_proc_show(struct seq_file *file, void*data)
 		sprintf(part_num,"%s","MT29VZZZAD9GQFSM_046W_9S9");
 	}
 	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/09 end */
-	manfidd = mmc_get_manfid();
-	snprintf(manfid, 5,"0x%x", manfidd);
-
-	seq_printf(file,"D: %s %s\n", manfid, RAM_size);
-	seq_printf(file,"U: %s %s %s 0x%x\n", manfid, emmc_ssize, part_num, kernel_fwrew[0]);
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 start */
+	sprintf(ddrid,"%s", ddr_id);
+	seq_printf(file,"D: %s %s\n", ddrid, RAM_size);
+	seq_printf(file,"U: %s %s %s 0x%x\n", ddrid, emmc_ssize, part_num, kernel_fwrew[0]);
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 end */
 
 	return 0;
 }
