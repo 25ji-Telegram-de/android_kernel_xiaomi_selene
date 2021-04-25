@@ -94,13 +94,10 @@ enum LCM_IOCTL {
 	LCM_IOCTL_NULL = 0,
 };
 
-
-
 enum LCM_Send_Cmd_Mode {
 	LCM_SEND_IN_CMD = 0,
 	LCM_SEND_IN_VDO
 };
-
 
 /* DBI related enumerations */
 
@@ -536,7 +533,6 @@ struct dynamic_fps_info {
 	/*unsigned int idle_check_interval;*//*ms*/
 };
 
-
 /*DynFPS*/
 enum DynFPS_LEVEL {
 	DFPS_LEVEL0 = 0,
@@ -590,7 +586,6 @@ struct dfps_info {
 	/*real fps during active*/
 	unsigned int vact_timing_fps_dyn;
 };
-
 
 struct LCM_DSI_PARAMS {
 	enum LCM_DSI_MODE_CON mode;
@@ -742,7 +737,6 @@ struct LCM_DSI_PARAMS {
 	/*for ARR*/
 	unsigned int dynamic_fps_levels;
 	struct dynamic_fps_info dynamic_fps_table[DYNAMIC_FPS_LEVELS];
-
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
 	/****DynFPS start****/
 	unsigned int dfps_enable;
@@ -973,7 +967,6 @@ struct LCM_UTIL_FUNCS {
 		void *cmdq, unsigned int cmd,
 		unsigned char count, unsigned char *para_list,
 		unsigned char force_update, enum LCM_Send_Cmd_Mode sendmode);
-
 };
 enum LCM_DRV_IOCTL_CMD {
 	LCM_DRV_IOCTL_ENABLE_CMD_MODE = 0x100,

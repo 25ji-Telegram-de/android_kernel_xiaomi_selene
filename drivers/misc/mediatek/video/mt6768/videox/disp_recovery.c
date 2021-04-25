@@ -68,6 +68,9 @@
 #include "disp_recovery.h"
 #include "disp_partial.h"
 #include "ddp_dsi.h"
+#ifdef CONFIG_MTK_MT6382_BDG
+#include "ddp_disp_bdg.h"
+#endif
 
 /* For abnormal check */
 static struct task_struct *primary_display_check_task;
@@ -713,6 +716,9 @@ int primary_display_esd_recovery(void)
 	enum DISP_STATUS ret = DISP_STATUS_OK;
 	struct LCM_PARAMS *lcm_param = NULL;
 	mmp_event mmp_r = ddp_mmp_get_events()->esd_recovery_t;
+#ifdef CONFIG_MTK_MT6382_BDG
+	struct disp_ddp_path_config *data_config;
+#endif
 
 	DISPFUNC();
 	dprec_logger_start(DPREC_LOGGER_ESD_RECOVERY, 0, 0);
@@ -780,6 +786,13 @@ int primary_display_esd_recovery(void)
 
 	DISPDBG("[ESD]dsi power reset[begine]\n");
 	dpmgr_path_dsi_power_off(primary_get_dpmgr_handle(), NULL);
+#ifdef CONFIG_MTK_MT6382_BDG
+	bdg_common_deinit(DISP_BDG_DSI0, NULL);
+
+	data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
+	bdg_common_init(DISP_BDG_DSI0, data_config, NULL);
+	mipi_dsi_rx_mac_init(DISP_BDG_DSI0, data_config, NULL);
+#endif
 	dpmgr_path_dsi_power_on(primary_get_dpmgr_handle(), NULL);
 	if (!primary_display_is_video_mode())
 		dpmgr_path_ioctl(primary_get_dpmgr_handle(), NULL,
@@ -807,6 +820,13 @@ int primary_display_esd_recovery(void)
 	else if (!(strcmp((primary_get_lcm()->drv->name), "nt36672D_fhdp_dsi_vdo_tianma_lcm_drv")))
 		nvt_update_firmware("novatek_ts_72d_fw.bin");
 
+#ifdef CONFIG_MTK_MT6382_BDG
+	if (get_mt6382_init()) {
+		DISPCHECK("set 6382 mode start\n");
+		bdg_tx_set_mode(DISP_BDG_DSI0, NULL, get_bdg_tx_mode());
+		bdg_tx_start(DISP_BDG_DSI0, NULL);
+	}
+#endif
 	DISPDBG("[ESD]start dpmgr path[begin]\n");
 	if (disp_partial_is_support()) {
 		struct disp_ddp_path_config *data_config =

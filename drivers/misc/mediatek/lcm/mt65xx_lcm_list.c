@@ -1331,6 +1331,14 @@ struct LCM_DRIVER *lcm_driver_list[] = {
 #if defined(FT8756_FHDP_DSI_VDO_AUO_RT4801)
 	&ft8756_fhdp_dsi_vdo_auo_rt4801_lcm_drv,
 #endif
+
+#if defined(NT36672C_FHDP_DSI_VDO_90HZ_SHENCHAO)
+	&nt36672c_fhdp_dsi_vdo_90hz_shenchao_lcm_drv,
+#endif
+
+#if defined(NT36672C_FHDP_DSI_VDO_90HZ_SHENCHAO_6382)
+	&nt36672c_fhdp_dsi_vdo_90hz_shenchao_6382_lcm_drv,
+#endif
 };
 
 unsigned char lcm_name_list[][128] = {

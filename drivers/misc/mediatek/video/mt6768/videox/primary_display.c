@@ -1113,6 +1113,7 @@ int primary_display_get_debug_state(char *stringbuf, int buf_len)
 	}
 	len += scnprintf(stringbuf + len, buf_len - len,
 		"|********Primary Display Path General Information********\n");
+
 	if (mutex_trylock(&(pgc->lock))) {
 		mutex_unlock(&(pgc->lock));
 		if (len > buf_len) {
@@ -3829,9 +3830,6 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 
 	DISPCHECK("%s begin lcm=%s, inited=%d\n",
 		__func__, lcm_name, is_lcm_inited);
-#ifdef CONFIG_MTK_MT6382_BDG
-	bdg_tx_pull_6382_reset_pin();
-#endif
 	
 	dprec_init();
 	dpmgr_init();
@@ -3884,6 +3882,10 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 		PM_QOS_DDR_OPP, PM_QOS_DDR_OPP_DEFAULT_VALUE);
 	pm_qos_add_request(&primary_display_mm_freq_request,
 		PM_QOS_DISP_FREQ, PM_QOS_MM_FREQ_DEFAULT_VALUE);
+#endif
+
+#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+	disp_fps_chg_cb_init();
 #endif
 
 	_primary_path_lock(__func__);
@@ -4058,10 +4060,6 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 
 	data_config->fps = lcm_fps;
 	data_config->dst_dirty = 1;
-#ifdef CONFIG_MTK_MT6382_BDG
-	bdg_common_init(DISP_BDG_DSI0, data_config, NULL);
-	mipi_dsi_rx_mac_init(DISP_BDG_DSI0, data_config, NULL);
-#endif
 	ret = dpmgr_path_config(pgc->dpmgr_handle, data_config,
 		pgc->cmdq_handle_config);
 
@@ -4088,10 +4086,7 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 			_cmdq_flush_config_handle(1, NULL, 0);
 			_cmdq_reset_config_handle();
 		}
-#ifndef CONFIG_MTK_MT6382_BDG
-//FIXME[MT6382]
 		ret = disp_lcm_init(pgc->plcm, 1);
-#endif
 	}
 	if (!ret)
 		primary_display_set_lcm_power_state_nolock(LCM_ON);
@@ -4220,7 +4215,7 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 	primary_display_lowpower_init();
 
 #ifdef CONFIG_MTK_MT6382_BDG
-	check_stopstate(NULL);
+	//check_stopstate(NULL);
 #endif
 	primary_set_state(DISP_ALIVE);
 #if 0 //def CONFIG_TRUSTONIC_TRUSTED_UI
@@ -4484,7 +4479,6 @@ int _display_set_lcm_refresh_rate(int fps)
 int primary_display_get_lcm_max_refresh_rate(void)
 {
 	unsigned int max_fps = 60;
-
 	if (disp_lcm_is_support_adjust_fps(pgc->plcm) != 0)
 		return 120;
 
@@ -4888,6 +4882,10 @@ int primary_display_suspend(void)
 #endif
 	/* pgc->state = DISP_SLEPT; */
 
+#ifdef CONFIG_MTK_MT6382_BDG
+	bdg_common_deinit(DISP_BDG_DSI0, NULL);
+#endif
+
 done:
 	primary_set_state(DISP_SLEPT);
 
@@ -5020,9 +5018,6 @@ int primary_display_resume(void)
 	DISPCHECK("primary_display_resume begin\n");
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_START, 0, 0);
-#ifdef CONFIG_MTK_MT6382_BDG
-	bdg_tx_pull_6382_reset_pin();
-#endif
 	_primary_path_lock(__func__);
 	if (pgc->state == DISP_ALIVE) {
 		primary_display_lcm_power_on_state(1);
@@ -5031,6 +5026,14 @@ int primary_display_resume(void)
 	}
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_PULSE, 0, 1);
+
+#ifdef MTK_FB_MMDVFS_SUPPORT
+#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+	/* for suspend/doze_suspend->doze/resume 90hz*/
+	primary_display_request_dvfs_perf(
+					0, HRT_LEVEL_LEVEL0);
+#endif
+#endif
 
 	if (is_ipoh_bootup) {
 		DISPCHECK(
@@ -5056,7 +5059,7 @@ int primary_display_resume(void)
 		if (dsi_force_config)
 			DSI_ForceConfig(1);
 	}
-//FIXME[MT6382]
+
 #ifdef CONFIG_MTK_MT6382_BDG
 	data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
 	DISPERR("[DENNIS][%s][%d]\n", __func__, __LINE__);
@@ -5223,6 +5226,12 @@ int primary_display_resume(void)
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_PULSE, 0, 5);
 
+#ifdef CONFIG_MTK_MT6382_BDG
+	if (get_mt6382_init()) {
+		bdg_tx_set_mode(DISP_BDG_DSI0, NULL, get_bdg_tx_mode());
+		bdg_tx_start(DISP_BDG_DSI0, NULL);
+	}
+#endif
 /* SW workaround.
  * Enable polling RDMA output line isn't 0 && RDMA status is run,
  * before path resume.
@@ -5368,6 +5377,17 @@ int primary_display_resume(void)
 		}
 	}
 
+#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+	/*DynFPS*/
+	/*check whether need change fps according cfg*/
+	if (primary_display_is_support_DynFPS()) {
+		int last_cfg = primary_display_get_current_cfg_id();
+
+		/* easy way to force change fps */
+		primary_display_update_cfg_id(!last_cfg);
+		primary_display_dynfps_chg_fps(last_cfg);
+	}
+#endif
 done:
 	primary_set_state(DISP_ALIVE);
 #if 0 //def CONFIG_TRUSTONIC_TRUSTED_UI
@@ -7191,7 +7211,7 @@ int primary_display_frame_cfg(struct disp_frame_cfg_t *cfg)
 {
 	int ret = 0;
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
-	unsigned int default_fps = 60;
+	unsigned int default_fps = 6000;
 #endif
 	struct disp_session_sync_info *session_info =
 		disp_get_session_sync_info_for_debug(cfg->session_id);
@@ -7219,8 +7239,10 @@ int primary_display_frame_cfg(struct disp_frame_cfg_t *cfg)
 	if (pgc->first_cfg) {
 		default_fps = primary_display_get_default_disp_fps(0);
 		DISPMSG("%s,first cfg, fps=%d\n", __func__, default_fps);
+		disp_invoke_fps_chg_callbacks(default_fps / 100);
 		pgc->first_cfg = 0;
 	}
+
 	/*DynFPS debug*/
 	if (g_force_cfg)
 		cfg->active_config = g_force_cfg_id;
@@ -7260,12 +7282,10 @@ int primary_display_frame_cfg(struct disp_frame_cfg_t *cfg)
 	primary_display_trigger_nolock(0, NULL, 0);
 
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
-#if 0
 	/*DynFPS*/
 	/*check whether need change fps according cfg*/
 	if (primary_display_is_support_DynFPS())
 		primary_display_dynfps_chg_fps(cfg->active_config);
-#endif
 #endif
 
 	dprec_done(trigger_event, 0, 0);
@@ -8002,7 +8022,7 @@ int primary_display_force_set_fps(unsigned int keep, unsigned int skip)
 	return ret;
 }
 
-unsigned int primary_display_force_get_vsync_fps(void)
+unsigned int primary_display_force_get_vsync_fps(void/*int need_lock*/)
 {
 	unsigned int _vsync_fps = 60;
 #if 0
@@ -10045,68 +10065,62 @@ extern int read_lcm(unsigned char cmd, unsigned char *buf,
 			unsigned char buf_size, bool sendhs, bool need_lock,
 			unsigned char offset);
 
-
+#ifdef CONFIG_MTK_MT6382_BDG
+extern void ddp_dsi_bdg_dynfps_chg_fps(
+	enum DISP_MODULE_ENUM module, void *handle,
+	unsigned int last_fps, unsigned int new_fps, unsigned int chg_index);
+#endif
 void primary_display_dynfps_chg_fps(int cfg_id)
 {
 	int last_cfg_id;
 	unsigned int new_dynfps;
 	unsigned int last_dynfps;
+	unsigned int fps_change_index;
 	bool need_send_cmd = false;
 	enum LCM_Send_Cmd_Mode sendmode;
 	struct cmdqRecStruct *qhandle = NULL;
 	int ret = 0;
 	unsigned int _idle_timeout = 50;/*ms*/
 	struct LCM_PARAMS *params;
-//	char para[15] = {0};
-//	unsigned int i;
-
-	DISPFUNC();
-
-	mmprofile_log_ex(ddp_mmp_get_events()->primary_switch_fps,
-		MMPROFILE_FLAG_START, 0, 0);
 
 	/*1,check whether fps changed*/
 	/*last_cfg_id = pgc->active_cfg;*/
 	last_cfg_id = primary_display_get_current_cfg_id();
 
-	DISPINFO("%s,g_force_cfg=%d,g_force_cfg_id=%d\n",
+	DISPDBG("%s,g_force_cfg=%d,g_force_cfg_id=%d\n",
 		__func__, g_force_cfg, g_force_cfg_id);
 	if (cfg_id == last_cfg_id) {
 		DISPDBG("%s,cfg_id no change:%d\n",
 			__func__, last_cfg_id);
-		mmprofile_log_ex(ddp_mmp_get_events()->primary_switch_fps,
-			MMPROFILE_FLAG_END, 0, 0);
 		return;
 	}
 
 	primary_display_get_cfg_fps(last_cfg_id, &last_dynfps, NULL);
 	primary_display_get_cfg_fps(cfg_id, &new_dynfps, NULL);
 
-	if (new_dynfps == last_dynfps) {
-		mmprofile_log_ex(ddp_mmp_get_events()->primary_switch_fps,
-			MMPROFILE_FLAG_END, 0, 1);
+	if (new_dynfps == last_dynfps)
 		return;
-	}
 
 	DISPMSG("%s,cfg_id:%d -> %d\n", __func__, last_cfg_id, cfg_id);
 	DISPMSG("%s,fps:%d -> %d\n", __func__, last_dynfps, new_dynfps);
 	/*2, do fps change*/
-	/* Only support CMD mode fps switch without mipi clock switching */
+	fps_change_index = ddp_dsi_fps_change_index(
+						last_dynfps, new_dynfps);
 
 	if (pgc->plcm == NULL) {
 		DISPMSG("lcm handle is null\n");
 		ASSERT(0);
 	}
-
-	mmprofile_log_ex(ddp_mmp_get_events()->primary_switch_fps,
-		MMPROFILE_FLAG_PULSE, 0, 0);
-
 	params = pgc->plcm->params;
 	need_send_cmd = disp_lcm_need_send_cmd(
 				pgc->plcm, last_dynfps, new_dynfps);
 	sendmode = params->sendmode;
-	DISPMSG("%s,need_send_cmd:%d in %d\n",
-		__func__, (unsigned int)need_send_cmd, sendmode);
+	DISPMSG("%s,need_send_cmd:%d in %d\n", __func__, need_send_cmd, sendmode);
+
+	if (fps_change_index & DYNFPS_DSI_MIPI_CLK ||
+		fps_change_index & DYNFPS_DSI_HFP) {
+
+		DISPMSG("%s,1H timing may changed\n", __func__);
 
 	/* choose esd check GCE thread and
 	 * keep mipi hopping also use esd check GCE thread
@@ -10117,46 +10131,131 @@ void primary_display_dynfps_chg_fps(int cfg_id)
 		CMDQ_SCENARIO_DISP_ESD_CHECK, &qhandle);
 	if (ret) {
 		DISPCHECK("%s,cmdq create fail!\n", __func__);
-		mmprofile_log_ex(ddp_mmp_get_events()->primary_switch_fps,
-			MMPROFILE_FLAG_END, 0, 2);
 		return;
 	}
 
 	cmdqRecReset(qhandle);
 	/*wait and clear EOF
+		 * avoid other display related task break fps change task
+		 * because fps change need stop & re-start vdo mode
 	 */
-	cmdqRecWait(qhandle, CMDQ_SYNC_TOKEN_STREAM_EOF);
+		cmdqRecWait(qhandle, CMDQ_EVENT_MUTEX0_STREAM_EOF);
 
+		if (need_send_cmd ||
+			(fps_change_index & DYNFPS_DSI_MIPI_CLK)) {
+			DISPMSG("%s,stop vdo mode\n", __func__);
+			dpmgr_path_build_cmdq(pgc->dpmgr_handle, qhandle,
+					CMDQ_STOP_VDO_MODE, 0);
+		}
 	if (need_send_cmd) {
 		DISPMSG("%s,send cmd to lcm\n", __func__);
 		disp_lcm_dynfps_send_cmd(pgc->plcm, qhandle,
 			last_dynfps, new_dynfps);
 	}
 
-	cmdqRecSetEventToken(qhandle, CMDQ_SYNC_TOKEN_STREAM_EOF);
+		ddp_dsi_dynfps_chg_fps(DISP_MODULE_DSI0, qhandle,
+			last_dynfps, new_dynfps, fps_change_index);
 
+		if (need_send_cmd ||
+			(fps_change_index & DYNFPS_DSI_MIPI_CLK)) {
+			DISPMSG("%s,start vdo mode\n", __func__);
+			dpmgr_path_build_cmdq(pgc->dpmgr_handle, qhandle,
+		    CMDQ_START_VDO_MODE, 0);
+			/*clear EOF
+			 *avoid config continue after we trigger vdo mode
+			 */
+			cmdqRecClearEventToken(qhandle,
+				CMDQ_EVENT_MUTEX0_STREAM_EOF);
+
+			/* trigger path */
+			DISPMSG("%s,trigger path\n", __func__);
+			dpmgr_path_trigger(primary_get_dpmgr_handle(),
+				qhandle, CMDQ_ENABLE);
+		}
+
+		cmdqRecFlushAsync(qhandle);
+		/*cmdqRecFlush(qhandle);*/
+
+	} else if (fps_change_index & DYNFPS_DSI_VFP) {
+
+		ret = cmdqRecCreate(
+		CMDQ_SCENARIO_DISP_ESD_CHECK, &qhandle);
+		if (ret) {
+			DISPCHECK("%s,cmdq create fail!\n", __func__);
+			return;
+		}
+		cmdqRecReset(qhandle);
+
+		if (need_send_cmd) {
+			cmdqRecWait(qhandle, CMDQ_EVENT_MUTEX0_STREAM_EOF);
+			DISPMSG("%s,send cmd to lcm in VFP solution\n", __func__);
+			disp_lcm_dynfps_send_cmd(pgc->plcm, qhandle,
+				last_dynfps, new_dynfps);
+		}
+#ifdef CONFIG_MTK_MT6382_BDG
+		if (get_dsc_state()) {
+			cmdqRecClearEventToken(qhandle,
+					CMDQ_EVENT_DSI_TE);
+		}
+#endif
+#ifdef CONFIG_MTK_MT6382_BDG
+		if (get_dsc_state()) {
+			cmdqRecWaitNoClear(qhandle,
+					CMDQ_EVENT_DSI_TE);
+		}
+#endif
+		/*now only primary display support*/
+		ddp_dsi_dynfps_chg_fps(DISP_MODULE_DSI0, qhandle,
+			last_dynfps, new_dynfps, fps_change_index);
+
+#ifdef CONFIG_MTK_MT6382_BDG
+		_blocking_flush();
+#endif
 	cmdqRecFlushAsync(qhandle);
-//	cmdqRecFlush(qhandle);
 
+#ifdef CONFIG_MTK_MT6382_BDG
+		ddp_dsi_bdg_dynfps_chg_fps(DISP_MODULE_DSI0, NULL,
+			last_dynfps, new_dynfps, fps_change_index);
+#endif
+
+	}
 	cmdqRecDestroy(qhandle);
+	/*3, inform fps go directly*/
+	disp_invoke_fps_chg_callbacks(new_dynfps / 100);
 
-	mmprofile_log_ex(ddp_mmp_get_events()->primary_switch_fps,
-		MMPROFILE_FLAG_PULSE, 0, 1);
-
-	/*3, update idle timeout*/
+	/*4, update idle timeout*/
 	_idle_timeout =	primary_display_get_idle_interval(new_dynfps / 100);
 	disp_lp_set_idle_check_interval(_idle_timeout);
 
-	/*4, update active_cfg*/
+	/*5, update active_cfg*/
 	primary_display_update_cfg_id(cfg_id);
 	pgc->lcm_refresh_rate = new_dynfps / 100;
 	pgc->lcm_fps = new_dynfps;
 
 	DISPMSG("%s,done\n", __func__);
-	mmprofile_log_ex(ddp_mmp_get_events()->primary_switch_fps,
-		MMPROFILE_FLAG_END, 0, 3);
+
 }
 
+void primary_display_dynfps_get_vfp_info(
+	unsigned int *vfp, unsigned int *vfp_for_lp)
+{
+	unsigned int cfg_id;
+	unsigned int fps;
+
+	cfg_id = primary_display_get_current_cfg_id();
+	primary_display_get_cfg_fps(cfg_id, &fps, NULL);
+
+	ddp_dsi_dynfps_get_vfp_info(fps, vfp, vfp_for_lp);
+}
+
+#if 0
+void _primary_display_fps_change_callback(void)
+{
+	/*inform to fpsgo*/
+
+	/*update pgc related parameters*/
+}
+#endif
 /*-----------------DynFPS end-------------------------------*/
 #endif
 

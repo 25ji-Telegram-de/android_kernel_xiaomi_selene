@@ -103,121 +103,20 @@ static struct LCM_UTIL_FUNCS lcm_util;
 #define FALSE 0
 #endif
 
+#ifdef CONFIG_MTK_MT6382_BDG
 #define DSC_ENABLE
+#endif
 
-/* i2c control start */
-
-#define LCM_I2C_ADDR 0x3E
-#define LCM_I2C_BUSNUM  1	/* for I2C channel 0 */
-#define LCM_I2C_ID_NAME "I2C_LCD_BIAS"
-
-
-/*****************************************************************************
- * Function Prototype
- *****************************************************************************/
-static int _lcm_i2c_probe(struct i2c_client *client,
-	const struct i2c_device_id *id);
-static int _lcm_i2c_remove(struct i2c_client *client);
-
-
-/*****************************************************************************
- * Data Structure
- *****************************************************************************/
-struct _lcm_i2c_dev {
-	struct i2c_client *client;
-
-};
-
-static const struct of_device_id _lcm_i2c_of_match[] = {
-	{ .compatible = "mediatek,I2C_LCD_BIAS", },
-	{},
-};
-
-static const struct i2c_device_id _lcm_i2c_id[] = {
-	{LCM_I2C_ID_NAME, 0},
-	{}
-};
-
-static struct i2c_driver _lcm_i2c_driver = {
-	.id_table = _lcm_i2c_id,
-	.probe = _lcm_i2c_probe,
-	.remove = _lcm_i2c_remove,
-	/* .detect               = _lcm_i2c_detect, */
-	.driver = {
-		   .owner = THIS_MODULE,
-		   .name = LCM_I2C_ID_NAME,
-		   .of_match_table = _lcm_i2c_of_match,
-		   },
-
-};
-
-/*****************************************************************************
- * Function
- *****************************************************************************/
-static int _lcm_i2c_probe(struct i2c_client *client,
-	const struct i2c_device_id *id)
-{
-	pr_debug("[LCM][I2C] %s\n", __func__);
-	pr_debug("[LCM][I2C] NT: info==>name=%s addr=0x%x\n",
-		client->name, client->addr);
-	_lcm_i2c_client = client;
-	return 0;
-}
-
-
-static int _lcm_i2c_remove(struct i2c_client *client)
-{
-	pr_debug("[LCM][I2C] %s\n", __func__);
-	_lcm_i2c_client = NULL;
-	i2c_unregister_device(client);
-	return 0;
-}
-
-// static int _lcm_i2c_write_bytes(unsigned char addr, unsigned char value)
-// {
-	// int ret = 0;
-	// struct i2c_client *client = _lcm_i2c_client;
-	// char write_data[2] = { 0 };
-
-	// if (client == NULL) {
-		// pr_debug("ERROR!! _lcm_i2c_client is null\n");
-		// return 0;
-	// }
-
-	// write_data[0] = addr;
-	// write_data[1] = value;
-	// ret = i2c_master_send(client, write_data, 2);
-	// if (ret < 0)
-		// pr_info("[LCM][ERROR] _lcm_i2c write data fail !!\n");
-
-	// return ret;
-// }
-
-/*
- * module load/unload record keeping
- */
-static int __init _lcm_i2c_init(void)
-{
-	pr_debug("[LCM][I2C] %s\n", __func__);
-	i2c_add_driver(&_lcm_i2c_driver);
-	pr_debug("[LCM][I2C] %s success\n", __func__);
-	return 0;
-}
-
-static void __exit _lcm_i2c_exit(void)
-{
-	pr_debug("[LCM][I2C] %s\n", __func__);
-	i2c_del_driver(&_lcm_i2c_driver);
-}
-
-module_init(_lcm_i2c_init);
-module_exit(_lcm_i2c_exit);
-/* i2c control end */
+#if defined(CONFIG_RT5081_PMU_DSV) || defined(CONFIG_MT6370_PMU_DSV)
+static struct regulator *disp_bias_pos;
+static struct regulator *disp_bias_neg;
+static int regulator_inited;
+#endif
 
 struct LCM_setting_table {
 	unsigned int cmd;
 	unsigned char count;
-	unsigned char para_list[64];
+	unsigned char para_list[500];
 };
 
 static struct LCM_setting_table lcm_suspend_setting[] = {
@@ -228,140 +127,358 @@ static struct LCM_setting_table lcm_suspend_setting[] = {
 };
 
 static struct LCM_setting_table init_setting_vdo[] = {
-	{0xFF, 1, {0x10} },
-	{0xFB, 1, {0x01} },
-	//DSC on
-	{0xC0, 1, {0x03} },
-	{0xC1, 16,
-		{0x89, 0x28, 0x00, 0x08, 0x00, 0xAA, 0x02, 0x0E,
-		 0x00, 0x2B, 0x00, 0x07, 0x0D, 0xB7, 0x0C, 0xB7} },
-	{0xC2, 2, {0x1B, 0xA0} },
+	{0XFF, 1, {0X10} },
+	//REGR 0XFE, 1, {0X10} },
+	{0XFB, 1, {0X01} },
+	{0XB0, 1, {0X00} },
+	{0XC0, 1, {0X03} },
+	{0XC1, 16, {0X89, 0X28, 0X00, 0X08, 0X00, 0XAA, 0X02, 0X0E, 0X00,
+		    0X2B, 0X00, 0X07, 0X0D, 0XB7, 0X0C, 0XB7} },
+	{0XC2, 2, {0X1B, 0XA0} },
 
-	{0xFF, 1, {0x20} },
-	{0xFB, 1, {0x01} },
-	{0x01, 1, {0x66} },
-	{0x32, 1, {0x4D} },
-	{0x69, 1, {0xD1} },
-	{0xF2, 1, {0x64} },
-	{0xF4, 1, {0x64} },
-	{0xF6, 1, {0x64} },
-	{0xF9, 1, {0x64} },
+	{0XFF, 1, {0X20} },
+	//REGR 0XFE, 1, {0X20} },
+	{0XFB, 1, {0X01} },
+	{0X01, 1, {0X66} },
+	{0X06, 1, {0X50} },
+	{0X07, 1, {0X28} },
+	{0X0E, 1, {0X00} },
+	{0X17, 1, {0X66} },
+	{0X1B, 1, {0X01} },
+	{0X5C, 1, {0X90} },
+	{0X5E, 1, {0XA0} },
+	{0X69, 1, {0XD0} },
 
-	{0xFF, 1, {0x26} },
-	{0xFB, 1, {0x01} },
-	{0x81, 1, {0x0E} },
-	{0x84, 1, {0x03} },
-	{0x86, 1, {0x03} },
-	{0x88, 1, {0x07} },
+	{0X19, 1, {0X55} },
+	{0X32, 1, {0X3D} },
+	{0X69, 1, {0XAA} },
+	{0X95, 1, {0XD1} },
+	{0X96, 1, {0XD1} },
+	{0XF2, 1, {0X66} },
+	{0XF3, 1, {0X44} },
+	{0XF4, 1, {0X66} },
+	{0XF3, 1, {0X44} },
+	{0XF6, 1, {0X66} },
+	{0XF3, 1, {0X44} },
+	{0XF8, 1, {0X66} },
+	{0XF3, 1, {0X44} },
 
-	{0xFF, 1, {0x27} },
-	{0xFB, 1, {0x01} },
-	{0xE3, 1, {0x01} },
-	{0xE4, 1, {0xEC} },
-	{0xE5, 1, {0x02} },
-	{0xE6, 1, {0xE3} },
-	{0xE7, 1, {0x01} },
-	{0xE8, 1, {0xEC} },
-	{0xE9, 1, {0x02} },
-	{0xEA, 1, {0x22} },
-	{0xEB, 1, {0x03} },
-	{0xEC, 1, {0x32} },
-	{0xED, 1, {0x02} },
-	{0xEE, 1, {0x22} },
+	{0XFF, 1, {0X21} },
+	//REGR 0XFE, 1, {0X10} },
+	{0XFB, 1, {0X01} },
 
-	{0xFF, 1, {0x2A} },
-	{0xFB, 1, {0x01} },
-	{0x0C, 1, {0x04} },
-	{0x0F, 1, {0x01} },
-	{0x11, 1, {0xE0} },
-	{0x15, 1, {0x0E} },
-	{0x16, 1, {0x78} },
-	{0x19, 1, {0x0D} },
-	{0x1A, 1, {0xF4} },
-	{0x37, 1, {0x6E} },
-	{0x88, 1, {0x76} },
+	{0XFF, 1, {0X24} },
+	//REGR 0XFE, 1, {0X24} },
+	{0XFB, 1, {0X01} },
+	{0X00, 1, {0X1C} },
+	{0X01, 1, {0X01} },
+	{0X04, 1, {0X2C} },
+	{0X05, 1, {0X2D} },
+	{0X06, 1, {0X2E} },
+	{0X07, 1, {0X2F} },
+	{0X08, 1, {0X30} },
+	{0X09, 1, {0X0F} },
+	{0X0A, 1, {0X11} },
+	{0X0C, 1, {0X14} },
+	{0X0D, 1, {0X16} },
+	{0X0E, 1, {0X18} },
+	{0X0F, 1, {0X13} },
+	{0X10, 1, {0X15} },
+	{0X11, 1, {0X17} },
+	{0X13, 1, {0X10} },
+	{0X14, 1, {0X22} },
+	{0X15, 1, {0X22} },
+	{0X18, 1, {0X1C} },
+	{0X19, 1, {0X01} },
+	{0X1C, 1, {0X2C} },
+	{0X1D, 1, {0X2D} },
+	{0X1E, 1, {0X2E} },
+	{0X1F, 1, {0X2F} },
+	{0X20, 1, {0X30} },
+	{0X21, 1, {0X0F} },
+	{0X22, 1, {0X11} },
+	{0X24, 1, {0X14} },
+	{0X25, 1, {0X16} },
+	{0X26, 1, {0X18} },
+	{0X27, 1, {0X13} },
+	{0X28, 1, {0X15} },
+	{0X29, 1, {0X17} },
+	{0X2B, 1, {0X10} },
+	{0X2D, 1, {0X22} },
+	{0X2F, 1, {0X22} },
+	{0X32, 1, {0X44} },
+	{0X33, 1, {0X00} },
+	{0X34, 1, {0X00} },
+	{0X35, 1, {0X01} },
+	{0X36, 1, {0X3F} },
+	{0X36, 1, {0X3F} },
+	{0X37, 1, {0X00} },
+	{0X38, 1, {0X00} },
+	{0X4D, 1, {0X02} },
+	{0X4E, 1, {0X3A} },
+	{0X4F, 1, {0X3A} },
+	{0X53, 1, {0X3A} },
+	{0X7A, 1, {0X83} },
+	{0X7B, 1, {0X90} },
+	{0X7D, 1, {0X03} },
+	{0X80, 1, {0X03} },
+	{0X81, 1, {0X03} },
+	{0X82, 1, {0X13} },
+	{0X84, 1, {0X31} },
+	{0X85, 1, {0X00} },
+	{0X86, 1, {0X00} },
+	{0X87, 1, {0X00} },
+	{0X90, 1, {0X13} },
+	{0X92, 1, {0X31} },
+	{0X93, 1, {0X00} },
+	{0X94, 1, {0X00} },
+	{0X95, 1, {0X00} },
+	{0X9C, 1, {0XF4} },
+	{0X9D, 1, {0X01} },
+	{0XA0, 1, {0X10} },
+	{0XA2, 1, {0X10} },
+	{0XA3, 1, {0X03} },
+	{0XA4, 1, {0X03} },
+	{0XA5, 1, {0X03} },
+	{0XC4, 1, {0X80} },
+	{0XC6, 1, {0XC0} },
+	{0XC9, 1, {0X00} },
+	{0XD1, 1, {0X34} },
+	{0XD9, 1, {0X80} },
+	{0XE9, 1, {0X03} },
 
-	{0xFF, 1, {0x2C} },
-	{0xFB, 1, {0x01} },
-	{0x4D, 1, {0x1E} },
-	{0x4E, 1, {0x04} },
-	{0x4F, 1, {0x00} },
-	{0x9D, 1, {0x1E} },
-	{0x9E, 1, {0x04} },
+	{0XFF, 1, {0X25} },
+	//REGR 0XFE, 1, {0X25} },
+	{0XFB, 1, {0X01} },
+	{0X0F, 1, {0X1B} },
+	{0X18, 1, {0X21} },
+	{0X19, 1, {0XE4} },
+	{0X21, 1, {0X40} },
+	{0X68, 1, {0X58} },
+	{0X69, 1, {0X10} },
+	{0X6B, 1, {0X00} },
+	{0X6C, 1, {0X1D} },
+	{0X71, 1, {0X1D} },
+	{0X77, 1, {0X72} },
+	{0X7F, 1, {0X00} },
+	{0X81, 1, {0X00} },
+	{0X84, 1, {0X6D} },
+	{0X86, 1, {0X2D} },
+	{0X8D, 1, {0X00} },
+	{0X8E, 1, {0X14} },
+	{0X8F, 1, {0X04} },
+	{0XC0, 1, {0X03} },
+	{0XC1, 1, {0X19} },
+	{0XC3, 1, {0X03} },
+	{0XC4, 1, {0X11} },
+	{0XC6, 1, {0X00} },
+	{0XEF, 1, {0X00} },
+	{0XF1, 1, {0X04} },
 
-	{0xFF, 1, {0xF0} },
-	{0xFB, 1, {0x01} },
-	{0x5A, 1, {0x00} },
+	{0XFF, 1, {0X26} },
+	//REGR 0XFE, 1, {0X26} },
+	{0XFB, 1, {0X01} },
+	{0X00, 1, {0X10} },
+	{0X01, 1, {0XEB} },
+	{0X03, 1, {0X01} },
+	{0X04, 1, {0X9A} },
+	{0X06, 1, {0X11} },
+	{0X08, 1, {0X96} },
+	{0X14, 1, {0X02} },
+	{0X15, 1, {0X01} },
+	{0X74, 1, {0XAF} },
+	{0X81, 1, {0X10} },
+	{0X83, 1, {0X03} },
+	{0X84, 1, {0X02} },
+	{0X85, 1, {0X01} },
+	{0X86, 1, {0X02} },
+	{0X87, 1, {0X01} },
+	{0X88, 1, {0X05} },
+	{0X8A, 1, {0X1A} },
+	{0X8B, 1, {0X11} },
+	{0X8C, 1, {0X24} },
+	{0X8E, 1, {0X42} },
+	{0X8F, 1, {0X11} },
+	{0X90, 1, {0X11} },
+	{0X91, 1, {0X11} },
+	{0X9A, 1, {0X80} },
+	{0X9B, 1, {0X04} },
+	{0X9C, 1, {0X00} },
+	{0X9D, 1, {0X00} },
+	{0X9E, 1, {0X00} },
 
-	{0xFF, 1, {0xE0} },
-	{0xFB, 1, {0x01} },
-	{0x25, 1, {0x02} },
-	{0x4E, 1, {0x02} },
-	{0x85, 1, {0x02} },
+	{0XFF, 1, {0X27} },
+	//REGR 0XFE, 1, {0X27} },
+	{0XFB, 1, {0X01} },
+	{0X01, 1, {0X60} },
+	{0X20, 1, {0X81} },
+	{0X21, 1, {0X71} },
+	{0X25, 1, {0X81} },
+	{0X26, 1, {0X99} },
+	{0X6E, 1, {0X00} },
+	{0X6F, 1, {0X00} },
+	{0X70, 1, {0X00} },
+	{0X71, 1, {0X00} },
+	{0X72, 1, {0X00} },
+	{0X75, 1, {0X04} },
+	{0X76, 1, {0X00} },
+	{0X77, 1, {0X00} },
+	{0X7D, 1, {0X09} },
+	{0X7E, 1, {0X63} },
+	{0X80, 1, {0X24} },
+	{0X82, 1, {0X09} },
+	{0X83, 1, {0X63} },
+	{0XE3, 1, {0X01} },
+	{0XE4, 1, {0XEC} },
+	{0XE5, 1, {0X00} },
+	{0XE6, 1, {0X7B} },
+	{0XE9, 1, {0X02} },
+	{0XEA, 1, {0X22} },
+	{0XEB, 1, {0X00} },
+	{0XEC, 1, {0X7B} },
 
-	{0xFF, 1, {0xD0} },
-	{0xFB, 1, {0x01} },
-	{0X09, 1, {0xAD} },
+	{0XFF, 1, {0X2A} },
+	//REGR 0XFE, 1, {0X10} },
+	{0XFB, 1, {0X01} },
+	{0X00, 1, {0X91} },
+	{0X03, 1, {0X20} },
+	{0X07, 1, {0X64} },
+	{0X0A, 1, {0X60} },
+	{0X0C, 1, {0X04} },
+	{0X0D, 1, {0X40} },
+	{0X0F, 1, {0X01} },
+	{0X11, 1, {0XE0} },
+	{0X15, 1, {0X0E} },
+	{0X16, 1, {0XB6} },
+	{0X19, 1, {0X0E} },
+	{0X1A, 1, {0X8A} },
+	{0X1F, 1, {0X40} },
+	{0X28, 1, {0XFD} },
+	{0X29, 1, {0X1F} },
+	{0X2A, 1, {0XFF} },
+	{0X2D, 1, {0X0A} },
+	{0X30, 1, {0X4F} },
+	{0X31, 1, {0XE7} },
+	{0X33, 1, {0X73} },
+	{0X34, 1, {0XFF} },
+	{0X35, 1, {0X3B} },
+	{0X36, 1, {0XE6} },
+	{0X36, 1, {0XE6} },
+	{0X37, 1, {0XF9} },
+	{0X38, 1, {0X40} },
+	{0X39, 1, {0XE1} },
+	{0X3A, 1, {0X4F} },
+	{0X45, 1, {0X06} },
+	{0X46, 1, {0X40} },
+	{0X47, 1, {0X02} },
+	{0X48, 1, {0X01} },
+	{0X4A, 1, {0X56} },
+	{0X4E, 1, {0X0E} },
+	{0X4F, 1, {0XB6} },
+	{0X52, 1, {0X0E} },
+	{0X53, 1, {0X8A} },
+	{0X57, 1, {0X55} },
+	{0X58, 1, {0X55} },
+	{0X59, 1, {0X55} },
+	{0X60, 1, {0X80} },
+	{0X61, 1, {0XFD} },
+	{0X62, 1, {0X0D} },
+	{0X63, 1, {0XC2} },
+	{0X64, 1, {0X06} },
+	{0X65, 1, {0X08} },
+	{0X66, 1, {0X01} },
+	{0X67, 1, {0X48} },
+	{0X68, 1, {0X17} },
+	{0X6A, 1, {0X8D} },
+	{0X6B, 1, {0XFF} },
+	{0X6C, 1, {0X2D} },
+	{0X6D, 1, {0X8C} },
+	{0X6E, 1, {0XFA} },
+	{0X6F, 1, {0X31} },
+	{0X70, 1, {0X88} },
+	{0X71, 1, {0X48} },
+	{0X7A, 1, {0X13} },
+	{0X7B, 1, {0X90} },
+	{0X7F, 1, {0X75} },
+	{0X83, 1, {0X07} },
+	{0X84, 1, {0XF9} },
+	{0X87, 1, {0X07} },
+	{0X88, 1, {0X77} },
 
-	{0xFF, 1, {0X20} },
-	{0xFB, 1, {0x01} },
-	{0XF8, 1, {0x64} },
+	{0XFF, 1, {0X2C} },
+	//REGR 0XFE, 1, {0X10} },
+	{0XFB, 1, {0X01} },
+	{0X03, 1, {0X17} },
+	{0X04, 1, {0X17} },
+	{0X05, 1, {0X17} },
+	{0X0D, 1, {0X01} },
+	{0X0E, 1, {0X54} },
+	{0X17, 1, {0X4B} },
+	{0X18, 1, {0X4B} },
+	{0X19, 1, {0X4B} },
+	{0X2D, 1, {0XAF} },
 
-	{0xFF, 1, {0x2A} },
-	{0xFB, 1, {0x01} },
-	{0X1A, 1, {0xF0} },
-	{0x30, 1, {0x5E} },
-	{0x31, 1, {0xCA} },
-	{0x34, 1, {0xFE} },
-	{0x35, 1, {0x35} },
-	{0x36, 1, {0xA2} },
+	{0X2F, 1, {0X10} },
+	{0X30, 1, {0XEB} },
+	{0X32, 1, {0X01} },
+	{0X33, 1, {0X9A} },
+	{0X35, 1, {0X16} },
+	{0X37, 1, {0X96} },
+	{0X37, 1, {0X96} },
+	{0X4D, 1, {0X17} },
+	{0X4E, 1, {0X04} },
+	{0X4F, 1, {0X04} },
+	{0X61, 1, {0X04} },
+	{0X62, 1, {0X68} },
+	{0X6B, 1, {0X71} },
+	{0X6C, 1, {0X71} },
+	{0X6D, 1, {0X71} },
+	{0X81, 1, {0X11} },
+	{0X82, 1, {0X84} },
+	{0X84, 1, {0X01} },
+	{0X85, 1, {0X9A} },
+	{0X87, 1, {0X29} },
+	{0X89, 1, {0X96} },
+	{0X9D, 1, {0X1B} },
+	{0X9E, 1, {0X08} },
+	{0X9F, 1, {0X10} },
 
-	{0x36, 1, {0xA2} },
-	{0x37, 1, {0xF8} },
-	{0x38, 1, {0x37} },
-	{0x39, 1, {0xA0} },
-	{0x3A, 1, {0x5E} },
-	{0x53, 1, {0xD7} },
-	{0x88, 1, {0x72} },
-	{0x88, 1, {0x72} },
+	{0XFF, 1, {0XE0} },
+	//REGR 0XFE, 1, {0XE0} },
+	{0XFB, 1, {0X01} },
+	{0X35, 1, {0X82} },
+	{0X25, 1, {0X00} },
+	{0X25, 1, {0X00} },
+	{0X4E, 1, {0X00} },
 
-	{0xFF, 1, {0x24} },
-	{0xFB, 1, {0x01} },
-	{0xC6, 1, {0xC0} },
+	{0XFF, 1, {0XF0} },
+	//REGR 0XFE, 1, {0X10} },
+	{0XFB, 1, {0X01} },
+	{0X1C, 1, {0X01} },
+	{0X33, 1, {0X01} },
+	{0X5A, 1, {0X00} },
 
-	{0xFF, 1, {0xE0} },
-	{0xFB, 1, {0x01} },
-	{0x25, 1, {0x00} },
-	{0x4E, 1, {0x02} },
-	{0x35, 1, {0x82} },
-	{0xFF, 1, {0xC0} },
+	{0XFF, 1, {0XD0} },
+	//REGR 0XFE, 1, {0XD0} },
+	{0XFB, 1, {0X01} },
+	{0X53, 1, {0X22} },
+	{0X54, 1, {0X02} },
+	{0XFF, 1, {0XC0} },
+	{0XFB, 1, {0X01} },
+	{0X9C, 1, {0X11} },
+	{0X9D, 1, {0X11} },
 
-	{0xFF, 1, {0xC0} },
-	{0xFB, 1, {0x01} },
-	{0x9C, 1, {0x11} },
-	{0x9D, 1, {0x11} },
-	//60HZ VESA DSC
-	{0xFF, 1, {0x25} },
-	{0xFB, 1, {0x01} },
-	{0x18, 1, {0x22} },
+	{0XFF, 1, {0X2B} },
+	{0XFB, 1, {0X01} },
+	{0XB7, 1, {0X13} },
+	{0XB8, 1, {0X0F} },
+	{0XC0, 1, {0X03} },
 
-	//CCMRUN
-	{0xFF, 1, {0x10} },
-	{0xFB, 1, {0x01} },
-	{0xC0, 1, {0x03} },
-	{0x51, 1, {0x00} },
-	{0x35, 1, {0x00} },
-	{0x53, 1, {0x24} },
-
-	{0x53, 1, {0x24} },
-	{0x55, 1, {0x00} },
-	{0xFF, 1, {0x10} },
-	{0x11, 0, {} },
-#ifndef LCM_SET_DISPLAY_ON_DELAY
-	{REGFLAG_DELAY, 120, {} },
-	/* Display On*/
-	{0x29, 0, {} },
-#endif
+	{0XFF, 1, {0X10} },
+	{0X11, 0, {} },
+	/* {REGFLAG_DELAY, 120, {} }, */
+	/* DISPLAY ON */
+	{0X29, 0, {} },
 };
 
 static struct LCM_setting_table
@@ -384,18 +501,6 @@ static struct LCM_setting_table bl_level[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {} }
 };
 
-// static struct dynamic_fps_info lcm_dynamic_fps_setting[] = {
-	// {60, 20},
-	// {50, 458},
-	// {40, 1115},
-	// {30, 2210},
-// #if 0
-	// {60, 20, 50},
-	// {50, 458, 60},
-	// {40, 115, 75},
-	// {30, 2210, 100},
-// #endif
-// };
 static void push_table(void *cmdq, struct LCM_setting_table *table,
 		       unsigned int count, unsigned char force_update)
 {
@@ -435,35 +540,35 @@ static void lcm_set_util_funcs(const struct LCM_UTIL_FUNCS *util)
 static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 {
 	struct dfps_info *dfps_params = dsi->dfps_params;
+
 	dsi->dfps_enable = 1;
 	dsi->dfps_default_fps = 9000;/*real fps * 100, to support float*/
 	dsi->dfps_def_vact_tim_fps = 9000;/*real vact timing fps * 100*/
-	/* traversing array must less than DFPS_LEVELS */
+
 	/* DPFS_LEVEL0 */
 	dfps_params[0].level = DFPS_LEVEL0;
 	dfps_params[0].fps = 6000;/*real fps * 100, to support float*/
 	dfps_params[0].vact_timing_fps = 9000;/*real vact timing fps * 100*/
 	/* if mipi clock solution */
-	dfps_params[0].PLL_CLOCK = 500;
-	dfps_params[0].vertical_frontporch = 2480;
+	/* dfps_params[0].PLL_CLOCK = 500; */
 	/* dfps_params[0].data_rate = xx; */
+	/* if vfp solution */
+	dfps_params[0].vertical_frontporch = 1290;
+
 	/* DPFS_LEVEL1 */
 	dfps_params[1].level = DFPS_LEVEL1;
 	dfps_params[1].fps = 9000;/*real fps * 100, to support float*/
 	dfps_params[1].vact_timing_fps = 9000;/*real vact timing fps * 100*/
 	/* if mipi clock solution */
-	dfps_params[1].PLL_CLOCK = 500;
-	dfps_params[1].vertical_frontporch = 800;
+	/* dfps_params[1].PLL_CLOCK = 500 */
 	/* dfps_params[1].data_rate = xx; */
+	dfps_params[1].vertical_frontporch = 46;
 	dsi->dfps_num = 2;
 }
 #endif
 
 static void lcm_get_params(struct LCM_PARAMS *params)
 {
-	// unsigned int i = 0;
-	// unsigned int dynamic_fps_levels = 0;
-
 	memset(params, 0, sizeof(struct LCM_PARAMS));
 
 	params->type = LCM_TYPE_DSI;
@@ -497,8 +602,8 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
 
 	params->dsi.vertical_sync_active = 10;
-	params->dsi.vertical_backporch = 22;
-	params->dsi.vertical_frontporch = 800;
+	params->dsi.vertical_backporch = 10;
+	params->dsi.vertical_frontporch = 46;
 	//params->dsi.vertical_frontporch_for_low_power = 750;
 	params->dsi.vertical_active_line = FRAME_HEIGHT;
 
@@ -507,17 +612,20 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 	params->dsi.horizontal_frontporch = 165;
 	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
 	params->dsi.ssc_disable = 1;
+#ifdef CONFIG_MTK_MT6382_BDG
 	params->dsi.bdg_ssc_disable = 1;
+#endif
 	params->dsi.dsc_enable = 0;
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	/* this value must be in MTK suggested table */
 #ifdef DSC_ENABLE
 	params->dsi.bdg_dsc_enable = 1;
-	params->dsi.PLL_CLOCK = 220; //with dsc
-//	params->dsi.PLL_CLOCK = 300; //with dsc
+	params->dsi.PLL_CLOCK = 380; //with dsc
 #else
+#ifdef CONFIG_MTK_MT6382_BDG
 	params->dsi.bdg_dsc_enable = 0;
-	params->dsi.PLL_CLOCK = 500; //without dsc
+#endif
+	//params->dsi.PLL_CLOCK = 500; //without dsc
 #endif
 	params->dsi.PLL_CK_CMD = 480;
 #else
@@ -557,52 +665,126 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 	params->dsi.vertical_frontporch_for_low_power = 750;
 #endif
 
-	// dynamic_fps_levels =
-		// sizeof(lcm_dynamic_fps_setting)/sizeof(struct dynamic_fps_info);
-
-	// dynamic_fps_levels =
-		// params->dsi.dynamic_fps_levels <
-		// dynamic_fps_levels
-		// ? params->dsi.dynamic_fps_levels
-		// : dynamic_fps_levels;
-
-	// for (i = 0; i < dynamic_fps_levels; i++) {
-		// params->dsi.dynamic_fps_table[i].fps =
-			// lcm_dynamic_fps_setting[i].fps;
-		// params->dsi.dynamic_fps_table[i].vfp =
-			// lcm_dynamic_fps_setting[i].vfp;
-		// params->dsi.dynamic_fps_table[i].idle_check_interval =
-		// lcm_dynamic_fps_setting[i].idle_check_interval;
-	// }
-#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+	#ifdef CONFIG_MTK_HIGH_FRAME_RATE
 	/****DynFPS start****/
 	lcm_dfps_int(&(params->dsi));
 	/****DynFPS end****/
-#endif
+	#endif
 }
 
+#if defined(CONFIG_RT5081_PMU_DSV) || defined(CONFIG_MT6370_PMU_DSV)
+int lcm_bias_regulator_init(void)
+{
+	int ret = 0;
+
+	if (regulator_inited)
+		return ret;
+
+	/* please only get regulator once in a driver */
+	disp_bias_pos = regulator_get(NULL, "dsv_pos");
+	if (IS_ERR(disp_bias_pos)) { /* handle return value */
+		ret = PTR_ERR(disp_bias_pos);
+		pr_info("get dsv_pos fail, error: %d\n", ret);
+		return ret;
+	}
+
+	disp_bias_neg = regulator_get(NULL, "dsv_neg");
+	if (IS_ERR(disp_bias_neg)) { /* handle return value */
+		ret = PTR_ERR(disp_bias_neg);
+		pr_info("get dsv_neg fail, error: %d\n", ret);
+		return ret;
+	}
+
+	regulator_inited = 1;
+	return ret; /* must be 0 */
+
+}
+
+int lcm_bias_enable(void)
+{
+	int ret = 0;
+	int retval = 0;
+
+	lcm_bias_regulator_init();
+
+	/* set voltage with min & max*/
+	ret = regulator_set_voltage(disp_bias_pos, 5500000, 5500000);
+	if (ret < 0)
+		pr_info("set voltage disp_bias_pos fail, ret = %d\n", ret);
+	retval |= ret;
+
+	ret = regulator_set_voltage(disp_bias_neg, 5500000, 5500000);
+	if (ret < 0)
+		pr_info("set voltage disp_bias_neg fail, ret = %d\n", ret);
+	retval |= ret;
+
+	/* enable regulator */
+	ret = regulator_enable(disp_bias_pos);
+	if (ret < 0)
+		pr_info("enable regulator disp_bias_pos fail, ret = %d\n",
+			ret);
+	retval |= ret;
+
+	ret = regulator_enable(disp_bias_neg);
+	if (ret < 0)
+		pr_info("enable regulator disp_bias_neg fail, ret = %d\n",
+			ret);
+	retval |= ret;
+
+	return retval;
+}
+
+
+int lcm_bias_disable(void)
+{
+	int ret = 0;
+	int retval = 0;
+
+	lcm_bias_regulator_init();
+
+	ret = regulator_disable(disp_bias_neg);
+	if (ret < 0)
+		pr_info("disable regulator disp_bias_neg fail, ret = %d\n",
+			ret);
+	retval |= ret;
+
+	ret = regulator_disable(disp_bias_pos);
+	if (ret < 0)
+		pr_info("disable regulator disp_bias_pos fail, ret = %d\n",
+			ret);
+	retval |= ret;
+
+	return retval;
+}
+
+#else
+int lcm_bias_regulator_init(void)
+{
+	return 0;
+}
+
+int lcm_bias_enable(void)
+{
+	return 0;
+}
+
+int lcm_bias_disable(void)
+{
+	return 0;
+}
+#endif
+
 /* turn on gate ic & control voltage to 5.5V */
+/* equle display_bais_enable ,mt6768 need +/-5.5V */
 static void lcm_init_power(void)
 {
-	display_bias_enable();
-/*
-	if (lcm_util.set_gpio_lcd_enp_bias) {
-		lcm_util.set_gpio_lcd_enp_bias(1);
-
-		_lcm_i2c_write_bytes(0x0, 0xf);
-		_lcm_i2c_write_bytes(0x1, 0xf);
-	} else
-		LCM_LOGI("set_gpio_lcd_enp_bias not defined...\n");
-*/
+	lcm_bias_enable();
 }
 
 static void lcm_suspend_power(void)
 {
 	SET_RESET_PIN(0);
-	if (lcm_util.set_gpio_lcd_enp_bias)
-		lcm_util.set_gpio_lcd_enp_bias(0);
-	else
-		LCM_LOGI("set_gpio_lcd_enp_bias not defined...\n");
+	lcm_bias_disable();
 }
 
 /* turn on gate ic & control voltage to 5.5V */
@@ -631,12 +813,14 @@ static void lcm_init(void)
 
 static void lcm_suspend(void)
 {
+	LCM_LOGI("%s:%d\n", __func__, __LINE__);
 	push_table(NULL, lcm_suspend_setting,
 		   ARRAY_SIZE(lcm_suspend_setting), 1);
 }
 
 static void lcm_resume(void)
 {
+	LCM_LOGI("%s:%d\n", __func__, __LINE__);
 	lcm_init();
 }
 
@@ -720,11 +904,8 @@ static unsigned int lcm_compare_id(void)
 	unsigned char buffer[1];
 	unsigned int array[16];
 
-	SET_RESET_PIN(1);
-	SET_RESET_PIN(0);
 	MDELAY(1);
 
-	SET_RESET_PIN(1);
 	MDELAY(20);
 
 	array[0] = 0x00013700;  /* read id return 1byte */
@@ -742,8 +923,8 @@ static unsigned int lcm_compare_id(void)
 
 }
 
-struct LCM_DRIVER nt36672c_fhdp_dsi_vdo_60hz_wo_dsc_shenchao_lcm_drv = {
-	.name = "nt36672c_fhdp_dsi_vdo_60hz_wo_dsc_shenchao_lcm_drv",
+struct LCM_DRIVER nt36672c_fhdp_dsi_vdo_90hz_shenchao_6382_lcm_drv = {
+	.name = "nt36672c_fhdp_dsi_vdo_90hz_shenchao_6382_lcm_drv",
 	.set_util_funcs = lcm_set_util_funcs,
 	.get_params = lcm_get_params,
 	.init = lcm_init,

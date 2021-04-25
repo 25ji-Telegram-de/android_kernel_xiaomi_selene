@@ -908,6 +908,38 @@ static void process_dbg_opt(const char *opt)
 	if (strncmp(opt, "helper", 6) == 0) {
 		/*ex: echo helper:DISP_OPT_BYPASS_OVL,0 > /d/mtkfb */
 		do_helper_opt(opt);
+	} else if (strncmp(opt, "mipi_hopping:on", 15) == 0) {
+		if (pgc->state == DISP_SLEPT) {
+			DISPWARN("primary display is already slept\n");
+			return;
+		}
+		primary_display_idlemgr_kick(__func__, 1);
+		if (dpmgr_path_is_busy(pgc->dpmgr_handle))
+			dpmgr_wait_event_timeout(pgc->dpmgr_handle,
+				DISP_PATH_EVENT_FRAME_DONE, HZ * 1);
+		DSI_Stop(DISP_MODULE_DSI0, NULL);
+
+#ifdef CONFIG_MTK_MT6382_BDG
+		bdg_mipi_clk_change(1, 1);
+#endif
+
+		DSI_Start(DISP_MODULE_DSI0, NULL);
+	} else if (strncmp(opt, "mipi_hopping:off", 16) == 0) {
+		if (pgc->state == DISP_SLEPT) {
+			DISPWARN("primary display is already slept\n");
+			return;
+		}
+		primary_display_idlemgr_kick(__func__, 1);
+		if (dpmgr_path_is_busy(pgc->dpmgr_handle))
+			dpmgr_wait_event_timeout(pgc->dpmgr_handle,
+				DISP_PATH_EVENT_FRAME_DONE, HZ * 1);
+		DSI_Stop(DISP_MODULE_DSI0, NULL);
+
+#ifdef CONFIG_MTK_MT6382_BDG
+		bdg_mipi_clk_change(1, 0);
+#endif
+
+		DSI_Start(DISP_MODULE_DSI0, NULL);
 	} else if (strncmp(opt, "switch_mode:", 12) == 0) {
 		int session_id = MAKE_DISP_SESSION(DISP_SESSION_PRIMARY, 0);
 		int sess_mode;

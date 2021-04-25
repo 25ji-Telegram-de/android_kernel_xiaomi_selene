@@ -324,6 +324,7 @@ static inline char *power_mode_to_string(enum mtkfb_power_mode pm)
 
 typedef int (*PRIMARY_DISPLAY_CALLBACK) (unsigned int user_data);
 
+enum mtkfb_power_mode primary_display_get_power_mode_nolock(void);
 struct display_primary_path_context *_get_context(void);
 void _primary_path_lock(const char *caller);
 void _primary_path_unlock(const char *caller);
@@ -516,6 +517,8 @@ void primary_display_update_cfg_id(int cfg_id);
 void primary_display_init_multi_cfg_info(void);
 int primary_display_get_multi_configs(struct multi_configs *p_cfgs);
 void primary_display_dynfps_chg_fps(int cfg_id);
+void primary_display_dynfps_get_vfp_info(
+	unsigned int *vfp, unsigned int *vfp_for_lp);
 
 #if 0
 bool primary_display_need_update_golden_fps(

@@ -38,8 +38,8 @@
 #  define LCM_LOGI(string, args...)  dprintf(0, "[LK/"LOG_TAG"]"string, ##args)
 #  define LCM_LOGD(string, args...)  dprintf(1, "[LK/"LOG_TAG"]"string, ##args)
 #else
-#  define LCM_LOGI(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
-#  define LCM_LOGD(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
+#  define LCM_LOGI(fmt, args...)  pr_err("[KERNEL/"LOG_TAG"]"fmt, ##args)
+#  define LCM_LOGD(fmt, args...)  pr_err("[KERNEL/"LOG_TAG"]"fmt, ##args)
 #endif
 
 #define LCM_ID_nt36672c 0x83
@@ -103,8 +103,9 @@ static struct LCM_UTIL_FUNCS lcm_util;
 #define FALSE 0
 #endif
 
-//#define DSC_ENABLE
-//#define DSC_ENABLE
+#ifdef CONFIG_MTK_MT6382_BDG
+#define DSC_ENABLE
+#endif
 
 /* i2c control start */
 
@@ -113,13 +114,15 @@ static struct LCM_UTIL_FUNCS lcm_util;
 #define LCM_I2C_ID_NAME "I2C_LCD_BIAS"
 
 
-static unsigned ENP = 494; //gpio169
-static unsigned ENN = 490; //gpio165
+static unsigned ENP = 490; //gpio165
+static unsigned ENN = 494; //gpio169
 
 #define GPIO_LCD_BIAS_ENP   ENP
 #define GPIO_LCD_BIAS_ENN   ENN
 
+int esd_flag_pin = 0;
 
+extern void  BDG_set_cmdq_V2_DSI0(void *cmdq, unsigned int cmd, unsigned char count,unsigned char *para_list, unsigned char force_update);
 
 /*****************************************************************************
  * Function Prototype
@@ -183,26 +186,6 @@ static int _lcm_i2c_remove(struct i2c_client *client)
 }
 
 
-// static int _lcm_i2c_write_bytes(unsigned char addr, unsigned char value)
-// {
-	// int ret = 0;
-	// struct i2c_client *client = _lcm_i2c_client;
-	// char write_data[2] = { 0 };
-
-	// if (client == NULL) {
-		// pr_debug("ERROR!! _lcm_i2c_client is null\n");
-		// return 0;
-	// }
-
-	// write_data[0] = addr;
-	// write_data[1] = value;
-	// ret = i2c_master_send(client, write_data, 2);
-	// if (ret < 0)
-		// pr_info("[LCM][ERROR] _lcm_i2c write data fail !!\n");
-
-	// return ret;
-// }
-
 /*
  * module load/unload record keeping
  */
@@ -236,140 +219,58 @@ static struct LCM_setting_table lcm_suspend_setting[] = {
 	{0x10, 0, {} },
 	{REGFLAG_DELAY, 120, {} },
 };
-#if 0
+
 static struct LCM_setting_table init_setting_vdo[] = {
 	{0xFF, 1, {0x10} },
+        {0xFB, 1, {0x01} },
+	{0XB0, 1, {0x00} },
+	{0XC0, 1, {0x03} },
+        {0xC1, 16, {0x89,0x28,0x00,0x08,0x00,0xAA,0x02,0x0E,0x00,0x2B,0x00,0x07,0xD,0xB7,0x0C,0xB7} },
+        {0XC2, 2, {0X1B,0XA0} },
+//FR
+	/*{0xFF, 1, {0x27} },
 	{0xFB, 1, {0x01} },
-	//DSC on
-	{0xC0, 1, {0x00} },
-	{0xC1, 16, {0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00} },
-	{0xC2, 2, {0x00, 0x00} },
+	{0x40, 1, {0x22} },*/
 
-	{0xFF, 1, {0x20} },
-	{0xFB, 1, {0x01} },
-	{0x01, 1, {0x66} },
-	{0x32, 1, {0x4D} },
-	{0x69, 1, {0xD1} },
-	{0xF2, 1, {0x64} },
-	{0xF4, 1, {0x64} },
-	{0xF6, 1, {0x64} },
-	{0xF9, 1, {0x64} },
+        {0xFF, 1, {0XE0} },
+        {0XFB, 1, {0X01} },
+        {0X35, 1, {0X82} },
+        {0X85, 1, {0X32} },
 
-	{0xFF, 1, {0x26} },
-	{0xFB, 1, {0x01} },
-	{0x81, 1, {0x0E} },
-	{0x84, 1, {0x03} },
-	{0x86, 1, {0x03} },
-	{0x88, 1, {0x07} },
+        {0xFF, 1, {0XF0} },
+        {0xFB, 1, {0x01} },
+        {0X1C, 1, {0X01} },
+        {0X33, 1, {0X01} },
+        {0X5A, 1, {0X00} },
 
-	{0xFF, 1, {0x27} },
-	{0xFB, 1, {0x01} },
-	{0xE3, 1, {0x01} },
-	{0xE4, 1, {0xEC} },
-	{0xE5, 1, {0x02} },
-	{0xE6, 1, {0xE3} },
-	{0xE7, 1, {0x01} },
-	{0xE8, 1, {0xEC} },
-	{0xE9, 1, {0x02} },
-	{0xEA, 1, {0x22} },
-	{0xEB, 1, {0x03} },
-	{0xEC, 1, {0x32} },
-	{0xED, 1, {0x02} },
-	{0xEE, 1, {0x22} },
+        {0xFF, 1, {0XD0} },
+        {0xFB, 1, {0x01} },
+        {0X53, 1, {0X22} },
+  	{0X54, 1, {0X02} },
 
-	{0xFF, 1, {0x2A} },
-	{0xFB, 1, {0x01} },
-	{0x0C, 1, {0x04} },
-	{0x0F, 1, {0x01} },
-	{0x11, 1, {0xE0} },
-	{0x15, 1, {0x0E} },
-	{0x16, 1, {0x78} },
-	{0x19, 1, {0x0D} },
-	{0x1A, 1, {0xF4} },
-	{0x37, 1, {0X6E} },
-	{0X88, 1, {0X76} },
+        {0XFF, 1, {0XC0} },
+        {0XFB, 1, {0X01} },
+  	{0X9C, 1, {0X11} },
+  	{0X9D, 1, {0X11} },
 
-	{0xFF, 1, {0x2C} },
-	{0xFB, 1, {0x01} },
-	{0x4D, 1, {0x1E} },
-	{0x4E, 1, {0x04} },
-	{0X4F, 1, {0X00} },
-	{0X9D, 1, {0X1E} },
-	{0X9E, 1, {0X04} },
+        {0xFF, 1, {0X27} },
+        {0XFB, 1, {0X01} },
+        {0X3F, 1, {0X01} },
+        {0X40, 1, {0X52} },
+        {0X43, 1, {0X10} },
 
-	{0xFF, 1, {0xF0} },
-	{0xFB, 1, {0x01} },
-	{0x5A, 1, {0x00} },
 
-	{0xFF, 1, {0xE0} },
-	{0xFB, 1, {0x01} },
-	{0x25, 1, {0x02} },
-	{0x4E, 1, {0x02} },
-	{0x85, 1, {0x02} },
+        {0XFF, 1, {0X10} },
+        {0XFB, 1, {0X01} },
+  	{0X35, 1, {0X00} },
 
-	{0xFF, 1, {0XD0} },
-	{0xFB, 1, {0x01} },
-	{0X09, 1, {0XAD} },
-
-	{0xFF, 1, {0X20} },
-	{0xFB, 1, {0x01} },
-	{0XF8, 1, {0X64} },
-
-	{0xFF, 1, {0X2A} },
-	{0xFB, 1, {0x01} },
-	{0X1A, 1, {0XF0} },
-	{0x30, 1, {0x5E} },
-	{0x31, 1, {0xCA} },
-	{0x34, 1, {0xFE} },
-	{0x35, 1, {0x35} },
-	{0x36, 1, {0xA2} },
-	{0x37, 1, {0xF8} },
-	{0x38, 1, {0x37} },
-	{0x39, 1, {0xA0} },
-	{0x3A, 1, {0x5E} },
-	{0x53, 1, {0xD7} },
-	{0x88, 1, {0x72} },
-	{0x88, 1, {0x72} },
-
-	{0xFF, 1, {0x24} },
-	{0xFB, 1, {0x01} },
-	{0xC6, 1, {0xC0} },
-
-	{0xFF, 1, {0xE0} },
-	{0xFB, 1, {0x01} },
-	{0x25, 1, {0x00} },
-	{0x4E, 1, {0x02} },
-	{0x35, 1, {0x82} },
-
-	{0xFF, 1, {0xC0} },
-	{0xFB, 1, {0x01} },
-	{0x9C, 1, {0x11} },
-	{0x9D, 1, {0x11} },
-	//60HZ VESA DSC
-	{0xFF, 1, {0x25} },
-	{0xFB, 1, {0x01} },
-	{0x18, 1, {0x22} },
-
-	//CCMRUN
-	{0xFF, 1, {0x10} },
-	{0xFB, 1, {0x01} },
-	{0XC0, 1, {0X00} },
-	{0x51, 1, {0x00} },
-	{0x35, 1, {0x00} },
-	{0x53, 1, {0x24} },
-	{0x55, 1, {0x00} },
-	{0xFF, 1, {0x10} },
-	{0x11, 0, {} },
-	#ifndef LCM_SET_DISPLAY_ON_DELAY
-	{REGFLAG_DELAY, 120, {} },
-	/* Display On*/
-	{0x29, 0, {} },
-	#endif
+        {0x11, 0, {} },
+        {REGFLAG_DELAY, 100, {} },
+        {0x29, 0, {} },
+        {REGFLAG_DELAY, 40, {} }
 };
-#endif
+
+
 static struct LCM_setting_table
 __maybe_unused lcm_deep_sleep_mode_in_setting[] = {
 	{0x28, 1, {0x00} },
@@ -390,18 +291,7 @@ static struct LCM_setting_table bl_level[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {} }
 };
 
-// static struct dynamic_fps_info lcm_dynamic_fps_setting[] = {
-	// {60, 20},
-	// {50, 458},
-	// {40, 1115},
-	// {30, 2210},
-// #if 0
-	// {60, 20, 50},
-	// {50, 458, 60},
-	// {40, 115, 75},
-	// {30, 2210, 100},
-// #endif
-// };
+
 static void push_table(void *cmdq, struct LCM_setting_table *table,
 		       unsigned int count, unsigned char force_update)
 {
@@ -423,8 +313,8 @@ static void push_table(void *cmdq, struct LCM_setting_table *table,
 		case REGFLAG_END_OF_TABLE:
 			break;
 		default:
-			dsi_set_cmdq_V22(cmdq, cmd, table[i].count,
-					 table[i].para_list, force_update);
+ 			BDG_set_cmdq_V2_DSI0(cmdq, cmd, table[i].count,
+ 					 table[i].para_list, force_update);
 			break;
 		}
 	}
@@ -453,6 +343,33 @@ static void lcm_set_util_funcs(const struct LCM_UTIL_FUNCS *util)
 {
 	memcpy(&lcm_util, util, sizeof(struct LCM_UTIL_FUNCS));
 }
+
+#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
+{
+	struct dfps_info *dfps_params = dsi->dfps_params;
+
+	dsi->dfps_enable = 1;
+	dsi->dfps_default_fps = 9000;/*real fps * 100, to support float*/
+	dsi->dfps_def_vact_tim_fps = 9000;/*real vact timing fps * 100*/
+	/* traversing array must less than DFPS_LEVELS */
+	/* DPFS_LEVEL0 */
+	dfps_params[0].level = DFPS_LEVEL0;
+	dfps_params[0].fps = 6000;/*real fps * 100, to support float*/
+	dfps_params[0].vact_timing_fps = 9000;/*real vact timing fps * 100*/
+	/* if mipi clock solution */
+	dfps_params[0].PLL_CLOCK = 574;
+	/* dfps_params[0].data_rate = xx; */
+	/* DPFS_LEVEL1 */
+	dfps_params[1].level = DFPS_LEVEL1;
+	dfps_params[1].fps = 9000;/*real fps * 100, to support float*/
+	dfps_params[1].vact_timing_fps = 9000;/*real vact timing fps * 100*/
+	/* if mipi clock solution */
+	dfps_params[1].PLL_CLOCK = 380;
+	/* dfps_params[1].data_rate = xx; */
+	dsi->dfps_num = 2;
+}
+#endif
 
 static void lcm_get_params(struct LCM_PARAMS *params)
 {
@@ -491,15 +408,15 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 
 	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
 
-	params->dsi.vertical_sync_active = 4;
-	params->dsi.vertical_backporch = 20;
-	params->dsi.vertical_frontporch = 40;
+	params->dsi.vertical_sync_active = 10;
+	params->dsi.vertical_backporch = 10;
+	params->dsi.vertical_frontporch = 54;
 	//params->dsi.vertical_frontporch_for_low_power = 750;
 	params->dsi.vertical_active_line = FRAME_HEIGHT;
 
-	params->dsi.horizontal_sync_active = 4;
-	params->dsi.horizontal_backporch = 24;
-	params->dsi.horizontal_frontporch = 132;
+	params->dsi.horizontal_sync_active = 22;
+	params->dsi.horizontal_backporch = 22;
+	params->dsi.horizontal_frontporch = 165;
 	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
 	params->dsi.ssc_disable = 1;
 	params->dsi.bdg_ssc_disable = 1;
@@ -507,8 +424,8 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	/* this value must be in MTK suggested table */
 #ifdef DSC_ENABLE
-	params->dsi.bdg_dsc_enable = 0;
-	params->dsi.PLL_CLOCK = 220; //with dsc
+	params->dsi.bdg_dsc_enable = 1;
+	params->dsi.PLL_CLOCK = 380; //with dsc
 #else
 	params->dsi.bdg_dsc_enable = 0;
 	params->dsi.PLL_CLOCK = 550; //without dsc
@@ -523,10 +440,10 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 	params->dsi.clk_lp_per_line_enable = 0;
 	params->dsi.esd_check_enable = 0;
 	params->dsi.customization_esd_check_enable = 0;
-	params->dsi.lcm_esd_check_table[0].cmd = 0x0a;
+/*	params->dsi.lcm_esd_check_table[0].cmd = 0x0a;
 	params->dsi.lcm_esd_check_table[0].count = 1;
 	params->dsi.lcm_esd_check_table[0].para_list[0] = 0x9d;
-
+*/
 	/* for ARR 2.0 */
 	// params->max_refresh_rate = 60;
 	// params->min_refresh_rate = 45;
@@ -538,36 +455,12 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 	params->corner_pattern_tp_size = sizeof(top_rc_pattern);
 	params->corner_pattern_lt_addr = (void *)top_rc_pattern;
 #endif
-	// /*ARR setting*/
-	// params->dsi.dynamic_fps_levels = 4;
-	// params->max_refresh_rate = 60;
-	// params->min_refresh_rate = 30;
-#if 0
-	/*vertical_frontporch should be related to the max fps*/
-	//params->dsi.vertical_frontporch = 20;
-	/*vertical_frontporch_for_low_power
-	 *should be related to the min fps
-	 */
-	params->dsi.vertical_frontporch_for_low_power = 750;
-#endif
 
-	// dynamic_fps_levels =
-		// sizeof(lcm_dynamic_fps_setting)/sizeof(struct dynamic_fps_info);
-
-	// dynamic_fps_levels =
-		// params->dsi.dynamic_fps_levels <
-		// dynamic_fps_levels
-		// ? params->dsi.dynamic_fps_levels
-		// : dynamic_fps_levels;
-
-	// for (i = 0; i < dynamic_fps_levels; i++) {
-		// params->dsi.dynamic_fps_table[i].fps =
-			// lcm_dynamic_fps_setting[i].fps;
-		// params->dsi.dynamic_fps_table[i].vfp =
-			// lcm_dynamic_fps_setting[i].vfp;
-		//params->dsi.dynamic_fps_table[i].idle_check_interval =
-		//lcm_dynamic_fps_setting[i].idle_check_interval;
-	// }
+	#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+	/****DynFPS start****/
+	lcm_dfps_int(&(params->dsi));
+	/****DynFPS end****/
+	#endif
 }
 
 /* turn on gate ic & control voltage to 5.5V */
@@ -590,22 +483,11 @@ static void lcm_init_power(void)
 
 static void lcm_suspend_power(void)
 {
-/* Huaqin add for HQ-123199 by shiwenlong at 2021/4/4 start */
-	SET_RESET_PIN(0);
+	//SET_RESET_PIN(0);
 	lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
 	MDELAY(3);
-
 	lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 0);
 	MDELAY(5);
-#if 0
-//	SET_RESET_PIN(0);
-	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
-	if (lcm_util.set_gpio_lcd_enp_bias)
-		lcm_util.set_gpio_lcd_enp_bias(0);
-	else
-		LCM_LOGI("set_gpio_lcd_enp_bias not defined...\n");
-#endif
-/* Huaqin add for HQ-123199 by shiwenlong at 2021/4/4 end */
 }
 
 /* turn on gate ic & control voltage to 5.5V */
@@ -620,23 +502,23 @@ static void lcm_resume_power(void)
 
 static void lcm_init(void)
 {
-//	SET_RESET_PIN(0);
-//	MDELAY(15);
-//	SET_RESET_PIN(1);
-//	MDELAY(1);
-//	SET_RESET_PIN(0);
-//	MDELAY(10);
+	SET_RESET_PIN(1);
+	MDELAY(10);
+	SET_RESET_PIN(0);
+	MDELAY(10);
+	SET_RESET_PIN(1);
+	MDELAY(10);
 
-//	SET_RESET_PIN(1);
-//	MDELAY(10);
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
-	//push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
+	push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
 	LCM_LOGI("nt36672c_fhdp----tps6132----lcm mode = vdo mode :%d----\n",
 		 lcm_dsi_mode);
+	esd_flag_pin = 1;
 }
 
 static void lcm_suspend(void)
 {
+	esd_flag_pin = 0;
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	push_table(NULL, lcm_suspend_setting,
 		   ARRAY_SIZE(lcm_suspend_setting), 1);
@@ -688,7 +570,7 @@ static void lcm_setbacklight_cmdq(void *handle, unsigned int level)
 
 static void lcm_set_hw_info(void)
 {
-	hq_regiser_hw_info(HWID_LCM, "incell,vendor:TianMa,IC:nt36672(novatek)");
+	hq_regiser_hw_info(HWID_LCM, "incell,vendor:TianMa,IC:nt36672C(novatek)");
 }
 
 static void lcm_update(unsigned int x, unsigned int y, unsigned int width,

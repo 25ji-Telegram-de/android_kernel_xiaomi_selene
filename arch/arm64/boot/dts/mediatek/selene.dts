@@ -611,9 +611,7 @@
 	reg = <0x37>;
 	status = "okay";
 	/*ktd,pwm-mode; */
-/*K19A HQ-123492 K19A LCD bring up by caogaojie at 2021/3/27 start*/
 	ktd,using-lsb = <1>;
-/*K19A HQ-123492 K19A LCD bring up by caogaojie at 2021/3/27 end*/
 	ktd,pwm-frequency = <100>;
 	ktd,bl-fscal-led = <0x98>;/*default 20.2mA*/
 	ktd,turn-on-ramp = <0>;
@@ -780,24 +778,35 @@
 };
 
 &spi5 {
+	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
-	spislv@2 {
-		compatible = "mediatek,hifi4dsp-spi";
-		spi-max-frequency = <1000000>;
-		spi-pin-mode = <0>;
-		/*tick-dly = <1>;*/
-		ick-dly = <0>;
-		reg = <0>;
-		status = "okay";
-	};
+	pinctrl-names = "default";
+	pinctrl-0 = <&spislv_pins_default>;
 
-        /*spid2v5:spid2v5@0 {
-                compatible = "mediatek,spi-mt65xx-test";
-                spi-max-frequency = <1000000>;
-                reg = <0>;
-                status = "okay";
-        };*/
+	spislv@0 {
+		compatible = "mediatek,spi_slave";
+		reg = <0>;
+		spi-max-frequency = <55000000>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+		low-speed-tick-delay = /bits/ 8 <1>;
+		low-speed-early-trans = /bits/ 8 <0>;
+		high-speed-tick-delay = /bits/ 8 <1>;
+		high-speed-early-trans = /bits/ 8 <1>;
+		slave-drive-strength = /bits/ 8 <3>;
+	};
+};
+&pio {
+	spislv_pins_default: spislv_mode_default {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO13__FUNC_SPI5_MI>,
+				<PINMUX_GPIO14__FUNC_SPI5_CSB>,
+				<PINMUX_GPIO15__FUNC_SPI5_MO>,
+				<PINMUX_GPIO16__FUNC_SPI5_CLK>;
+			drive-strength = <3>;
+		};
+	};
 };
 
 /* DISPSYS GPIO standardization end*/
