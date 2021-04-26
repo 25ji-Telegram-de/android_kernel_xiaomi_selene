@@ -124,6 +124,10 @@ static unsigned ENN = 494; //gpio169
 
 int esd_flag_pin = 0;
 
+/* Huaqin modify for HQ-124216 by shujiawang at 2021/04/30 start */
+extern bool nvt_gesture_flag;
+/* Huaqin modify for HQ-124216 by shujiawang at 2021/04/30 end */
+
 extern void  BDG_set_cmdq_V2_DSI0(void *cmdq, unsigned int cmd, unsigned char count,unsigned char *para_list, unsigned char force_update);
 
 /*****************************************************************************
@@ -483,14 +487,18 @@ static void lcm_init_power(void)
 	LCM_LOGI("[nt36672D] %s exit\n", __func__);
 }
 
+/* Huaqin modify for HQ-124216 by shujiawang at 2021/04/30 start */
 static void lcm_suspend_power(void)
 {
-	//SET_RESET_PIN(0);
-	lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
-	MDELAY(3);
-	lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 0);
-	MDELAY(5);
+	if (!nvt_gesture_flag)
+	{
+		lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
+		MDELAY(3);
+		lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 0);
+		MDELAY(5);
+	}
 }
+/* Huaqin modify for HQ-124216 by shujiawang at 2021/04/30 end */
 
 /* turn on gate ic & control voltage to 5.5V */
 static void lcm_resume_power(void)
