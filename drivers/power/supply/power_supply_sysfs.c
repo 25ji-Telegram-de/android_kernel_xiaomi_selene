@@ -85,7 +85,6 @@ static const char * const typec_text[] = {
 		"Nothing attached", "Source attached",
 		"Sink attached",
 };
-
 static ssize_t power_supply_show_property(struct device *dev,
 					  struct device_attribute *attr,
 					  char *buf) {
@@ -328,6 +327,9 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(connector_temp),
 	POWER_SUPPLY_ATTR(vbus_disable),
 	POWER_SUPPLY_ATTR(chip_ok),
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 start*/
+	POWER_SUPPLY_ATTR(quick_charge_type),
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 end*/
 /*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 start*/
 /* BSP.Charge - 2021.03.02 - add batterysecrete - start*/
 	/* battery verify properties */

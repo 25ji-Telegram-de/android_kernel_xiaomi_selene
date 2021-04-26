@@ -209,6 +209,9 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_CONNECTOR_TEMP,
 	POWER_SUPPLY_PROP_VBUS_DISABLE,
 	POWER_SUPPLY_PROP_CHIP_OK,
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 start*/
+	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 end*/
 /*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 start*/
 /* BSP.Charge - 2021.03.02 - add batterysecrete - start*/
 	/* battery verify properties */

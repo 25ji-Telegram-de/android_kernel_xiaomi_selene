@@ -332,14 +332,21 @@ static int mt_ac_get_property(struct power_supply *psy,
 
 	return 0;
 }
-
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 start*/
+enum quick_charge_type {
+	QUICK_CHARGE_NORMAL = 0,
+	QUICK_CHARGE_FAST,
+	QUICK_CHARGE_FLASH,
+	QUICK_CHARGE_TURPE,
+	QUICK_CHARGE_MAX,
+};
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 end*/
 static int mt_usb_get_property(struct power_supply *psy,
 	enum power_supply_property psp, union power_supply_propval *val)
 {
 	struct mt_charger *mtk_chg = power_supply_get_drvdata(psy);
 	//struct tcpc_device *tcpc = tcpc_dev_get_by_name("type_c_port0");
 	int typec_mode = 0;
-
 	switch (psp) {
 	case POWER_SUPPLY_PROP_ONLINE:
 		if ((mtk_chg->chg_type == STANDARD_HOST) ||
@@ -412,6 +419,34 @@ static int mt_usb_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
 		val->intval = battery_get_vbus();
 		break;
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 start*/
+	case POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE:
+		if (hvdcp_type_tmp == HVDCP_3) {
+			val->intval = QUICK_CHARGE_FAST;
+			break;
+		} else if (hvdcp_type_tmp == HVDCP) {
+			val->intval = QUICK_CHARGE_FAST;
+			break;
+		}
+		switch (mtk_chg->chg_type) {
+		case  STANDARD_HOST:
+			val->intval = QUICK_CHARGE_NORMAL;
+			break;
+		case  CHARGING_HOST:
+			val->intval = QUICK_CHARGE_NORMAL;
+			break;
+		case  STANDARD_CHARGER:
+			val->intval = QUICK_CHARGE_NORMAL;
+			break;
+		case  HVDCP_CHARGER:
+			val->intval = QUICK_CHARGE_FAST;
+			break;
+		default:
+			val->intval = QUICK_CHARGE_NORMAL;
+			break;
+	}
+		break;
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 end*/
 	default:
 		return -EINVAL;
 	}
@@ -589,6 +624,9 @@ static enum power_supply_property mt_usb_properties[] = {
 	POWER_SUPPLY_PROP_REVERSE_CHG_OTG,
 	POWER_SUPPLY_PROP_REVERSE_CHG_STATUS,
 #endif
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 start*/
+	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 end*/
 };
 
 static enum power_supply_property mt_main_properties[] = {
