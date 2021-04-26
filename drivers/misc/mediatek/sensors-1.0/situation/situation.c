@@ -12,8 +12,12 @@
  */
 
 #define pr_fmt(fmt) "<SITUATION> " fmt
-
+/*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 start*/
+#include <hwmsensor.h>
 #include "situation.h"
+#include <SCP_sensorHub.h>
+/*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 end*/
+
 
 static struct situation_context *situation_context_obj;
 
@@ -543,19 +547,48 @@ static int situation_misc_init(struct situation_context *cxt)
 
 	return err;
 }
+/*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 start*/
+static ssize_t sarcali_update_store(struct device *dev,
+        struct device_attribute *attr, const char *buf,
+        size_t count)
+{
+	uint8_t *cali_buf = NULL;
+	uint32_t *print_buf = NULL;
+	int err = 0;
+
+	cali_buf = vzalloc(count);
+	if (!cali_buf)
+		return -ENOMEM;
+	memcpy(cali_buf, buf, count);
+    print_buf = (uint32_t *)cali_buf;
+    pr_err("%s: sar cali: [%u - 0x%x, %u - 0x%x]\n", __func__, print_buf[0], print_buf[0], 
+					print_buf[1], print_buf[1]);
+
+    err = sensor_cfg_to_hub(ID_SAR, cali_buf, count);
+    if (err < 0) {
+		pr_err("%s: sar set cali err %d\n", __func__, err);
+    }
+	vfree(cali_buf);
+	return count;
+}
+/*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 end*/
 
 DEVICE_ATTR(situactive, 0644,
 	situation_show_active, situation_store_active);
 DEVICE_ATTR(situbatch, 0644, situation_show_batch, situation_store_batch);
 DEVICE_ATTR(situflush, 0644, situation_show_flush, situation_store_flush);
 DEVICE_ATTR(situdevnum, 0644, situation_show_devnum, NULL);
-
-
+/*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 start*/
+DEVICE_ATTR(sarcali_update, 0644, NULL, sarcali_update_store);  //new add
+/*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 end*/
 static struct attribute *situation_attributes[] = {
 	&dev_attr_situactive.attr,
 	&dev_attr_situbatch.attr,
 	&dev_attr_situflush.attr,
 	&dev_attr_situdevnum.attr,
+	/*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 start*/
+	&dev_attr_sarcali_update.attr,
+	/*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 end*/
 	NULL
 };
 
