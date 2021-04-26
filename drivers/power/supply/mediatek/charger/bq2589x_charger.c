@@ -1498,7 +1498,11 @@ static int bq2589x_charger_remove(struct i2c_client *client)
 
 static void bq2589x_charger_shutdown(struct i2c_client *client)
 {
-
+	/*K19A-185 charge by wangchao at 2021/4/15 start*/
+	struct bq2589x *bq = i2c_get_clientdata(client);
+	bq2589x_disable_otg(bq);
+	pr_err("bq2589x_disable_otg for shutdown\n");
+	/*K19A-185 charge by wangchao at 2021/4/26 end*/
 }
 
 static struct i2c_driver bq2589x_charger_driver = {
