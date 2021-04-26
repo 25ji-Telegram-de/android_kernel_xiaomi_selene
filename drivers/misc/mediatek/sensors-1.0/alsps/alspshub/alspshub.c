@@ -396,11 +396,12 @@ static int alshub_factory_enable_sensor(bool enable_disable,
 {
 	int err = 0;
 	struct alspshub_ipi_data *obj = obj_ipi_data;
-
+    /*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 start*/
+	int android_enable = 0;
 	if (enable_disable == true)
-		WRITE_ONCE(obj->als_android_enable, true);
+		WRITE_ONCE(obj->als_factory_enable, true);
 	else
-		WRITE_ONCE(obj->als_android_enable, false);
+		WRITE_ONCE(obj->als_factory_enable, false);
 
 	if (enable_disable == true) {
 		err = sensor_set_delay_to_hub(ID_LIGHT, sample_periods_ms);
@@ -409,11 +410,18 @@ static int alshub_factory_enable_sensor(bool enable_disable,
 			return -1;
 		}
 	}
+    android_enable = READ_ONCE(obj->als_android_enable);
+    if(android_enable == false){
+    pr_err("%s: android_enable[%u] execute power request[%s]\n", __func__, android_enable, (enable_disable == true)?("on"):("off"));
 	err = sensor_enable_to_hub(ID_LIGHT, enable_disable);
 	if (err) {
 		pr_err("sensor_enable_to_hub failed!\n");
 		return -1;
 	}
+    }else{
+        pr_err("%s: android_enable[%u] ignore power request[%s]\n", __func__, android_enable, (enable_disable == true)?("on"):("off"));
+        }
+    /*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 end*/
 	mutex_lock(&alspshub_mutex);
 	if (enable_disable)
 		set_bit(CMC_BIT_ALS, &obj->enable);
