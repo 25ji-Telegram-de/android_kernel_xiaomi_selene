@@ -488,3 +488,6 @@ CONFIG_BATT_VERIFY_BY_DS28E16=y
 #/*K19A HQ-123203 K19A config thermal farmework by denggang at 2021/04/16 start*/
 CONFIG_CPU_THERMAL=y
 #/*K19A HQ-123203 K19A config thermal farmework by denggang at 2021/04/16 end*/
+# Huaqin add for HQ-123513 by liunianliang at 2021/04/25 start
+CONFIG_SWTP_DRIVER_SELENE=y
+# Huaqin add for HQ-123513 by liunianliang at 2021/04/25 end

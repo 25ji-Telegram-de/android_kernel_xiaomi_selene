@@ -40,7 +40,13 @@ ccci_port-y += port_sysmsg.o
 ifeq ($(CONFIG_SWTP_DRIVER), y)
 ccci_port-y += ccci_swtp_merlin.o
 else
-ccci_port-y += ccci_swtp.o
+# Huaqin modify for HQ-123513 by liunianliang at 2021/04/25 start
+  ifeq ($(CONFIG_SWTP_DRIVER_SELENE), y)
+  ccci_port-y += ccci_swtp_selene.o
+  else
+  ccci_port-y += ccci_swtp.o
+  endif
+# Huaqin modify for HQ-123513 by liunianliang at 2021/04/25 end
 endif
 
 else
