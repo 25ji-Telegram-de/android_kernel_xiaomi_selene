@@ -84,10 +84,12 @@ static struct LCM_UTIL_FUNCS lcm_util;
 #define FRAME_WIDTH			(1080)
 #define FRAME_HEIGHT			(2400)
 
+/* Huaqin modify for HQ-132693 by liunianliang at 2021/04/27 start */
 /* physical size in um */
-#define LCM_PHYSICAL_WIDTH		(64500)
-#define LCM_PHYSICAL_HEIGHT		(129000)
-#define LCM_DENSITY			(480)
+#define LCM_PHYSICAL_WIDTH		(67716)
+#define LCM_PHYSICAL_HEIGHT		(150480)
+#define LCM_DENSITY			(405)
+/* Huaqin modify for HQ-132693 by liunianliang at 2021/04/27 end */
 
 #define REGFLAG_DELAY			0xFFFC
 #define REGFLAG_UDELAY			0xFFFB
