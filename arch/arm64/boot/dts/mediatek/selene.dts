@@ -548,8 +548,10 @@
 	enable_min_charge_temp;
 	min_charge_temp = <0>;
 	min_charge_temp_plus_x_degree = <2>;
-	max_charge_temp = <55>;
-	max_charge_temp_minus_x_degree = <53>;
+	/*K19A HQ-132845 K19A charger by wangqi at 2021/4/26 start*/
+	max_charge_temp = <60>;
+	max_charge_temp_minus_x_degree = <57>;
+	/*K19A HQ-132845 K19A charger by wangqi at 2021/4/26 end*/
 
 	qcom,thermal-mitigation-dcp
 		= <1800000 1800000 1800000 1800000 1800000 1800000 1800000
