@@ -944,6 +944,9 @@ void charger_manager_set_prop_system_temp_level(int temp_level)
 
 	if (pinfo == NULL)
 		return ;
+	/*K19A HQ-133296 K19A charger of low temperature by wangqi at 2021/4/27 start*/
+	return;
+	/*K19A HQ-133296 K19A charger of low temperature by wangqi at 2021/4/27 start*/
 	pcba_to_thermal = get_huaqin_pcba_config();
 
 #if defined(TARGET_PRODUCT_LANCELOT) || defined(TARGET_PRODUCT_SHIVA)

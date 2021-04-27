@@ -364,7 +364,8 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
           pdata->charging_current_limit = 6000000;
           pr_err("POWER_SUPPLY_TYPE_USB_HVDCP set icl\n");
 	}
-
+/*K19A HQ-133296 K19A charger of low temperature by wangqi at 2021/4/27 start*/
+#if 0
 	if (info->enable_sw_jeita) {
 		if (IS_ENABLED(CONFIG_USBIF_COMPLIANCE)
 		    && info->chr_type == STANDARD_HOST)
@@ -376,6 +377,9 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 			}
 		}
 	}
+#endif
+/*K19A HQ-133296 K19A charger of low temperature by wangqi at 2021/4/27 end*/
+
 	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
 	if (info->enable_sw_jeita){
 		if (pdata->charging_current_limit > info->sw_jeita.cc)
