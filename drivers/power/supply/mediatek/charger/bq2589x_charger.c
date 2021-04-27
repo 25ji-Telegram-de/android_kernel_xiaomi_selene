@@ -1384,7 +1384,9 @@ static struct charger_ops bq2589x_chg_ops = {
 
 	/* OTG */
 	.enable_otg = bq2589x_set_otg,
-	.set_boost_current_limit = bq2589x_set_boost_ilmt,
+	/*K19A K19A-187 K19A charger of set boost current by wangqi at 2021/4/27 start*/
+	.set_otg_current = bq2589x_set_boost_ilmt,
+	/*K19A K19A-187 K19A charger of set boost current by wangqi at 2021/4/27 start*/
 	.enable_discharge = NULL,
 
 	/* PE+/PE+20 */
