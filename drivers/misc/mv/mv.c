@@ -43,9 +43,6 @@ static int mv_proc_show(struct seq_file *file, void*data)
 	char emmc_ssize[8];
 	uint32_t manfidd;
 	char manfid[32];
-	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 start */
-	char ddrid[10];
-	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 end */
 	char *product_version;
 
 	status = hq_emmcinfo(emmc_size);
@@ -55,17 +52,16 @@ static int mv_proc_show(struct seq_file *file, void*data)
 	} else{
 		status = sprintf(RAM_size, "%d", round_kbytes_to_readable_mbytes(K(i.totalram)));
 	}
-	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/09 start */
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/28 start */
 	if(strcmp("K19A_Micro_9S9",part_num) == 0)
 	{
 		sprintf(part_num,"%s","MT29VZZZAD9GQFSM_046W_9S9");
 	}
-	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/09 end */
-	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 start */
-	sprintf(ddrid,"%s", ddr_id);
-	seq_printf(file,"D: %s %s\n", ddrid, RAM_size);
-	seq_printf(file,"U: %s %s %s 0x%x\n", ddrid, emmc_ssize, part_num, kernel_fwrew[0]);
-	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 end */
+	manfidd = mmc_get_manfid();
+	snprintf(manfid, 5,"0x%x", manfidd);
+	seq_printf(file,"D: %s %s\n", ddr_id, RAM_size);
+	seq_printf(file,"U: %s %s %s 0x%x\n", manfid, emmc_ssize, part_num, kernel_fwrew[0]);
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/28 end */
 
 	return 0;
 }

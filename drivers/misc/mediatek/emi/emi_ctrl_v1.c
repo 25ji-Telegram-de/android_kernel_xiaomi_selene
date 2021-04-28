@@ -255,9 +255,9 @@ static int __init emi_ctrl_init(void)
 	for (i = 0; i < get_rk_num(); i++)
 		pr_info("[EMI] rank%d_size(0x%x)", i, get_rank_size(i));
 
-	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 start */
-	sprintf(ddr_id, "0x%x", get_dram_mr(5));
-	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/23 end */
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/28 start */
+	sprintf(ddr_id, "0x%02x", get_dram_mr(5));
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/04/28 end */
 
 	return 0;
 }
