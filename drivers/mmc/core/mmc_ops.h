@@ -40,18 +40,6 @@ int __mmc_switch(struct mmc_card *card, u8 set, u8 index, u8 value,
 		bool use_busy_signal, bool send_status,	bool retry_crc_err);
 int mmc_switch(struct mmc_card *card, u8 set, u8 index, u8 value,
 		unsigned int timeout_ms);
-/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 start */
-int mmc_send_vc_cmd(struct mmc_card *card, u32 opcode, u32 arg);
-int mmc_send_cxd_witharg_data(struct mmc_card *card, struct mmc_host *host,
-		u32 opcode, u32 arg, void *buf, unsigned len);
-int mmc_send_cxd_data(struct mmc_card *card, struct mmc_host *host, u32 opcode, void *buf, unsigned len);
-int mmc_get_osv_data(struct mmc_card *card,  void *buf);
-int mmc_get_nandinfo_data(struct mmc_card *card, void *buf);
-/* Huaqin modify for HQ-123324 by luocheng at 2021/04/21 start */
-int mmc_send_micron_hr(struct mmc_card *card, struct mmc_host *host,
-		u32 opcode, void *buf, unsigned int len);
-/* Huaqin modify for HQ-123324 by luocheng at 2021/04/21 end */
-/* Huaqin modify for HQ-123324 by luocheng at 2021/04/12 end */
 #ifdef CONFIG_MTK_EMMC_HW_CQ
 int __mmc_switch_cmdq_mode(struct mmc_command *cmd, u8 set, u8 index,
 				  u8 value, unsigned int timeout_ms,
