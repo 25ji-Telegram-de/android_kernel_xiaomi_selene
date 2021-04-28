@@ -944,9 +944,7 @@ void charger_manager_set_prop_system_temp_level(int temp_level)
 
 	if (pinfo == NULL)
 		return ;
-	/*K19A HQ-133296 K19A charger of low temperature by wangqi at 2021/4/27 start*/
-	return;
-	/*K19A HQ-133296 K19A charger of low temperature by wangqi at 2021/4/27 start*/
+
 	pcba_to_thermal = get_huaqin_pcba_config();
 
 #if defined(TARGET_PRODUCT_LANCELOT) || defined(TARGET_PRODUCT_SHIVA)
@@ -1000,9 +998,10 @@ void charger_manager_set_prop_system_temp_level(int temp_level)
 	} else {
 		thermal_is_500 = false;
 	}
-	pr_err("%s, system_temp_level:%d thermal_icl_ua:%d usb_type:%d\n", __func__,
+  	/*K19A HQ-124114 K19A charger enable jeita by wangqi at 2021/4/27 start*/
+	pr_err("%s, battery_temp: %d system_temp_level:%d thermal_icl_ua:%d usb_type:%d\n", __func__,pinfo->battery_temp,
 			pinfo->system_temp_level, thermal_icl_ua, pinfo->usb_psy->desc->type);
-
+	/*K19A HQ-124114 K19A charger enable jeita by wangqi at 2021/4/27 end*/
 	// pr_err("%s, system_temp_level:%d thermal_icl_ua:%d \n", __func__,
 	// 		pinfo->system_temp_level, thermal_icl_ua);
 
