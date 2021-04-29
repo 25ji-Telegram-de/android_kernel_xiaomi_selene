@@ -168,7 +168,7 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 		SENSOR_DRVNAME_OV50C40_OFILM_MAIN_MIPI_RAW,
 		{
             {SensorMCLK, Vol_High, 0},
-			{RST, Vol_Low, 1},
+			{RST, Vol_Low, 5},
 			{AVDD, Vol_2800, 1},
 			{DOVDD, Vol_1800, 1},
 			{DVDD, Vol_1200, 1},
@@ -181,7 +181,7 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 		SENSOR_DRVNAME_OV50C40_QTECH_MAIN_MIPI_RAW,
 		{
             {SensorMCLK, Vol_High, 0},
-			{RST, Vol_Low, 1},
+			{RST, Vol_Low, 5},
 			{AVDD, Vol_2800, 1},
 			{DOVDD, Vol_1800, 1},
 			{DVDD, Vol_1200, 1},
