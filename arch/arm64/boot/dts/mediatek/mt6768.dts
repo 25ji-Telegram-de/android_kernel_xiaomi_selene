@@ -2795,6 +2795,15 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 		status = "disabled";
 	};
 
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	dsi_err_flag: dsi_err_flag {
+		compatible = "mediatek, dsi_err-flag";
+		status = "disabled";
+	};
+#endif
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end */
+
 	mm_mutex@14016000 {
 		compatible = "mediatek,mm_mutex";
 		reg = <0 0x14016000 0 0x1000>;

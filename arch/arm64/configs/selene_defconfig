@@ -476,3 +476,6 @@ CONFIG_CPU_THERMAL=y
 CONFIG_SWTP_DRIVER_SELENE=y
 # Huaqin add for HQ-123513 by liunianliang at 2021/04/25 end
 CONFIG_RTMM=y
+# Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start
+CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE=y
+# Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end

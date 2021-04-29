@@ -83,6 +83,15 @@
                 <sensitive_level>Edge</sensitive_level>
                 <debounce_en>Disable</debounce_en>
             </eint20>
+            <!-- Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start -->
+            <eint21>
+                <varName>DSI_ERR_FLAG</varName>
+                <debounce_time>0</debounce_time>
+                <polarity>High</polarity>
+                <sensitive_level>Edge</sensitive_level>
+                <debounce_en>Disable</debounce_en>
+            </eint21>
+            <!-- Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end -->
             <eint41>
                 <varName>TCPC_PD</varName>
                 <debounce_time>0</debounce_time>
@@ -345,7 +354,9 @@
             </gpio20>
             <gpio21>
                 <eint_mode>false</eint_mode>
-                <def_mode>0</def_mode>
+		<!-- Huaqin modify for HQ-124138 by liunianliang at 2021/04/29 start -->
+                <def_mode>1</def_mode>
+		<!-- Huaqin modify for HQ-124138 by liunianliang at 2021/04/29 end -->
                 <inpull_en>true</inpull_en>
                 <inpull_selhigh>false</inpull_selhigh>
                 <def_dir>IN</def_dir>

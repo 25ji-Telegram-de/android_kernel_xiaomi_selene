@@ -129,6 +129,11 @@ int esd_flag_pin2 = 0;
 
 extern void  BDG_set_cmdq_V2_DSI0(void *cmdq, unsigned int cmd, unsigned char count,unsigned char *para_list, unsigned char force_update);
 
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+extern int32_t nvt_update_firmware(char *firmware_name);
+#endif
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end */
 /*****************************************************************************
  * Function Prototype
  *****************************************************************************/
@@ -188,7 +193,6 @@ static int _lcm_i2c_remove(struct i2c_client *client)
 	i2c_unregister_device(client);
 	return 0;
 }
-
 
 // static int _lcm_i2c_write_bytes(unsigned char addr, unsigned char value)
 // {
@@ -471,7 +475,11 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 #endif
 	params->dsi.CLK_HS_POST = 36;
 	params->dsi.clk_lp_per_line_enable = 0;
-	params->dsi.esd_check_enable = 0;
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	params->dsi.esd_check_enable = 1;
+#endif
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end */
 	params->dsi.customization_esd_check_enable = 0;
 	//params->dsi.lcm_esd_check_table[0].cmd = 0x0a;
 	//params->dsi.lcm_esd_check_table[0].count = 1;
@@ -547,7 +555,7 @@ static void lcm_init_power(void)
 static void lcm_suspend_power(void)
 {
 /* Huaqin add for HQ-123199 by shiwenlong at 2021/4/4 start */
-	SET_RESET_PIN(0);
+	//SET_RESET_PIN(0);
 	lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
 	MDELAY(3);
 
@@ -710,6 +718,20 @@ static unsigned int lcm_compare_id(void)
 
 }
 
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+static unsigned int lcd_esd_recover(void)
+{
+	LCM_LOGI("%s, int and update tp fw..\n", __func__);
+	lcm_init_power();
+	lcm_init();
+
+	nvt_update_firmware("nt36672c_tr_02_ts_fw.bin");
+	return 0;
+}
+#endif
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end */
+
 struct LCM_DRIVER dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv = {
 	.name = "dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv",
 	.set_util_funcs = lcm_set_util_funcs,
@@ -725,5 +747,10 @@ struct LCM_DRIVER dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv = {
 	.ata_check = lcm_ata_check,
 	.update = lcm_update,
 	.set_hw_info = lcm_set_hw_info,
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	.esd_recover = lcd_esd_recover,
+#endif
+/* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end */
 };
 

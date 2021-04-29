@@ -126,6 +126,14 @@ static unsigned int gPresentFenceIndex;
 unsigned int gTriggerDispMode;
 static unsigned int g_keep;
 static unsigned int g_skip;
+
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+extern atomic_t lcm_ready;
+extern atomic_t lcm_valid_irq;
+#endif
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
+
 #if 0 //def CONFIG_TRUSTONIC_TRUSTED_UI
 static struct switch_dev disp_switch_data;
 #endif
@@ -4710,6 +4718,14 @@ int primary_display_suspend(void)
 	int active_cfg = 0;
 #endif
 	DISPCHECK("%s begin\n", __func__);
+
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	atomic_set(&lcm_ready, 0);
+	DISPERR("[ESD] atomic_set(&lcm_ready, 0)\n");
+#endif
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
+
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_suspend,
 		MMPROFILE_FLAG_START, 0, 0);
 	primary_display_idlemgr_kick(__func__, 1);
@@ -4918,6 +4934,7 @@ done:
 	primary_display_request_dvfs_perf(0,
 		HRT_LEVEL_DEFAULT);
 #endif
+
 	return ret;
 }
 
@@ -5022,6 +5039,11 @@ int primary_display_resume(void)
 	unsigned int out_fps = 60;
 #endif
 	DISPCHECK("primary_display_resume begin\n");
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	atomic_set(&lcm_valid_irq, 1);
+#endif
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_START, 0, 0);
 	_primary_path_lock(__func__);
@@ -5421,6 +5443,13 @@ done:
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_END, 0, 0);
 	ddp_clk_check();
+
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	atomic_set(&lcm_ready, 1);
+	DISPERR("[ESD] atomic_set(&lcm_ready, 1)\n");
+#endif
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
 	return ret;
 }
 
