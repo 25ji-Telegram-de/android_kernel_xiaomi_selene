@@ -80,9 +80,9 @@
 bool thermal_is_500;
 static struct charger_manager *pinfo;
 static struct list_head consumer_head = LIST_HEAD_INIT(consumer_head);
-/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
-extern hq_selene_pcba_config;
-/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/29 start*/
+extern int hq_selene_pcba_config;
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/29 end*/
 
 
 static DEFINE_MUTEX(consumer_mutex);
