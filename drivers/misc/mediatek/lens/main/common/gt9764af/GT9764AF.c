@@ -245,6 +245,24 @@ long GT9764AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned l
 	return i4RetValue;
 }
 
+static int AF_PowerDown(void)
+{
+	int i4RetValue = 0;
+	char PDSendCmdRelease[2] = {(char)(0x02), (char)(0x01)};
+
+	g_pstAF_I2Cclient->addr = AF_I2C_SLAVE_ADDR;
+	g_pstAF_I2Cclient->addr = g_pstAF_I2Cclient->addr >> 1;
+	LOG_INF("GT9764AF AF_PowerDown\n");
+
+	i4RetValue = i2c_master_send(g_pstAF_I2Cclient, PDSendCmdRelease, 2);
+	if (i4RetValue < 0) {
+		LOG_INF("I2C send failed!!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 /* Main jobs: */
 /* 1.Deallocate anything that "open" allocated in private_data. */
 /* 2.Shut down the device on last close. */
@@ -253,6 +271,7 @@ long GT9764AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned l
 int GT9764AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
 {
 	LOG_INF("Start\n");
+	AF_PowerDown();
 
 	if (*g_pAF_Opened == 2)
 		LOG_INF("Wait\n");
@@ -270,6 +289,16 @@ int GT9764AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
 	LOG_INF("End\n");
 
 	return 0;
+}
+
+
+
+void GT9764AF_SwitchToPowerDown(struct i2c_client *pstAF_I2Cclient)
+{
+	g_pstAF_I2Cclient = pstAF_I2Cclient;
+	LOG_INF("GT9764AF_SwitchToPowerDown Start\n");
+	AF_PowerDown();
+	LOG_INF("GT9764AF_SwitchToPowerDown End\n");
 }
 
 int GT9764AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_SpinLock, int *pAF_Opened)
