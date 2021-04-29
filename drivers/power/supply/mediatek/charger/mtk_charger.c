@@ -1697,7 +1697,9 @@ void mtk_charger_int_handler(void)
 	} else {
 		temp = battery_get_bat_temperature();
 		pr_err("dhx---temp:%d\n", temp);
-		if (temp >= 0 && temp <= 60)
+		/*K19A HQ-133625 K19A charger of status by wangqi at 2021/4/29 start*/
+		if (temp >= -10 && temp <= 60)
+		/*K19A HQ-133625 K19A charger of status by wangqi at 2021/4/29 end*/
 			charger_manager_notifier(pinfo, CHARGER_NOTIFY_START_CHARGING);
 	}
 
