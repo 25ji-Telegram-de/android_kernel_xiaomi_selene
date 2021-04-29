@@ -40,7 +40,9 @@ const struct of_device_id swtp_of_match[] = {
 #define SWTP_MAX_SUPPORT_MD 1
 struct swtp_t swtp_data[SWTP_MAX_SUPPORT_MD];
 #define MAX_RETRY_CNT 10
-#define GOIP_STATUS "swtp_gpio_status"
+/* Huaqin modify for HQ-123513 by liunianliang at 2021/04/29 start */
+#define GOIP_STATUS "gpio_status"
+/* Huaqin modify for HQ-123513 by liunianliang at 2021/04/29 end */
 static struct proc_dir_entry  *gpio_status;
 int input_data = -1;
 static int gpio_proc_show(struct seq_file *file, void *data)
