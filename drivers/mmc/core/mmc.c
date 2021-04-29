@@ -71,7 +71,9 @@ static const unsigned int taac_mant[] = {
 	})
 
 static struct mmc_cid *emmc_cid;
-
+/*Huaqin modify for HQ-123324 by luocheng at 2021/04/29 start*/
+struct mmc_card *mi_card;
+/*Huaqin modify for HQ-123324 by luocheng at 2021/04/29 end*/
 /*
  * Given the decoded CSD structure, decode the raw CID to our CID structure.
  */
@@ -2009,6 +2011,10 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 		}
 	}
 #endif
+/*Huaqin modify for HQ-123324 by luocheng at 2021/04/29*/
+	mi_card = card;
+	pr_crit("[mi-memory] card:0x%x\n",card);
+/*Huaqin modify for HQ-123324 by luocheng at 2021/04/29*/
 	return 0;
 
 free_card:

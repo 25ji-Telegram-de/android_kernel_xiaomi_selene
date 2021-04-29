@@ -557,4 +557,7 @@ source "drivers/misc/echo/Kconfig"
 source "drivers/misc/cxl/Kconfig"
 source "drivers/misc/mediatek/Kconfig"
 source "drivers/misc/hqsysfs/Kconfig"
+#Huaqin modify for HQ-123324 by luocheng at 2021/04/29 start
+source "drivers/misc/mi-memory/Kconfig"
+#Huaqin modify for HQ-123324 by luocheng at 2021/04/29 end
 endmenu

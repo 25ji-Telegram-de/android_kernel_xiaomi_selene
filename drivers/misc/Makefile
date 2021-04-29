@@ -64,6 +64,9 @@ obj-$(CONFIG_MEDIATEK_SOLUTION) += mediatek/
 obj-$(CONFIG_HQ_SYSFS_SUPPORT) 	+= hqsysfs/
 obj-$(CONFIG_SERIAL_NUM) += serial_num.o
 obj-y                          += mv/
+#Huaqin modify for HQ-123324 by luocheng at 2021/04/29 start
+obj-y                          += mi-memory/
+#Huaqin modify for HQ-123324 by luocheng at 2021/04/29 end
 lkdtm-$(CONFIG_LKDTM)		+= lkdtm_core.o
 lkdtm-$(CONFIG_LKDTM)		+= lkdtm_bugs.o
 lkdtm-$(CONFIG_LKDTM)		+= lkdtm_heap.o

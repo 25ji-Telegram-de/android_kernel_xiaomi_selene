@@ -1,0 +1,7 @@
+config MI_MEMORY_SYSFS
+	tristate "show memory info"
+	default n
+	help
+		This adds support for mi memory info.
+
+
