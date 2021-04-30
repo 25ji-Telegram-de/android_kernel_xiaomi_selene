@@ -1717,6 +1717,18 @@ int bdg_tx_start(enum DISP_BDG_ENUM module, void *cmdq)
 	return 0;
 }
 
+int bdg_tx_clr_sta(enum DISP_BDG_ENUM module, void *cmdq)
+{
+	int i;
+
+	DISPFUNCSTART();
+
+	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++)
+		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_INTSTA, 0);
+
+	return 0;
+}
+
 int bdg_set_dcs_read_cmd(bool enable, void *cmdq)
 {
 	DISPFUNCSTART();
@@ -1820,7 +1832,7 @@ int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module)
 {
 	unsigned int i, k;
 
-	DISPFUNCSTART();
+//	DISPFUNCSTART();
 
 	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++) {
 		unsigned long dsc_base_addr = (unsigned long)DSC_REG;
@@ -1828,7 +1840,6 @@ int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module)
 		unsigned long mipi_base_addr = (unsigned long)MIPI_TX_REG;
 
 		DISPMSG("========================== mt6382 RX REGS ==\n", i);
-
 		DISPMSG("0x%08x: 0x%08x\n", 0x0000d00c, mtk_spi_read(0x0000d00c));
 		DISPMSG("0x%08x: 0x%08x\n", 0x0000d2d0, mtk_spi_read(0x0000d2d0));
 		DISPMSG("0x%08x: 0x%08x\n", 0x0000d2b0, mtk_spi_read(0x0000d2b0));
@@ -1841,9 +1852,9 @@ int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module)
 		DISPMSG("0x%08x: 0x%08x\n", 0x0000d240, mtk_spi_read(0x0000d240));
 		DISPMSG("0x%08x: 0x%08x\n", 0x0000d220, mtk_spi_read(0x0000d220));
 		DISPMSG("0x%08x: 0x%08x\n", 0x0000d200, mtk_spi_read(0x0000d200));
+		DISPMSG("0x%08x: 0x%08x\n", 0x00023180,	mtk_spi_read(0x00023180));
 
 		DISPMSG("========================== mt6382 DSI%d REGS ==\n", i);
-
 //		for (k = 0; k < sizeof(struct BDG_TX_REGS); k += 16) {
 		for (k = 0; k < 0x210; k += 16) {
 			DISPMSG("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", k,
@@ -1854,8 +1865,9 @@ int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module)
 		}
 
 		DISPMSG("========================== mt6382 DSI%d CMD REGS ==\n", i);
-		for (k = 0; k < 32; k += 16) { /* only dump first 32 bytes cmd */
-			DISPMSG("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", k,
+		/* only dump first 32 bytes cmd */
+		for (k = 0; k < 32; k += 16) {
+			DISPMSG("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", 0xd00 + k,
 				mtk_spi_read((dsi_base_addr + 0xd00 + k)),
 				mtk_spi_read((dsi_base_addr + 0xd00 + k + 0x4)),
 				mtk_spi_read((dsi_base_addr + 0xd00 + k + 0x8)),
@@ -1890,7 +1902,7 @@ int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module)
 
 int bdg_tx_wait_for_idle(enum DISP_BDG_ENUM module)
 {
-/*	int i;
+	int i;
 	unsigned int timeout = 5000;
 	unsigned int status;
 
@@ -1909,11 +1921,12 @@ int bdg_tx_wait_for_idle(enum DISP_BDG_ENUM module)
 		}
 	}
 	if (timeout == 0) {
-//		dsi_dump_reg(module, 0);
+		bdg_tx_reset(module, NULL);
+
 		DISPMSG("%s, wait timeout!\n", __func__);
 		return -1;
 	}
-*/
+
 	return 0;
 }
 
@@ -2112,6 +2125,13 @@ unsigned int get_dsc_state(void)
 	DISPMSG("%s, dsc_en=%d\n", __func__, dsc_en);
 
 	return dsc_en;
+}
+
+void set_mt6382_init(unsigned int value)
+{
+	DISPMSG("%s, mt6382_init=%d->%d\n", __func__, mt6382_init, value);
+
+	mt6382_init = value;
 }
 
 unsigned int get_mt6382_init(void)
@@ -3910,7 +3930,7 @@ int polling_status(void)
 	while (timeout) {
 		status = mtk_spi_read((unsigned long)(&TX_REG[0]->DSI_TX_STATE_DBG7));
 
-		DISPMSG("%s, status=0x%x, timeout=%d\n", __func__, status, timeout);
+//		DISPMSG("%s, status=0x%x, timeout=%d\n", __func__, status, timeout);
 
 		if ((status & 0x800) == 0x800)
 			break;

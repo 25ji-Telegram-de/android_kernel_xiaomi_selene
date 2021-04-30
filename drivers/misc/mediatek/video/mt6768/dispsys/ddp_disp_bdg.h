@@ -92,12 +92,14 @@ int bdg_vm_mode_set(enum DISP_BDG_ENUM module, bool enable,
 int bdg_tx_wait_for_idle(enum DISP_BDG_ENUM module);
 int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module);
 int bdg_set_dcs_read_cmd(bool enable, void *cmdq);
+int bdg_tx_clr_sta(enum DISP_BDG_ENUM module, void *cmdq);
 
 unsigned int get_ap_data_rate(void);
 unsigned int get_bdg_data_rate(void);
 int set_bdg_data_rate(unsigned int data_rate);
 unsigned int get_bdg_line_cycle(void);
 unsigned int get_dsc_state(void);
+void set_mt6382_init(unsigned int value);
 unsigned int get_mt6382_init(void);
 unsigned int get_bdg_tx_mode(void);
 int check_stopstate(void *cmdq);

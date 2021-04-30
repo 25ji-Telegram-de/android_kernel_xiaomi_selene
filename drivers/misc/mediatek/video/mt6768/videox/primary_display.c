@@ -4231,7 +4231,13 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 	DISPCHECK("%s done\n", __func__);
 
 done:
-	DISPDBG("init and hold wakelock...\n");
+#ifdef CONFIG_MTK_MT6382_BDG
+	if (is_lcm_inited)
+		set_mt6382_init(1);
+	else
+		set_mt6382_init(0);
+#endif
+	DISPCHECK("init and hold wakelock...\n");
 	wakeup_source_init(&pri_wk_lock, "pri_disp_wakelock");
 	lock_primary_wake_lock(1);
 
@@ -4806,7 +4812,7 @@ int primary_display_suspend(void)
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_suspend,
 		MMPROFILE_FLAG_PULSE, 0, 3);
 
-	DISPDBG("[POWER]primary display path stop[begin]\n");
+	DISPCHECK("[POWER]primary display path stop[begin]\n");
 	dpmgr_path_stop(pgc->dpmgr_handle, CMDQ_DISABLE);
 	DISPCHECK("[POWER]primary display path stop[end]\n");
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_suspend,
@@ -4985,7 +4991,7 @@ int primary_display_lcm_power_on_state(int alive)
 			skip_update = 1;
 	} else if (primary_display_get_power_mode_nolock() == FB_RESUME) {
 		if (primary_display_get_lcm_power_state_nolock() != LCM_ON) {
-			DISPDBG("[POWER]lcm resume[begin]\n");
+			DISPMSG("[POWER]lcm resume[begin]\n");
 
 			if (primary_display_get_lcm_power_state_nolock() !=
 				LCM_ON_LOW_POWER) {
@@ -4994,7 +5000,7 @@ int primary_display_lcm_power_on_state(int alive)
 				disp_lcm_aod(pgc->plcm, 0);
 				skip_update = 1;
 			}
-			DISPCHECK("[POWER]lcm resume[end]\n");
+			DISPMSG("[POWER]lcm resume[end]\n");
 			primary_display_set_lcm_power_state_nolock(LCM_ON);
 		}
 	}
