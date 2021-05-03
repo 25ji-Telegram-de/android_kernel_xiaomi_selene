@@ -3421,7 +3421,11 @@ static void preview_setting(void)
     write_cmos_sensor(0x0702, 0x0000);
     write_cmos_sensor(0x0202, 0x0100);
     write_cmos_sensor(0x0200, 0x0100);
+#ifdef FACTORY_CAMERA_MODE
+    write_cmos_sensor(0x0D00, 0x0001);
+#else
     write_cmos_sensor(0x0D00, 0x0000);
+#endif
     write_cmos_sensor(0x0D02, 0x0001);
     write_cmos_sensor(0x0D04, 0x0102);
     write_cmos_sensor(0x6226, 0x0000);
@@ -4051,7 +4055,11 @@ static void capture_setting(kal_uint16 currefps)
 	write_cmos_sensor(0x0702, 0x0000);
 	write_cmos_sensor(0x0202, 0x0100);
 	write_cmos_sensor(0x0200, 0x0100);
+#ifdef FACTORY_CAMERA_MODE
+	write_cmos_sensor(0x0D00, 0x0001);
+#else
 	write_cmos_sensor(0x0D00, 0x0000);
+#endif
 	write_cmos_sensor(0x0D02, 0x0001);
 	write_cmos_sensor(0x0D04, 0x0102);
 	write_cmos_sensor(0x6226, 0x0000);
