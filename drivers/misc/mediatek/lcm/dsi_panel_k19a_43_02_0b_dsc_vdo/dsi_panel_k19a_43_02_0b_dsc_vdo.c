@@ -127,6 +127,10 @@ static unsigned ENN = 490; //gpio165
 
 int esd_flag_pin2 = 0;
 
+/* Huaqin add for HQ-132637 by liunianliang at 2021/05/04 start */
+extern bool nvt_gesture_flag;
+/* Huaqin add for HQ-132637 by liunianliang at 2021/05/04 end */
+
 extern void  BDG_set_cmdq_V2_DSI0(void *cmdq, unsigned int cmd, unsigned char count,unsigned char *para_list, unsigned char force_update);
 
 /* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start */
@@ -555,19 +559,16 @@ static void lcm_init_power(void)
 static void lcm_suspend_power(void)
 {
 /* Huaqin add for HQ-123199 by shiwenlong at 2021/4/4 start */
-	//SET_RESET_PIN(0);
-	lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
-	MDELAY(3);
+/* Huaqin modify for HQ-132637 by liunianliang at 2021/05/04 start */
+	if (!nvt_gesture_flag)
+	{
+		lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
+		MDELAY(3);
 
-	lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 0);
-	MDELAY(5);
-#if 0
-	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
-	if (lcm_util.set_gpio_lcd_enp_bias)
-		lcm_util.set_gpio_lcd_enp_bias(0);
-	else
-		LCM_LOGI("set_gpio_lcd_enp_bias not defined...\n");
-#endif
+		lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 0);
+		MDELAY(5);
+	}
+/* Huaqin modify for HQ-132637 by liunianliang at 2021/05/04 end */
 /* Huaqin add for HQ-123199 by shiwenlong at 2021/4/4 end */
 }
 
