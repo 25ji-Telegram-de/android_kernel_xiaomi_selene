@@ -455,6 +455,24 @@ int bq2589x_set_input_current_limit(struct bq2589x *bq, int curr)
 						val << BQ2589X_IINLIM_SHIFT);
 }
 
+/*K19A HQ-133295 K19A charger full time by wangqi at 2021/5/6 start*/
+int bq2589x_set_ir_compensation(struct bq2589x *bq, int bat_comp, int vclamp)
+{
+	u8 val_bat_comp;
+	u8 val_vclamp;
+	pr_err("bq2589x_set_ir_compensation!!!\n");
+
+	val_bat_comp = bat_comp / BQ2589X_BAT_COMP_LSB;
+	val_vclamp = vclamp / BQ2589X_VCLAMP_LSB;
+
+	bq2589x_update_bits(bq, BQ2589X_REG_08, BQ2589X_BAT_COMP_MASK,
+						val_bat_comp << BQ2589X_BAT_COMP_SHIFT);
+	bq2589x_update_bits(bq, BQ2589X_REG_08, BQ2589X_VCLAMP_MASK,
+						val_vclamp << BQ2589X_VCLAMP_SHIFT);
+	return 0;
+}
+/*K19A HQ-133295 K19A charger full time by wangqi at 2021/5/6 start*/
+
 int bq2589x_set_watchdog_timer(struct bq2589x *bq, u8 timeout)
 {
 	u8 val;
@@ -972,6 +990,9 @@ static int bq2589x_init_device(struct bq2589x *bq)
 	/*K19A HQ-133582 K19A charger time by wangqi at 2021/5/6 start*/
 	bq2589x_disable_safety_timer(bq);
 	/*K19A HQ-133582 K19A charger time by wangqi at 2021/5/6 end*/
+	/*K19A HQ-133295 K19A charger full time by wangqi at 2021/5/6 start*/
+	bq2589x_set_ir_compensation(bq, 20, 64);
+	/*K19A HQ-133295 K19A charger full time by wangqi at 2021/5/6 end*/
 
 
 	ret = bq2589x_set_prechg_current(bq, bq->platform_data->iprechg);
