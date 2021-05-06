@@ -92,7 +92,6 @@ struct bq2589x {
 
 	int status;
 	int irq;
-
 	struct mutex i2c_rw_lock;
 
 	bool charge_enabled;	/* Register bit status */
@@ -100,7 +99,9 @@ struct bq2589x {
 
 	struct bq2589x_platform_data *platform_data;
 	struct charger_device *chg_dev;
-
+/* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 start */
+	struct delayed_work	read_byte_work;
+/* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 start */
 	struct power_supply *psy;
 };
 /* Huaqin modify for WXYFB-592 by miaozhichao at 2021/3/29 start */
@@ -789,11 +790,9 @@ static int bq2589x_get_charger_type_ext(struct charger_device *chg_dev, u32 *typ
 	return 0;
 }
 EXPORT_SYMBOL_GPL(bq2589x_get_charger_type_ext);
-
 static int bq2589x_get_charger_type(struct bq2589x *bq, enum charger_type *type)
 {
 	int ret;
-
 	u8 reg_val = 0;
 	int vbus_stat = 0;
 	enum charger_type chg_type = CHARGER_UNKNOWN;
@@ -815,15 +814,13 @@ static int bq2589x_get_charger_type(struct bq2589x *bq, enum charger_type *type)
 	/*K19A HQ-129052 K19A charger of thermal by wangqi at 2021/4/22 end*/
 	/*K19A k19A-143 K19A charger_type by wangqi at 2021/4/15 start*/
 	hvdcp_type_tmp = HVDCP_NULL;
-	/*K19A k19A-143 K19A charger_type by wangqi at 2021/4/15 end*/
+	/*K19A k19A-143 K19A charger_type by wangqi at 2021/4/15 end*/	
 	ret = bq2589x_read_byte(bq, BQ2589X_REG_0B, &reg_val);
 
 	if (ret)
 		return ret;
-
 	vbus_stat = (reg_val & BQ2589X_VBUS_STAT_MASK);
 	vbus_stat >>= BQ2589X_VBUS_STAT_SHIFT;
-
 	switch (vbus_stat) {
 
 	case BQ2589X_VBUS_TYPE_NONE:
@@ -874,7 +871,6 @@ static int bq2589x_get_charger_type(struct bq2589x *bq, enum charger_type *type)
 	/*K19A-104 charge by wangchao at 2021/4/8 end*/
 	return 0;
 }
-
 static int bq2589x_inform_charger_type(struct bq2589x *bq)
 {
 	int ret = 0;
@@ -928,13 +924,25 @@ static int bq2589x_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 	return 0;
 }
 /*K19A WXYFB-996 K19A charger by wangchao at 2021/4/22 end*/
+/* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 start */
+static void bq2589x_read_byte_work(struct work_struct *work)
+{
+        int ret;
+	struct bq2589x *bq = container_of(work,
+			struct bq2589x, read_byte_work.work);
+	enum charger_type prev_chg_type;
 
+	prev_chg_type = bq->chg_type;
+	ret = bq2589x_get_charger_type(bq, &bq->chg_type);
+	if (!ret &&prev_chg_type != bq->chg_type && bq->chg_det_enable)
+		bq2589x_inform_charger_type(bq);
+}
+/* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 end */
 static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 {
 	int ret;
 	u8 reg_val;
 	bool prev_pg;
-	enum charger_type prev_chg_type;
 	struct bq2589x *bq = data;
 	ret = bq2589x_read_byte(bq, BQ2589X_REG_0B, &reg_val);
 	if (ret)
@@ -952,13 +960,9 @@ static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 		pr_err("adapter/usb removed\n");
 	}
 /* Huaqin modify for WXYFB-592 by miaozhichao at 2021/3/29 end */
-
-	prev_chg_type = bq->chg_type;
-
-	ret = bq2589x_get_charger_type(bq, &bq->chg_type);
-	if (!ret && prev_chg_type != bq->chg_type && bq->chg_det_enable)
-		bq2589x_inform_charger_type(bq);
-
+/* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 start */
+	schedule_delayed_work(&bq->read_byte_work, msecs_to_jiffies(600));
+/* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 end */
 	return IRQ_HANDLED;
 }
 
@@ -993,7 +997,6 @@ static int bq2589x_init_device(struct bq2589x *bq)
 	/*K19A HQ-133295 K19A charger full time by wangqi at 2021/5/6 start*/
 	bq2589x_set_ir_compensation(bq, 20, 64);
 	/*K19A HQ-133295 K19A charger full time by wangqi at 2021/5/6 end*/
-
 
 	ret = bq2589x_set_prechg_current(bq, bq->platform_data->iprechg);
 	if (ret)
@@ -1490,7 +1493,9 @@ static int bq2589x_charger_probe(struct i2c_client *client,
 		pr_err("Failed to init device\n");
 		return ret;
 	}
-
+/* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 start */
+	INIT_DELAYED_WORK(&bq->read_byte_work,bq2589x_read_byte_work);
+/* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 end */
 	bq2589x_register_interrupt(bq);
 
 	bq->chg_dev = charger_device_register(bq->chg_dev_name,
