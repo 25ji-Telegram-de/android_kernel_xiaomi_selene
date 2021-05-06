@@ -969,6 +969,9 @@ static int bq2589x_init_device(struct bq2589x *bq)
 	int ret;
 
 	bq2589x_disable_watchdog_timer(bq);
+	/*K19A HQ-133582 K19A charger time by wangqi at 2021/5/6 start*/
+	bq2589x_disable_safety_timer(bq);
+	/*K19A HQ-133582 K19A charger time by wangqi at 2021/5/6 end*/
 
 
 	ret = bq2589x_set_prechg_current(bq, bq->platform_data->iprechg);
