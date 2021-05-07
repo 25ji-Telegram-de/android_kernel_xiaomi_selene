@@ -65,7 +65,7 @@ static imgsensor_info_struct imgsensor_info = {
 		/*       following for MIPIDataLowPwr2HighSpeedSettleDelayCount by different scenario   */
 		.mipi_data_lp2hs_settle_dc = 23,
 		/*       following for GetDefaultFramerateByScenario()  */
-		.mipi_pixel_rate = 289000000,
+		.mipi_pixel_rate = 254554699,
 		.max_framerate = 300,
 		},
 	.cap = {
@@ -77,7 +77,7 @@ static imgsensor_info_struct imgsensor_info = {
 		.grabwindow_width = 3264,
 		.grabwindow_height = 2448,
 		.mipi_data_lp2hs_settle_dc = 23,
-		.mipi_pixel_rate = 289000000,
+		.mipi_pixel_rate = 254554665,
 		.max_framerate = 300,
 		},
 	.cap1 = {		/* capture for PIP 24fps relative information, capture1 mode must use same framelength, linelength with Capture mode for shutter calculate */
@@ -89,7 +89,7 @@ static imgsensor_info_struct imgsensor_info = {
 		 .grabwindow_width = 3264,
 		 .grabwindow_height = 2448,
 		 .mipi_data_lp2hs_settle_dc = 23,
-		 .mipi_pixel_rate = 289000000,
+		 .mipi_pixel_rate = 254554665,
 		 .max_framerate = 150,
 		 },
 	.normal_video = {
@@ -2156,6 +2156,45 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 	    *feature_return_para_32 = imgsensor_info.checksum_value;
 	   *feature_para_len = 4;
 	break;
+	case SENSOR_FEATURE_GET_PIXEL_RATE:
+	switch (*feature_data) {
+		case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
+			*(MUINT32 *)(uintptr_t)(*(feature_data + 1)) =
+				(imgsensor_info.cap.pclk /
+				 (imgsensor_info.cap.linelength - 80))*
+				imgsensor_info.cap.grabwindow_width;
+			break;
+
+		case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
+			*(MUINT32 *)(uintptr_t)(*(feature_data + 1)) =
+				(imgsensor_info.normal_video.pclk /
+				 (imgsensor_info.normal_video.linelength - 80))*
+				imgsensor_info.normal_video.grabwindow_width;
+			break;
+
+		case MSDK_SCENARIO_ID_HIGH_SPEED_VIDEO:
+			*(MUINT32 *)(uintptr_t)(*(feature_data + 1)) =
+				(imgsensor_info.hs_video.pclk /
+				 (imgsensor_info.hs_video.linelength - 80))*
+				imgsensor_info.hs_video.grabwindow_width;
+			break;
+
+		case MSDK_SCENARIO_ID_SLIM_VIDEO:
+			*(MUINT32 *)(uintptr_t)(*(feature_data + 1)) =
+				(imgsensor_info.slim_video.pclk /
+				 (imgsensor_info.slim_video.linelength - 80))*
+				imgsensor_info.slim_video.grabwindow_width;
+			break;
+
+		case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
+		default:
+			*(MUINT32 *)(uintptr_t)(*(feature_data + 1)) =
+				(imgsensor_info.pre.pclk /
+				 (imgsensor_info.pre.linelength - 80))*
+				imgsensor_info.pre.grabwindow_width;
+			break;
+	}
+	break;
 	case SENSOR_FEATURE_SET_FRAMERATE:
 	    LOG_INF("current fps :%d\n", (UINT16)*feature_data_32);
 	    spin_lock(&imgsensor_drv_lock);
@@ -2167,6 +2206,31 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 	    spin_lock(&imgsensor_drv_lock);
 	    imgsensor.ihdr_en = (BOOL)*feature_data_32;
 	    spin_unlock(&imgsensor_drv_lock);
+	break;
+	case SENSOR_FEATURE_GET_MIPI_PIXEL_RATE:
+	{
+		kal_uint32 rate;
+
+		switch (*feature_data) {
+			case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
+				rate = imgsensor_info.cap.mipi_pixel_rate;
+				break;
+			case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
+				rate = imgsensor_info.normal_video.mipi_pixel_rate;
+				break;
+			case MSDK_SCENARIO_ID_HIGH_SPEED_VIDEO:
+				rate = imgsensor_info.hs_video.mipi_pixel_rate;
+				break;
+			case MSDK_SCENARIO_ID_SLIM_VIDEO:
+				rate = imgsensor_info.slim_video.mipi_pixel_rate;
+				break;
+			case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
+			default:
+				rate = imgsensor_info.pre.mipi_pixel_rate;
+				break;
+		}
+		*(MUINT32 *)(uintptr_t)(*(feature_data + 1)) = rate;
+	}
 	break;
 	case SENSOR_FEATURE_GET_CROP_INFO:
 	    LOG_INF("SENSOR_FEATURE_GET_CROP_INFO scenarioId:%d\n", (UINT32)*feature_data_32);
