@@ -155,8 +155,10 @@
 #define IMX091_SENSOR_ID                        0x0091
 #define IMX073_SENSOR_ID                        0x0046
 #define IMX058_SENSOR_ID                        0x0058
-#define IMX355_SUNNY_ULTRA_SENSOR_ID            (0x355 + 1)
-#define IMX355_AAC_ULTRA_SENSOR_ID              0x355
+#define IMX355_SUNNY_ULTRA_SENSOR_ID (0x355 + 1)
+#define IMX355_SUNNY_ULTRA_SENSOR_INDIA_ID (0x355 + 4)
+#define IMX355_AAC_ULTRA_SENSOR_ID 0x355
+#define IMX355_AAC_ULTRA_SENSOR_INDIA_ID 0x358
 /*OV*/
 #define OV23850_SENSOR_ID                       0x023850
 #define OV16880_SENSOR_ID                       0x016880
@@ -178,7 +180,9 @@
 #define OV8858S_SENSOR_ID                      (0x8858+1)
 #define OV8856_SENSOR_ID                        0x885A
 #define OV8856_OFILM_FRONT_SENSOR_ID            0x885A
+#define OV8856_OFILM_FRONT_SENSOR_INDIA_ID 0x885D
 #define OV8856_AAC_FRONT_SENSOR_ID              0x885B
+#define OV8856_AAC_FRONT_SENSOR_INDIA_ID   0x885E
 #define OV8856_QTECH_ULTRA_SENSOR_ID                        0x885B
 #define OV8856_QTECH_FRONT_SENSOR_ID                        0x885C
 #define OV8830_SENSOR_ID                        0x8830
@@ -217,9 +221,12 @@
 #define OV13B10_SENSOR_INDIA_ID                       0x560D46
 #define OV13B10_SUNNY_SENSOR_INDIA_ID                 0x560D47
 #define OV48D_OFILM_MAIN_SENSOR_ID              0x561244
-#define OV50C40_OFILM_MAIN_SENSOR_ID			0x565043
-#define S5KJN1_OFILM_MAIN_SENSOR_ID             0x38e1
-#define OV50C40_QTECH_MAIN_SENSOR_ID            (0x565043+1)
+#define OV50C40_OFILM_MAIN_SENSOR_ID               0x565043
+#define OV50C40_OFILM_MAIN_SENSOR_INDIA_ID               0x565046
+#define S5KJN1_OFILM_MAIN_SENSOR_ID                0x38e1
+#define S5KJN1_OFILM_MAIN_SENSOR_INDIA_ID                0x38e4
+#define OV50C40_QTECH_MAIN_SENSOR_ID               (0x565043+1)
+#define OV50C40_QTECH_MAIN_SENSOR_INDIA_ID               (0x565043+4)
 #define OV13B10_OFILM_SENSOR_ID                 0x560D44
 #define OV13B10_QTECH_SENSOR_ID                 0x560D45
 #define S5K3L6_QTECH_SENSOR_ID                 0x30C6
@@ -356,7 +363,9 @@
 #define GC02M1_MACRO_SENSOR_INDIA_ID 0x02e6
 #define GC02M1_MACRO_SUNNY_SENSOR_INDIA_ID 0x02e7
 #define GC02M1_MACRO_AAC_SENSOR_ID 0x02e0
+#define GC02M1_MACRO_AAC_SENSOR_INDIA_ID 0x02e3
 #define GC02M1_MACRO_SY_SENSOR_ID 0x02e1
+#define GC02M1_MACRO_SY_SENSOR_INDIA_ID 0x02e4
 /*SP*/
 #define SP0A19_YUV_SENSOR_ID                    0xA6
 #define SP2518_YUV_SENSOR_ID                    0x53
@@ -411,7 +420,9 @@
 #define OV16A10_SENSOR_ID                       0x561641
 #define GC02M1B_SENSOR_ID                       0x02e0
 #define GC02M1B_SENSOR_ID1                      (0x02e0 + 2)
+#define GC02M1B_SUNNY_SENSOR_INDIA_ID    (0x02e0 + 5)
 #define OV02B1B_OFILM_SENSOR_ID                 0x002b
+#define OV02B1B_OFILM_SENSOR_INDIA_ID                 0x002e
 
 /* CAMERA DRIVER NAME */
 #define CAMERA_HW_DEVNAME                       "kd_camera_hw"
