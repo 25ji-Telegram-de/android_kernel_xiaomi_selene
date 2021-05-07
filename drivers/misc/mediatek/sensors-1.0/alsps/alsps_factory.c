@@ -335,13 +335,21 @@ static long alsps_factory_unlocked_ioctl(struct file *file, unsigned int cmd,
 		}
 		return 0;
 	case ALSPS_PS_ENABLE_CALI:
+/*Huaqin modify for HQ-123670 by baoguangxiu at 2021.5.7 start*/
+		if (copy_from_user(&data, ptr, sizeof(data)))
+			return -EFAULT;
 		if (alsps_factory.fops != NULL &&
 			alsps_factory.fops->ps_enable_calibration != NULL) {
-			err = alsps_factory.fops->ps_enable_calibration();
+			err = alsps_factory.fops->ps_enable_calibration(data);
 			if (err < 0) {
 				pr_err("ALSPS_PS_ENABLE_CALI FAIL!\n");
+                if ((err == -EACCES) || (err == -EAGAIN) || (err == -EBUSY)){
+                    pr_err("ALSPS_PS_ENABLE_CALI FAIL! Special return value, directly returned to the upper layer\n");
+                    return err;
+                }
 				return -EINVAL;
 			}
+/*Huaqin modify for HQ-123670 by baoguangxiu at 2021.5.7 end*/
 		} else {
 			pr_err("ALSPS_PS_ENABLE_CALI NULL\n");
 			return -EINVAL;
