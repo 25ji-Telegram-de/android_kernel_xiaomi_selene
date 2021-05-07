@@ -346,7 +346,6 @@ enum DSI_STATUS DSI_DumpRegisters(enum DISP_MODULE_ENUM module, int level)
 				i, _dsi_cmd_mode_parse_state(DSI_DBG9_Status));
 		}
 	}
-
 	if (level >= 1) {
 		for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module);
 			i++) {
@@ -2424,8 +2423,6 @@ enum DSI_STATUS DSI_Stop(enum DISP_MODULE_ENUM module,
 void DSI_Set_VM_CMD(enum DISP_MODULE_ENUM module, struct cmdqRecStruct *cmdq)
 {
 	int i = 0;
-
-	DISPFUNCSTART();
 
 	if (module != DISP_MODULE_DSIDUAL) {
 		for (i = DSI_MODULE_BEGIN(module);
