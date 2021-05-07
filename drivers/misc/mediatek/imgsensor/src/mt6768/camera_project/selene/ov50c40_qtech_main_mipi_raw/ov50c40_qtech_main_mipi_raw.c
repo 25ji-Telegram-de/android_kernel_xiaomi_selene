@@ -310,30 +310,31 @@ static struct SET_PD_BLOCK_INFO_T imgsensor_pd_info = {
 	.i4SubBlkH = 4,
 	.i4BlockNumX = 254,
 	.i4BlockNumY = 190,
+	.i4BlockNumY = 190,
 	.i4PosL = {
-		{20, 17}, 
-		{28, 17}, 
-		{16, 21}, 
-		{24, 21}, 
-		{20, 25}, 
-		{28, 25}, 
-		{16, 29}, 
-		{24, 29}
+		{23, 18},
+		{31, 18}, 
+		{19, 22}, 
+		{27, 22}, 
+		{23, 26}, 
+		{31, 26}, 
+		{19, 30}, 
+		{27, 30}
 	},
 	.i4PosR = {
-		{21, 17}, 
-		{29, 17}, 
-		{17, 21}, 
-		{25, 21}, 
-		{21, 25}, 
-		{29, 25}, 
-		{17, 29}, 
-		{25, 29}
+		{22, 18}, 
+		{30, 18}, 
+		{18, 22}, 
+		{26, 22}, 
+		{22, 26}, 
+		{30, 26}, 
+		{18, 30}, 
+		{26, 30}
 	},
 	.i4Crop = {
 		{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}
 	},
-	.iMirrorFlip = 0,	/*0 IMAGE_NORMAL, 1 IMAGE_H_MIRROR, 2 IMAGE_V_MIRROR, 3 IMAGE_HV_MIRROR */
+	.iMirrorFlip = 3,	/*0 IMAGE_NORMAL, 1 IMAGE_H_MIRROR, 2 IMAGE_V_MIRROR, 3 IMAGE_HV_MIRROR */
 };
 
 #if 0
