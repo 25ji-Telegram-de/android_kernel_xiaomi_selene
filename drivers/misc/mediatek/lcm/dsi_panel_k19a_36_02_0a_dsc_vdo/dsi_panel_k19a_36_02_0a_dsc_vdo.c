@@ -128,7 +128,9 @@ int esd_flag_pin = 0;
 extern bool nvt_gesture_flag;
 /* Huaqin modify for HQ-124216 by shujiawang at 2021/04/30 end */
 
-extern void  BDG_set_cmdq_V2_DSI0(void *cmdq, unsigned int cmd, unsigned char count,unsigned char *para_list, unsigned char force_update);
+/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
+//extern void  BDG_set_cmdq_V2_DSI0(void *cmdq, unsigned int cmd, unsigned char count,unsigned char *para_list, unsigned char force_update);
+/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
 
 /* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start */
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
@@ -236,7 +238,9 @@ static struct LCM_setting_table init_setting_vdo[] = {
         {0xFB, 1, {0x01} },
 	{0XB0, 1, {0x00} },
 	{0XC0, 1, {0x03} },
-        {0xC1, 16, {0x89,0x28,0x00,0x08,0x00,0xAA,0x02,0x0E,0x00,0x2B,0x00,0x07,0xD,0xB7,0x0C,0xB7} },
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
+        {0xC1, 16, {0x89,0x28,0x00,0x08,0x00,0xAA,0x02,0x0E,0x00,0x2B,0x00,0x07,0x0D,0xB7,0x0C,0xB7} },
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
         {0XC2, 2, {0X1B,0XA0} },
 //FR
 	/*{0xFF, 1, {0x27} },
@@ -276,6 +280,9 @@ static struct LCM_setting_table init_setting_vdo[] = {
   	{0X35, 1, {0X00} },
 
         {0x11, 0, {} },
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
+	{0x11, 0, {} },
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
         {REGFLAG_DELAY, 100, {} },
         {0x29, 0, {} },
         {REGFLAG_DELAY, 40, {} }
@@ -324,8 +331,12 @@ static void push_table(void *cmdq, struct LCM_setting_table *table,
 		case REGFLAG_END_OF_TABLE:
 			break;
 		default:
- 			BDG_set_cmdq_V2_DSI0(cmdq, cmd, table[i].count,
- 					 table[i].para_list, force_update);
+ 	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
+			dsi_set_cmdq_V22(cmdq, cmd, table[i].count,
+					 table[i].para_list, force_update);
+			if (table[i].count > 1)
+				MDELAY(1);
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
 			break;
 		}
 	}

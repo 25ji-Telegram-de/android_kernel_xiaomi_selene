@@ -339,12 +339,28 @@ static int __init mtkfb_get_white_point(char *p)
 
 	lcd_merlin_para.white_point_y = (wpoint[3]-'0') * 100
 		+ (wpoint[4]-'0') * 10 + (wpoint[5]-'0');
-
+/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 start */
+	lcd_merlin_para.white_point_l = (wpoint[6]-'0') * 100
+		+ (wpoint[7]-'0') * 10 + (wpoint[8]-'0');
+/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 end */
 	return 0;
 }
 
 early_param("ro.boot.lcm_white_point", mtkfb_get_white_point);
+/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 start */
+static ssize_t mtkfb_get_wpoint_level(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	int ret;
+	ret = scnprintf(buf, PAGE_SIZE, "%3d\n", lcd_merlin_para.white_point_l);
+	return ret;
+}
 
+static ssize_t mtkfb_set_wpoint_level(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
+{
+	sscanf(buf, "%3d", &lcd_merlin_para.white_point_l);
+	return len;
+}
+/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 end */
 static int mtkfb_set_rgb_point_init(void)
 {
 	if (strncmp(mtkfb_lcm_name, "nt36672A_fhdp_dsi_vdo_tianma_lcm_drv", 36) == 0) {
@@ -497,6 +513,8 @@ static DEVICE_ATTR(mtkfb_disprpoint, 0644, mtkfb_get_rpoint, mtkfb_set_rpoint);
 static DEVICE_ATTR(mtkfb_dispgpoint, 0644, mtkfb_get_gpoint, mtkfb_set_gpoint);
 static DEVICE_ATTR(mtkfb_dispbpoint, 0644, mtkfb_get_bpoint, mtkfb_set_bpoint);
 static DEVICE_ATTR(panel_info, 0644, mtkfb_get_panel_info, NULL);
+/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 start */
+static DEVICE_ATTR(mtkfb_dispwpoint_level, 0644, mtkfb_get_wpoint_level, mtkfb_set_wpoint_level);
 
 static struct attribute *mtk_fb_attrs[] = {
 	&dev_attr_mtk_fb_hbm.attr,
@@ -505,9 +523,10 @@ static struct attribute *mtk_fb_attrs[] = {
 	&dev_attr_mtkfb_dispgpoint.attr,
 	&dev_attr_mtkfb_dispbpoint.attr,
 	&dev_attr_panel_info.attr,
+	&dev_attr_mtkfb_dispwpoint_level.attr,
 	NULL,
 };
-
+/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 end */
 static struct attribute_group mtk_fb_attr_group = {
 	.attrs = mtk_fb_attrs,
 };
