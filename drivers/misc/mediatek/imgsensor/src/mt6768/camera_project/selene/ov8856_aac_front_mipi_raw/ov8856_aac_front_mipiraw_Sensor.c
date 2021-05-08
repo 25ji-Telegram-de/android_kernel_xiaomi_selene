@@ -209,12 +209,12 @@ static void set_dummy(void)
 {
 	LOG_INF("dummyline = %d, dummypixels = %d\n", imgsensor.dummy_line, imgsensor.dummy_pixel);
 	/* you can set dummy by imgsensor.dummy_line and imgsensor.dummy_pixel, or you can set dummy by imgsensor.frame_length and imgsensor.line_length */
-	write_cmos_sensor(0x0100, 0x00);
+	//write_cmos_sensor(0x0100, 0x00);
 	write_cmos_sensor(0x380e, imgsensor.frame_length >> 8);
 	write_cmos_sensor(0x380f, imgsensor.frame_length & 0xFF);
 	write_cmos_sensor(0x380c, imgsensor.line_length >> 8);
 	write_cmos_sensor(0x380d, imgsensor.line_length & 0xFF);
-	write_cmos_sensor(0x0100, 0x01);
+	//write_cmos_sensor(0x0100, 0x01);
 
 }	/*	set_dummy  */
 
@@ -351,7 +351,7 @@ static void set_shutter(kal_uint64 shutter)
 
 		if (bNeedSetNormalMode) {
 			LOG_INF("LZM 1111 exit long shutter = %d\n", shutter);
-			write_cmos_sensor(0x0100, 0x00);
+			//write_cmos_sensor(0x0100, 0x00);
 			write_cmos_sensor(0x0303, 0x01);
 			write_cmos_sensor(0x030f, 0x04);
 			write_cmos_sensor(0x0312, 0x01);
@@ -368,7 +368,7 @@ static void set_shutter(kal_uint64 shutter)
 			write_cmos_sensor(0x5783, 0x02);
 			write_cmos_sensor(0x5789, 0x0f);
 			write_cmos_sensor(0x578a, 0xfd);
-			write_cmos_sensor(0x0100, 0x01);
+			//write_cmos_sensor(0x0100, 0x01);
 			imgsensor.current_ae_effective_frame = 1;
 			bNeedSetNormalMode = KAL_FALSE;
 		}
@@ -392,24 +392,24 @@ static void set_shutter(kal_uint64 shutter)
 			set_max_framerate(146, 0);
 		else {
 			// Extend frame length
-			write_cmos_sensor(0x0100, 0x00);
+			//write_cmos_sensor(0x0100, 0x00);
 			write_cmos_sensor(0x380e, imgsensor.frame_length >> 8);
 			write_cmos_sensor(0x380f, imgsensor.frame_length & 0xFF);
-			write_cmos_sensor(0x0100, 0x01);
+			//write_cmos_sensor(0x0100, 0x01);
 		}
 	} else {
 			// Extend frame length
-			write_cmos_sensor(0x0100, 0x00);
+			//write_cmos_sensor(0x0100, 0x00);
 			write_cmos_sensor(0x380e, imgsensor.frame_length >> 8);
 			write_cmos_sensor(0x380f, imgsensor.frame_length & 0xFF);
-			write_cmos_sensor(0x0100, 0x01);
+			//write_cmos_sensor(0x0100, 0x01);
 	}
 	// Update Shutter
-	write_cmos_sensor(0x0100, 0x00);
+	//write_cmos_sensor(0x0100, 0x00);
 	write_cmos_sensor(0x3502, (shutter << 4) & 0xFF);
 	write_cmos_sensor(0x3501, (shutter >> 4) & 0xFF);
 	write_cmos_sensor(0x3500, (shutter >> 12) & 0x0F);
-	write_cmos_sensor(0x0100, 0x01);
+	//write_cmos_sensor(0x0100, 0x01);
 	LOG_INF("Exit! shutter =%d, framelength =%d, realtime_fps =%d \n", shutter, imgsensor.frame_length, realtime_fps);
 	} else{
 		LOG_INF("ZT Enter Long Exposure shutter:%d ", shutter);
@@ -670,7 +670,7 @@ static void set_shutter(kal_uint64 shutter)
 
 	}
 
-    write_cmos_sensor(0x0100, 0X00);
+    //write_cmos_sensor(0x0100, 0X00);
 	write_cmos_sensor(0x3021, 0X23);
 	write_cmos_sensor(0x0303, value_0303);
 	write_cmos_sensor(0x030f, value_030f);
@@ -690,7 +690,7 @@ static void set_shutter(kal_uint64 shutter)
 	write_cmos_sensor(0X5783, 0x01);
 	write_cmos_sensor(0X5789, 0xf5);
 	write_cmos_sensor(0X578a, 0xf5);
-	write_cmos_sensor(0X0100, 0x01);
+	//write_cmos_sensor(0X0100, 0x01);
 	LOG_INF("ZT Exit Long Exposure shutter:%d 2020-04-20 ", shutter);
 	}
 
@@ -1166,7 +1166,7 @@ write_cmos_sensor(0x57a1, 0x40 );
 }
 static void vga_setting_120fps(void)
 {
-		write_cmos_sensor(0x0100, 0x00);
+		//write_cmos_sensor(0x0100, 0x00);
 
 		write_cmos_sensor(0x3501, 0x25);
 		write_cmos_sensor(0x3502, 0xc0);
@@ -1220,7 +1220,7 @@ static void vga_setting_120fps(void)
 		write_cmos_sensor(0x5007, 0x90);
 		write_cmos_sensor(0x5e10, 0x7c);
 
-		write_cmos_sensor(0x0100, 0x01);
+		//write_cmos_sensor(0x0100, 0x01);
 
 }
 #if 0
