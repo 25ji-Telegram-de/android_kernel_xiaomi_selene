@@ -1985,7 +1985,12 @@ static int mtk_hp_spk_enable(struct mt6358_priv *priv)
 	regmap_write(priv->regmap, MT6358_AUDDEC_ANA_CON6, 0x009b);
 /*K19A code for K19A-56 by zhangpeng at 2021/4/20 end*/
 
+/*K19A code for WXYFB-1015 by xuqingli at 2021/4/20 start*/
+    //lch inverse
+	regmap_update_bits(priv->regmap, MT6358_AFUNC_AUD_CON0,
+		0x4000, 0x1<<10);
 	/* Disable Pull-down HPL/R to AVSS28_AUD */
+/*K19A code for WXYFB-1015 by xuqingli at 2021/4/20 start*/
 	hp_pull_down(priv, false);
 
 	return 0;
@@ -2290,7 +2295,9 @@ static int mt_lo_event(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
 	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
-
+/*K19A code for WXYFB-1015 by xuqingli at 2021/5/8 start*/
+	uint32_t reg_value = 0;
+/*K19A code for WXYFB-1015 by xuqingli at 2021/5/8 end*/
 	dev_info(priv->dev, "%s(), event 0x%x, mux %u\n",
 		 __func__,
 		 event,
@@ -2376,6 +2383,13 @@ static int mt_lo_event(struct snd_soc_dapm_widget *w,
 				0x3 << 2, 0x1 << 2);
 /*K19A code for K19A-56 by zhangpeng at 2021/4/20 end*/
 
+/*K19A code for WXYFB-1015 by xuqingli at 2021/5/8 start*/
+    //lch inverse
+	 regmap_write(priv->regmap, MT6358_AFUNC_AUD_CON0,0xCFA1);
+	//add by mtk for debug 
+        regmap_read(priv->regmap, MT6358_AFUNC_AUD_CON0, &reg_value);
+        dev_info(priv->dev, "%s(), MT6358_AFUNC_AUD_CON0 0x%x, \n",__func__,reg_value);
+/*K19A code for WXYFB-1015 by xuqingli at 2021/5/8 end*/
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		/* Switch LOL MUX to open */
