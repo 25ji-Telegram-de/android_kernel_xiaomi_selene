@@ -118,10 +118,10 @@ static struct LCM_UTIL_FUNCS lcm_util;
 #define LCM_I2C_BUSNUM  1	/* for I2C channel 0 */
 #define LCM_I2C_ID_NAME "I2C_LCD_BIAS"
 
-
-static unsigned ENP = 494; //gpio169
-static unsigned ENN = 490; //gpio165
-
+/* Huaqin add for HQ-123498 by caogaojie at 2021/05/08 start */
+static unsigned ENP = 490; //gpio165
+static unsigned ENN = 494; //gpio169
+/* Huaqin add for HQ-123498 by caogaojie at 2021/05/08 end */
 #define GPIO_LCD_BIAS_ENP   ENP
 #define GPIO_LCD_BIAS_ENN   ENN
 
@@ -131,10 +131,6 @@ int esd_flag_pin2 = 0;
 /* Huaqin add for HQ-132637 by liunianliang at 2021/05/04 start */
 extern bool nvt_gesture_flag;
 /* Huaqin add for HQ-132637 by liunianliang at 2021/05/04 end */
-
-/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
-//extern void  BDG_set_cmdq_V2_DSI0(void *cmdq, unsigned int cmd, unsigned char count,unsigned char *para_list, unsigned char force_update);
-/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
 
 /* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start */
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
@@ -247,14 +243,14 @@ struct LCM_setting_table {
 	unsigned char count;
 	unsigned char para_list[64];
 };
-
+/* Huaqin modify for HQ-124216 by caogaojie at 2021/05/08 start */
 static struct LCM_setting_table lcm_suspend_setting[] = {
 	{0x28, 0, {} },
 	{REGFLAG_DELAY, 20, {} },
 	{0x10, 0, {} },
-//	{REGFLAG_DELAY, 120, {} },
+	{REGFLAG_DELAY, 120, {} }
 };
-
+/* Huaqin modify for HQ-124216 by caogaojie at 2021/05/08 end */
 static struct LCM_setting_table init_setting_vdo[] = {
 	{0xFF, 1, {0x10} },
         {0xFB, 1, {0x01} },
@@ -301,12 +297,13 @@ static struct LCM_setting_table init_setting_vdo[] = {
   	{0X35, 1, {0X00} },
 
         {0x11, 0, {} },
-	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */	
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
 	{0x11, 0, {} },
 	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
         {REGFLAG_DELAY, 100, {} },
         {0x29, 0, {} },
         {REGFLAG_DELAY, 40, {} }
+
 };
 
 static struct LCM_setting_table
@@ -571,16 +568,15 @@ static void lcm_init_power(void)
 static void lcm_suspend_power(void)
 {
 /* Huaqin add for HQ-123199 by shiwenlong at 2021/4/4 start */
-/* Huaqin modify for HQ-132637 by liunianliang at 2021/05/04 start */
+/* Huaqin modify for HQ-123498 by caogaojie at 2021/05/08 start */
 	if (!nvt_gesture_flag)
 	{
-		lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
-		MDELAY(3);
-
 		lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 0);
+		MDELAY(3);
+		lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
 		MDELAY(5);
 	}
-/* Huaqin modify for HQ-132637 by liunianliang at 2021/05/04 end */
+/* Huaqin modify for HQ-123498 by caogaojie at 2021/05/08 end */
 /* Huaqin add for HQ-123199 by shiwenlong at 2021/4/4 end */
 }
 

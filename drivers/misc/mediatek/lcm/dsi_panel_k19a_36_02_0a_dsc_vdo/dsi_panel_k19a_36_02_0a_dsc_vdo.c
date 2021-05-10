@@ -225,14 +225,14 @@ struct LCM_setting_table {
 	unsigned char count;
 	unsigned char para_list[64];
 };
-
+/* Huaqin modify for HQ-124216 by caogaojie at 2021/05/8 start */
 static struct LCM_setting_table lcm_suspend_setting[] = {
 	{0x28, 0, {} },
 	{REGFLAG_DELAY, 20, {} },
 	{0x10, 0, {} },
-//	{REGFLAG_DELAY, 120, {} },
+	{REGFLAG_DELAY, 120, {} }
 };
-
+/* Huaqin modify for HQ-124216 by caogaojie at 2021/05/8 end */
 static struct LCM_setting_table init_setting_vdo[] = {
 	{0xFF, 1, {0x10} },
         {0xFB, 1, {0x01} },
@@ -507,18 +507,18 @@ static void lcm_init_power(void)
 	LCM_LOGI("[nt36672D] %s exit\n", __func__);
 }
 
-/* Huaqin modify for HQ-124216 by shujiawang at 2021/04/30 start */
+/* Huaqin modify for HQ-124216 by caogaojie at 2021/05/8 start */
 static void lcm_suspend_power(void)
 {
 	if (!nvt_gesture_flag)
 	{
-		lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
-		MDELAY(3);
 		lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 0);
+		MDELAY(3);
+		lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
 		MDELAY(5);
 	}
 }
-/* Huaqin modify for HQ-124216 by shujiawang at 2021/04/30 end */
+/* Huaqin modify for HQ-124216 by caogaojie at 2021/05/8 end */
 
 /* turn on gate ic & control voltage to 5.5V */
 static void lcm_resume_power(void)
