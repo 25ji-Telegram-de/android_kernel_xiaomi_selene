@@ -2192,9 +2192,11 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 
 	/* hs_trail > max(8*UI, 60ns+4*UI) (spec) */
 	/* hs_trail = 80ns+4*UI */
-	hs_trail = 80 + 4 * ui;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	hs_trail = 76 + 4 * ui;
 	timcon0.HS_TRAIL = (hs_trail > cycle_time) ?
 				NS_TO_CYCLE(hs_trail, cycle_time) + 1 : 2;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 	/* hs_exit > 100ns (spec) */
 	/* hs_exit = 120ns */
@@ -2224,9 +2226,11 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 
 	/* clk_trail > 60ns (spec) */
 	/* clk_trail = 100ns */
-	timcon2.CLK_TRAIL = NS_TO_CYCLE(100, cycle_time) + 1;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	timcon2.CLK_TRAIL = NS_TO_CYCLE(88, cycle_time) + 1;
 	if (timcon2.CLK_TRAIL < 2)
 		timcon2.CLK_TRAIL = 2;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 	/* clk_exit > 100ns (spec) */
 	/* clk_exit = 200ns */
@@ -2306,19 +2310,19 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 	timcon3.CLK_HS_POST = (dsi_params->CLK_HS_POST == 0) ?
 		NS_TO_CYCLE((0x60 + 0x34 * ui), cycle_time) :
 		dsi_params->CLK_HS_POST;
-
 #endif
 #ifdef CONFIG_MTK_MT6382_BDG
 	data_phy_cycle = (timcon1.DA_HS_EXIT + 1) + timcon0.LPX +
 				timcon0.HS_PRPR + timcon0.HS_ZERO + 1;
 #endif
-	DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI",
-			"[DISP] - kernel - %s, HS_TRAIL = %d, HS_ZERO = %d, HS_PRPR = %d, LPX = %d, TA_GET = %d, TA_SURE = %d, TA_GO = %d, CLK_TRAIL = %d, CLK_ZERO = %d, CLK_HS_PRPR = %d\n",
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	printk("[DISP] - kernel - %s, HS_TRAIL = %d, HS_ZERO = %d, HS_PRPR = %d, LPX = %d, TA_GET = %d, TA_SURE = %d, TA_GO = %d, CLK_TRAIL = %d, CLK_ZERO = %d, CLK_HS_PRPR = %d, cycle_time = %d\n",
 			__func__, timcon0.HS_TRAIL, timcon0.HS_ZERO,
 			timcon0.HS_PRPR, timcon0.LPX,
 			timcon1.TA_GET, timcon1.TA_SURE,
 			timcon1.TA_GO, timcon2.CLK_TRAIL,
-			timcon2.CLK_ZERO, timcon3.CLK_HS_PRPR);
+			timcon2.CLK_ZERO, timcon3.CLK_HS_PRPR, cycle_time);
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++) {
 		DSI_OUTREGBIT(cmdq, struct DSI_PHY_TIMCON0_REG,

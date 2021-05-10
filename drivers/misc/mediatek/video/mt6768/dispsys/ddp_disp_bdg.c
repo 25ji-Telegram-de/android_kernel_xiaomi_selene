@@ -1139,9 +1139,11 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 
 	/* hs_trail > max(8*UI, 60ns+4*UI) (spec) */
 	/* hs_trail = 80ns+4*UI */
-	hs_trail = 80 + 4 * ui;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	hs_trail = 76 + 4 * ui;
 	timcon0.HS_TRAIL = (hs_trail > cycle_time) ?
 				NS_TO_CYCLE(hs_trail, cycle_time) + 1 : 2;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 	/* hs_exit > 100ns (spec) */
 	/* hs_exit = 120ns */
@@ -1171,10 +1173,11 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 
 	/* clk_trail > 60ns (spec) */
 	/* clk_trail = 100ns */
-	timcon2.CLK_TRAIL = NS_TO_CYCLE(100, cycle_time) + 1;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	timcon2.CLK_TRAIL = NS_TO_CYCLE(80, cycle_time) + 1;
 	if (timcon2.CLK_TRAIL < 2)
 		timcon2.CLK_TRAIL = 2;
-
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 	/* clk_exit > 100ns (spec) */
 	/* clk_exit = 200ns */
 	/* timcon3.CLK_EXIT = NS_TO_CYCLE(200, cycle_time); */
@@ -1260,12 +1263,13 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 		"%s, bg_tx_data_phy_cycle=%d, LPX=%d, HS_PRPR=%d, HS_ZERO=%d, HS_TRAIL=%d, DA_HS_EXIT=%d\n",
 		__func__, bg_tx_data_phy_cycle, timcon0.LPX, timcon0.HS_PRPR,
 		 timcon0.HS_ZERO, timcon0.HS_TRAIL, timcon1.DA_HS_EXIT);
-
-	DISPINFO(
-		"%s, TA_GO=%d, TA_GET=%d, TA_SURE=%d, CLK_HS_PRPR=%d, CLK_ZERO=%d, CLK_TRAIL=%d, CLK_HS_EXIT=%d, CLK_HS_POST=%d\n",
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	printk(
+		"%s, TA_GO=%d, TA_GET=%d, TA_SURE=%d, CLK_HS_PRPR=%d, CLK_ZERO=%d, CLK_TRAIL=%d, CLK_HS_EXIT=%d, CLK_HS_POST=%d, HS_TRAIL=%d, cycle_time = %d\n",
 		__func__, timcon1.TA_GO, timcon1.TA_GET, timcon1.TA_SURE,
 		timcon3.CLK_HS_PRPR, timcon2.CLK_ZERO, timcon2.CLK_TRAIL,
-		 timcon3.CLK_HS_EXIT, timcon3.CLK_HS_POST);
+		 timcon3.CLK_HS_EXIT, timcon3.CLK_HS_POST, timcon0.HS_TRAIL, cycle_time);
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++) {
 		DSI_OUTREGBIT(cmdq, struct DSI_TX_PHY_TIMCON0_REG,
