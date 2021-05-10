@@ -395,6 +395,7 @@ static void lcm_set_util_funcs(const struct LCM_UTIL_FUNCS *util)
 }
 
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
+/* Huaqin modify for HQHW-802 by liunianliang at 2021/05/10 start */
 static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 {
 	struct dfps_info *dfps_params = dsi->dfps_params;
@@ -408,17 +409,24 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	dfps_params[0].fps = 6000;/*real fps * 100, to support float*/
 	dfps_params[0].vact_timing_fps = 9000;/*real vact timing fps * 100*/
 	/* if mipi clock solution */
-	dfps_params[0].PLL_CLOCK = 574;
+	/* dfps_params[0].PLL_CLOCK = 574; */
 	/* dfps_params[0].data_rate = xx; */
+	/* if vfp solution */
+	dfps_params[0].vertical_frontporch = 1290;
+	dfps_params[0].vertical_frontporch_for_low_power = 2466;
+
 	/* DPFS_LEVEL1 */
 	dfps_params[1].level = DFPS_LEVEL1;
 	dfps_params[1].fps = 9000;/*real fps * 100, to support float*/
 	dfps_params[1].vact_timing_fps = 9000;/*real vact timing fps * 100*/
 	/* if mipi clock solution */
-	dfps_params[1].PLL_CLOCK = 380;
+	/* dfps_params[1].PLL_CLOCK = 380 */
 	/* dfps_params[1].data_rate = xx; */
+	dfps_params[1].vertical_frontporch = 54;
+	dfps_params[1].vertical_frontporch_for_low_power = 1290;
 	dsi->dfps_num = 2;
 }
+/* Huaqin modify for HQHW-802 by liunianliang at 2021/05/10 end */
 #endif
 
 static void lcm_get_params(struct LCM_PARAMS *params)
