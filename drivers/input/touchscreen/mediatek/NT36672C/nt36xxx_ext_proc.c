@@ -655,14 +655,15 @@ int32_t nvt_set_edge_reject_switch(uint8_t edge_reject_switch)
 		goto nvt_set_edge_reject_switch_out;
 	}
 
+/* Huaqin modify for HQ-133113 by shujiawang at 2021/05/10 start */
 	buf[0] = EVENT_MAP_HOST_CMD;
 	if (edge_reject_switch == 1) {
 		// vertical
 		buf[1] = 0xBA;
-	} else if (edge_reject_switch == 2) {
+	} else if (edge_reject_switch == 3) {
 		// left up
 		buf[1] = 0xBB;
-	} else if (edge_reject_switch == 3) {
+	} else if (edge_reject_switch == 2) {
 		// righ up
 		buf[1] = 0xBC;
 	} else {
@@ -670,6 +671,7 @@ int32_t nvt_set_edge_reject_switch(uint8_t edge_reject_switch)
 		ret = -EINVAL;
 		goto nvt_set_edge_reject_switch_out;
 	}
+/* Huaqin modify for HQ-133113 by shujiawang at 2021/05/10 end */
 	ret = CTP_SPI_WRITE(ts->client, buf, 2);
 	if (ret < 0) {
 		NVT_ERR("Write edge reject switch command fail!\n");
