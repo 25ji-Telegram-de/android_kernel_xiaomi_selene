@@ -84,6 +84,9 @@ static struct list_head consumer_head = LIST_HEAD_INIT(consumer_head);
 extern int hq_selene_pcba_config;
 /*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/29 end*/
 
+/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 start */
+extern bool tp_charger_status;
+/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 end */
 
 static DEFINE_MUTEX(consumer_mutex);
 
@@ -2270,16 +2273,21 @@ static int charger_routine_thread(void *arg)
 		charger_check_status(info);
 		kpoc_power_off_check(info);
 
+		/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 start */
 		if (is_disable_charger() == false) {
 			if (is_charger_on == true) {
+				tp_charger_status = true;
 				if (info->do_algorithm)
 					info->do_algorithm(info);
 				wakeup_sc_algo_cmd(&pinfo->sc.data, SC_EVENT_CHARGING, 0);
-			} else
+			} else{
+				tp_charger_status = false;
 				wakeup_sc_algo_cmd(&pinfo->sc.data, SC_EVENT_STOP_CHARGING, 0);
-		} else
+			}
+		} else{
 			chr_debug("disable charging\n");
-
+		}
+		/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/11 end */
 		spin_lock_irqsave(&info->slock, flags);
 		__pm_relax(&info->charger_wakelock);
 		spin_unlock_irqrestore(&info->slock, flags);

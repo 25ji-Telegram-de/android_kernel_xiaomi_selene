@@ -55,6 +55,11 @@ uint8_t esd_check;
 uint8_t esd_retry;
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
 
+/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 start */
+bool tp_charger_status;
+extern int32_t nvt_set_charger_switch(uint8_t charger_switch);
+/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 end */
+
 #if NVT_TOUCH_EXT_PROC
 extern int32_t nvt_extra_proc_init(void);
 extern void nvt_extra_proc_deinit(void);
@@ -2660,6 +2665,16 @@ static int32_t nvt_ts_resume(struct device *dev)
 
 	bTouchIsAwake = 1;
 
+	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 start */
+	if (tp_charger_status == true) {
+		nvt_set_charger_switch(1);
+		NVT_ERR("charger_switch = 1\n");
+	} else {
+		nvt_set_charger_switch(0);
+		NVT_ERR("charger_switch = 0\n");
+	}
+	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 end */
+
 	mutex_unlock(&ts->lock);
 	#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
 	if (ts->palm_sensor_switch) {
@@ -2707,6 +2722,16 @@ int32_t nvt_ts_tp_resume(void)
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
 
 	bTouchIsAwake = 1;
+
+	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 start */
+	if (tp_charger_status == true) {
+		nvt_set_charger_switch(1);
+		NVT_ERR("charger_switch = 1\n");
+	} else {
+		nvt_set_charger_switch(0);
+		NVT_ERR("charger_switch = 0\n");
+	}
+	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 end */
 
 	mutex_unlock(&ts->lock);
 #ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
