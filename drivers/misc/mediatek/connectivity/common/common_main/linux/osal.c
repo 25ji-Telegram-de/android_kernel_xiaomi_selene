@@ -220,18 +220,7 @@ INT32 osal_dbg_print(const PINT8 str, ...)
 
 INT32 osal_warn_print(const PINT8 str, ...)
 {
-	va_list args;
-	INT32 ret;
-	INT8 tempString[DBG_LOG_STR_SIZE];
-
-	va_start(args, str);
-	ret = vsnprintf(tempString, DBG_LOG_STR_SIZE, str, args);
-	va_end(args);
-
-	if (ret > 0)
-		pr_warn("%s", tempString);
-
-	return ret;
+	return 1;
 }
 
 INT32 osal_dbg_assert(INT32 expr, const PINT8 file, INT32 line)
