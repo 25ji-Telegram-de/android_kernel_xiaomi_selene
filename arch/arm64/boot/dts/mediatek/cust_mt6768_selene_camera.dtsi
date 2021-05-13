@@ -417,7 +417,7 @@
 	cam4_vcamio-supply = <&mt_pmic_vcamio_ldo_reg>;
 	status = "okay";
 
-	cam0_enable_sensor = "ov50c40_ofilm_main_mipi_raw s5kjn1_ofilm_main_mipi_raw ov50c40_qtech_main_mipi_raw ov48d_ofilm_main_mipi_raw";
+	cam0_enable_sensor = "ov50c40_ofilm_main_mipi_raw s5kjn1_ofilm_main_mipi_raw ov50c40_qtech_main_mipi_raw";
 	cam1_enable_sensor = "ov8856_ofilm_front_mipi_raw ov8856_aac_front_mipi_raw";
 	cam2_enable_sensor = "imx355_sunny_ultra_mipi_raw imx355_aac_ultra_mipi_raw";
 	cam3_enable_sensor = "gc02m1b_sunny_mipi_raw ov02b1b_ofilm_mipi_raw";

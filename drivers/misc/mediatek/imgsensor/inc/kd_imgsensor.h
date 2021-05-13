@@ -220,7 +220,6 @@
 #define OV13B10_SUNNY_SENSOR_ID                 0x560D43
 #define OV13B10_SENSOR_INDIA_ID                       0x560D46
 #define OV13B10_SUNNY_SENSOR_INDIA_ID                 0x560D47
-#define OV48D_OFILM_MAIN_SENSOR_ID              0x561244
 #define OV50C40_OFILM_MAIN_SENSOR_ID               0x565043
 #define OV50C40_OFILM_MAIN_SENSOR_INDIA_ID               0x565046
 #define S5KJN1_OFILM_MAIN_SENSOR_ID                0x38e1
@@ -525,7 +524,6 @@
 #define SENSOR_DRVNAME_OV13B10_SUNNY_MIPI_RAW         "ov13b10_sunny_mipi_raw"
 #define SENSOR_DRVNAME_OV13B10_MIPI_RAW_FACTORY         "ov13b10_mipi_raw_factory"
 #define SENSOR_DRVNAME_OV13B10_SUNNY_MIPI_RAW_FACTORY         "ov13b10_sunny_mipi_raw_factory"
-#define SENSOR_DRVNAME_OV48D_OFILM_MAIN_MIPI_RAW         "ov48d_ofilm_main_mipi_raw"
 #define SENSOR_DRVNAME_OV50C40_OFILM_MAIN_MIPI_RAW       "ov50c40_ofilm_main_mipi_raw"
 #define SENSOR_DRVNAME_S5KJN1_OFILM_MAIN_MIPI_RAW        "s5kjn1_ofilm_main_mipi_raw"
 #define SENSOR_DRVNAME_OV50C40_QTECH_MAIN_MIPI_RAW       "ov50c40_qtech_main_mipi_raw"
