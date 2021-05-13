@@ -24,7 +24,7 @@ extern enum hvdcp_status hvdcp_type_tmp;
 /*K19A K19A-159 K19A charger by wangqi at 2021/4/20 end*/
 /*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 start*/
 extern int call_mode;
-/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 start*/
+/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 end*/
 
 
 
@@ -481,13 +481,12 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 	}
 	/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 start*/
 	if (call_mode != -1) {
-		if (pdata->input_current_limit > call_mode) {
-			pdata->input_current_limit = call_mode;
+		if (pdata->charging_current_limit > call_mode) {
 			pdata->charging_current_limit = call_mode;
 			pr_err("call mode is %d\n", call_mode);
 		}
 	}
-	/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 start*/
+	/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 end*/
 done:
 	if (info->data.parallel_vbus) {
 		pdata->input_current_limit = pdata->input_current_limit / 2;
