@@ -288,7 +288,9 @@ static struct LCM_setting_table init_setting_vdo[] = {
 
         {0xFF, 1, {0X27} },
         {0XFB, 1, {0X01} },
-        {0X3F, 1, {0X01} },
+	/* Huaqin modify for K19A-271 by caogaojie at 2021/05/13 start */
+        {0X3F, 1, {0X09} },
+	/* Huaqin modify for K19A-271 by caogaojie at 2021/05/13 end */
         {0X40, 1, {0X25} },
         {0X43, 1, {0X08} },
 
