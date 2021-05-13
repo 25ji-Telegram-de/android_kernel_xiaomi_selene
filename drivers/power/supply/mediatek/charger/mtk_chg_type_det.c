@@ -249,7 +249,10 @@ static int mt_charger_get_property(struct power_supply *psy,
 		val->intval = mtk_chg->chg_type;
 		break;
 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
+		/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 start*/
+		charger_dev_get_charging_current(mtk_chg->chg1_dev, &call_mode);
 		val->intval = call_mode;
+		/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 start*/
 		break;
 	default:
 		return -EINVAL;
