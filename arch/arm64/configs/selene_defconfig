@@ -479,3 +479,6 @@ CONFIG_RTMM=y
 # Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start
 CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE=y
 # Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end
+#K19A code for HQ-132901 by qianxiaoming at 20210513 start
+CONFIG_INCREMENTAL_FS=y
+#K19A code for HQ-132901 by qianxiaoming at 20210513 end
