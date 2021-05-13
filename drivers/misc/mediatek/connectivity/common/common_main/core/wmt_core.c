@@ -590,17 +590,6 @@ INT32 wmt_core_ctrl(ENUM_WMT_CTRL_T ctrId, PULONG pPa1, PULONG pPa2)
 
 VOID wmt_core_dump_data(PUINT8 pData, PUINT8 pTitle, UINT32 len)
 {
-	PUINT8 ptr = pData;
-	INT32 k = 0;
-
-	WMT_INFO_FUNC("%s len=%d\n", pTitle, len);
-	for (k = 0; k < len; k++) {
-		if (k % 16 == 0)
-			WMT_INFO_FUNC("\n");
-		WMT_INFO_FUNC("0x%02x ", *ptr);
-		ptr++;
-	}
-	WMT_INFO_FUNC("--end\n");
 }
 
 /*!
@@ -761,7 +750,6 @@ static INT32 wmt_core_trigger_assert(VOID)
 	UINT8 WMT_ASSERT_CMD[] = { 0x01, 0x02, 0x01, 0x00, 0x08 };
 	UINT8 WMT_ASSERT_EVT[] = { 0x02, 0x02, 0x00, 0x00, 0x00 };
 
-	WMT_INFO_FUNC("Send Assert command !\n");
 	tstCmdSz = osal_sizeof(WMT_ASSERT_CMD);
 	tstEvtSz = osal_sizeof(WMT_ASSERT_EVT);
 	osal_memcpy(tstCmd, WMT_ASSERT_CMD, tstCmdSz);
@@ -982,16 +970,6 @@ deinit_ic_ops_done:
 
 static VOID wmt_core_dump_func_state(PINT8 pSource)
 {
-	WMT_INFO_FUNC
-	    ("[%s]status(b:%d f:%d g:%d gl5:%d w:%d lpbk:%d coredump:%d wmt:%d ant:%d sd1:%d sd2:%d stp:%d)\n",
-	     (pSource == NULL ? (PINT8) "CORE" : pSource), gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_BT],
-	     gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_FM], gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_GPS],
-	     gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_GPSL5],
-	     gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_WIFI], gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_LPBK],
-	     gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_COREDUMP], gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_WMT],
-	     gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_ANT], gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_SDIO1],
-	     gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_SDIO2], gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_STP]
-	    );
 	return;
 
 }
