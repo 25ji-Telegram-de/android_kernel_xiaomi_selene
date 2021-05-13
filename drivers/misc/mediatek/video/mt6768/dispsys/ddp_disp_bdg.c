@@ -5556,9 +5556,12 @@ int bdg_common_init(enum DISP_BDG_ENUM module,
 	EFUSE = (struct BDG_EFUSE_REGS *)DISPSYS_BDG_EFUSE_BASE;
 	GPIO = (struct BDG_GPIO_REGS *)DISPSYS_BDG_GPIO_BASE;
 	TX_CMDQ_REG[0] = (struct DSI_TX_CMDQ_REGS *)(DISPSYS_BDG_TX_DSI0_BASE + 0xd00);
-
-	bdg_tx_pull_6382_reset_pin();
+  
+	/* Huaqin modify for HQ-135591 by caogaojie at 2021/05/15 start */
 	clk_buf_disp_ctrl(true);
+	mdelay(5);
+	bdg_tx_pull_6382_reset_pin();
+	/* Huaqin modify for HQ-135591 by caogaojie at 2021/05/15 end */
 
 	spislv_init();
 	spislv_switch_speed_hz(SPI_TX_LOW_SPEED_HZ, SPI_RX_LOW_SPEED_HZ);
@@ -5711,10 +5714,13 @@ int bdg_common_init_for_rx_pat(enum DISP_BDG_ENUM module,
 	EFUSE = (struct BDG_EFUSE_REGS *)DISPSYS_BDG_EFUSE_BASE;
 	GPIO = (struct BDG_GPIO_REGS *)DISPSYS_BDG_GPIO_BASE;
 	TX_CMDQ_REG[0] = (struct DSI_TX_CMDQ_REGS *)(DISPSYS_BDG_TX_DSI0_BASE + 0xd00);
-
-	bdg_tx_pull_6382_reset_pin();
-
+  
+	/* Huaqin modify for HQ-135591 by caogaojie at 2021/05/15 start */
 	clk_buf_disp_ctrl(true);
+	mdelay(5);
+	bdg_tx_pull_6382_reset_pin();
+	/* Huaqin modify for HQ-135591 by caogaojie at 2021/05/15 end */
+
 	set_LDO_on(cmdq);
 	set_mtcmos_on(cmdq);
 	ana_macro_on(cmdq);
