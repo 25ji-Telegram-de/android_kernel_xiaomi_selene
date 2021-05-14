@@ -100,6 +100,7 @@ struct TEEC_UUID uuid_ta_gf = { 0x8888c03f, 0xc30c, 0x4dd0,
 	{ 0xa3, 0x19, 0xea, 0x29, 0x64, 0x3d, 0x4d, 0x4b } };
 
 /*************************************************************/
+static int Screen_status = 0;
 static LIST_HEAD(device_list);
 static DEFINE_MUTEX(device_list_lock);
 
@@ -579,11 +580,13 @@ static int gf_fb_notifier_callback(struct notifier_block *self,
 
 	switch (blank) {
 	case FB_BLANK_UNBLANK:
+		Screen_status =1;
 		gf_debug(INFO_LOG, "[%s] : lcd on notify\n", __func__);
 		gf_netlink_send(gf_dev, GF_NETLINK_SCREEN_ON);
 		break;
 
 	case FB_BLANK_POWERDOWN:
+		Screen_status =2;
 		gf_debug(INFO_LOG, "[%s] : lcd off notify\n", __func__);
 		gf_netlink_send(gf_dev, GF_NETLINK_SCREEN_OFF);
 		break;
@@ -875,7 +878,7 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			input_sync(gf_dev->input);
 		}
 
-		if (GF_KEY_HOME == gf_key.key) {
+		if ((GF_KEY_HOME == gf_key.key) && (Screen_status != 1)) {
 		    input_report_key(gf_dev->input, key_input, gf_key.value);
 		    input_sync(gf_dev->input);
 		}
