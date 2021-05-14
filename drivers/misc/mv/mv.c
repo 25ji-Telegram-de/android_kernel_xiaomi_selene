@@ -57,6 +57,12 @@ static int mv_proc_show(struct seq_file *file, void*data)
 	{
 		sprintf(part_num,"%s","MT29VZZZAD9GQFSM_046W_9S9");
 	}
+        /* Huaqin modify for K19A-274 by luocheng at 2021/05/14 start */
+	else if(strcmp("K19A_Micro_9K9",part_num) == 0)
+	{
+		sprintf(part_num,"%s","MT29VZZZAD9DQKSM_046W_9K9");
+	}
+        /* Huaqin modify for K19A-274 by luocheng at 2021/05/14 end */
 	manfidd = mmc_get_manfid();
 	snprintf(manfid, 5,"0x%x", manfidd);
 	seq_printf(file,"D: %s %s\n", ddr_id, RAM_size);
