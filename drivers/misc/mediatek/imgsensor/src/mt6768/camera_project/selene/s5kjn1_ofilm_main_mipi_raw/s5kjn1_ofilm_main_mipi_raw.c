@@ -188,13 +188,13 @@ static struct SENSOR_VC_INFO_STRUCT SENSOR_VC_INFO[4] = {
 	{
 		0x02, 0x0A, 0x00, 0x08, 0x40, 0x00,
 		0x00, 0x2B, 0x0ff0, 0x0c00, 0x01, 0x00, 0x0000, 0x0000,
-		0x01, 0x30, 0x09EC, 0x02FC, 0x03, 0x00, 0x0000, 0x0000
+		0x01, 0x30, 0x027C, 0x0BF0, 0x03, 0x00, 0x0000, 0x0000
 	},
     /* capture mode setting */
 	{
 		0x02, 0x0A, 0x00, 0x08, 0x40, 0x00,
 		0x00, 0x2B, 0x0ff0, 0x0c00, 0x01, 0x00, 0x0000, 0x0000,
-		0x01, 0x30, 0x09EC, 0x02FC, 0x03, 0x00, 0x0000, 0x0000
+		0x01, 0x30, 0x027C, 0x0BF0, 0x03, 0x00, 0x0000, 0x0000
 	},
     /* normal_video mode setting */
 	{
@@ -6509,16 +6509,15 @@ feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 	case SENSOR_FEATURE_GET_PDAF_INFO:
 		pr_debug("SENSOR_FEATURE_GET_PDAF_INFO scenarioId:%d\n",
 				 (UINT16) *feature_data);
-		PDAFinfo =
-			(struct SET_PD_BLOCK_INFO_T
-			 *)(uintptr_t) (*(feature_data + 1));
+		PDAFinfo =(struct SET_PD_BLOCK_INFO_T*)(uintptr_t) (*(feature_data + 1));
+
 		switch (*feature_data) {
-		case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
 		case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
+		case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
 		case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
 			memcpy((void *)PDAFinfo, (void *)&imgsensor_pd_info,
-				   sizeof(struct SET_PD_BLOCK_INFO_T));
-		break;
+				sizeof(struct SET_PD_BLOCK_INFO_T));
+			break;
 
 		case MSDK_SCENARIO_ID_HIGH_SPEED_VIDEO:
 		case MSDK_SCENARIO_ID_SLIM_VIDEO:
@@ -6527,27 +6526,25 @@ feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 		}
 	break;
 	case SENSOR_FEATURE_GET_VC_INFO:
-		pr_debug("SENSOR_FEATURE_GET_VC_INFO %d\n",
-				 (UINT16) *feature_data);
-		pvcinfo =
-			(struct SENSOR_VC_INFO_STRUCT
-			 *)(uintptr_t) (*(feature_data + 1));
+		LOG_INF("SENSOR_FEATURE_GET_VC_INFO %d\n",(UINT16) *feature_data);
+		pvcinfo = (struct SENSOR_VC_INFO_STRUCT *) (uintptr_t) (*(feature_data + 1));
 		switch (*feature_data_32) {
 		case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
-		case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
+			memcpy((void *)pvcinfo, (void *)&SENSOR_VC_INFO[1],
+				sizeof(struct SENSOR_VC_INFO_STRUCT));
+			break;
 		case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
-			memcpy((void *)pvcinfo,
-				   (void *)&SENSOR_VC_INFO[2],
-				   sizeof(struct SENSOR_VC_INFO_STRUCT));
-		break;
-		case MSDK_SCENARIO_ID_CUSTOM1:
+			memcpy((void *)pvcinfo, (void *)&SENSOR_VC_INFO[2],
+				sizeof(struct SENSOR_VC_INFO_STRUCT));
+			break;
+		case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
 		default:
-			memcpy((void *)pvcinfo,
-				   (void *)&SENSOR_VC_INFO[0],
-				   sizeof(struct SENSOR_VC_INFO_STRUCT));
-		break;
+			memcpy((void *)pvcinfo, (void *)&SENSOR_VC_INFO[0],
+				sizeof(struct SENSOR_VC_INFO_STRUCT));
+			break;
 		}
-	break;
+		break;
+
 	case SENSOR_FEATURE_GET_SENSOR_PDAF_CAPACITY:
 		pr_debug
 		("SENSOR_FEATURE_GET_SENSOR_PDAF_CAPACITY scenarioId:%d\n",
