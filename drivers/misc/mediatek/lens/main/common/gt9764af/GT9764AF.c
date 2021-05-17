@@ -56,12 +56,12 @@ static int i2c_read(u8 a_u2Addr, u8 *a_puBuff)
 	g_pstAF_I2Cclient->addr = g_pstAF_I2Cclient->addr >> 1;
 
 	i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puReadCmd, 1);
-	if (i4RetValue != 2) {
+	if (i4RetValue < 0) {
 		LOG_INF(" I2C write failed!!\n");
 		return -1;
 	}
 	i4RetValue = i2c_master_recv(g_pstAF_I2Cclient, (char *)a_puBuff, 1);
-	if (i4RetValue != 1) {
+	if (i4RetValue < 0) {
 		LOG_INF(" I2C read failed!!\n");
 		return -1;
 	}
@@ -133,7 +133,7 @@ static inline int moveAF(unsigned long a_u4Position)
 {
 	int ret = 0;
 	int i4RetValue=0;
-
+	unsigned short CurrPos;
 	if ((a_u4Position > g_u4AF_MACRO) || (a_u4Position < g_u4AF_INF)) {
 		LOG_INF("out of range\n");
 		return -EINVAL;
@@ -175,6 +175,12 @@ static inline int moveAF(unsigned long a_u4Position)
 		*g_pAF_Opened = 2;
 		spin_unlock(g_pAF_SpinLock);
 	}
+
+	// add debug  pos log
+	LOG_INF("get Position =%d",a_u4Position);
+	s4AF_ReadReg(&CurrPos);
+	LOG_INF("set Position=%d",CurrPos);
+
 
 	if (g_u4CurrPosition == a_u4Position)
 		return 0;
