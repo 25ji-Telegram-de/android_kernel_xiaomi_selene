@@ -1074,7 +1074,13 @@ static int __init early_lcm_name(char *p)
     } else if (memcmp(p, "nt36672", 7) == 0) {
     printk("LCM_name=nt36672A_fhdp_dsi_vdo_tianma_lcm_drv, g_screen_info = 2\n");
     g_screen_info = 1;
-    } else
+	/*modify for HQ-123670 by baoguangxiu  2021.5.19 start*/
+    } else if(strcmp(p, "dsi_panel_k19a_36_02_0a_dsc_vdo_lcm_drv") == 0) {
+    g_screen_info = 3;
+    }else if(strcmp(p, "dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv") == 0) {
+    g_screen_info = 4;
+    }else
+    /*modify for HQ-123670 by baoguangxiu  2021.5.19 end*/
     printk("LCM_name = unknow,\n");
     return 0;
 }
