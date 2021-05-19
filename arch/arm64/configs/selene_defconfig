@@ -230,7 +230,9 @@ CONFIG_BLK_DEV_DM=y
 CONFIG_DM_CRYPT=y
 #/*K19A K19A-2 solve bsp version  by miaozhichao at 2021/3/26 start*/
 # CONFIG_MMC_CRYPTO_LEGACY=y
-# CONFIG_BLK_INLINE_ENCRYPTION_FALLBACK=y
+#K19A HQ-135324 fix vts by feiwen at 2021.5.19 start
+CONFIG_BLK_INLINE_ENCRYPTION_FALLBACK=y
+#K19A HQ-135324 fix vts by feiwen at 2021.5.19 end
 CONFIG_DM_DEFAULT_KEY=y
 #/*K19A K19A-2 solve bsp version  by miaozhichao at 2021/3/26 end*/
 CONFIG_DM_UEVENT=y
@@ -394,7 +396,9 @@ CONFIG_F2FS_FS_ENCRYPTION=y
 CONFIG_FS_ENCRYPTION_INLINE_CRYPT=y
 #Huaqin modify for HQ-123324 by luocheng at 2021/04/29 start
 CONFIG_MI_MEMORY_SYSFS=y
-CONFIG_MTK_EMMC_CQ_SUPPORT=y
+# K19A HQ-135324 fix vts by feiwen at 2021.5.19 start
+# CONFIG_MTK_EMMC_CQ_SUPPORT is not set
+# K19A HQ-135324 fix vts by feiwen at 2021.5.19 end
 #Huaqin modify for HQ-123324 by luocheng at 2021/04/29 end
 CONFIG_QUOTA_NETLINK_INTERFACE=y
 CONFIG_ISO9660_FS=y
