@@ -5434,9 +5434,10 @@ static kal_uint32 open(void)
 
 static kal_uint32 close(void)
 {
+	write_cmos_sensor(0x0100, 0x00);
+	LOG_INF("close had stream off  %d \n", read_cmos_sensor(0x0100));
 	return ERROR_NONE;
 }				/*  close  */
-
 static kal_uint32 preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 			  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
