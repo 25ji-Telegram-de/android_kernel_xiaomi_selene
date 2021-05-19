@@ -1894,7 +1894,7 @@ int tp_compare_ic(void)
 		return 0;
 	} else if (is_ft_lcm == 5) {
 		BOOT_UPDATE_FIRMWARE_NAME = "nt36672c_tr_02_ts_fw.bin";
-		MP_UPDATE_FIRMWARE_NAME = "nt36672c_tr_02_ts_mp.BIN";
+		MP_UPDATE_FIRMWARE_NAME = "nt36672c_tr_02_ts_mp.bin";
 		NVT_LOG("match dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv");
 		return 0;
 	} else {
