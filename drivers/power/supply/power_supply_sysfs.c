@@ -322,6 +322,9 @@ static struct device_attribute power_supply_attrs[] = {
 	/*K19A-75 charge by wangchao at 2021/4/15 start*/
 	POWER_SUPPLY_ATTR(hiz_enable),
 	/*K19A-75 charge by wangchao at 2021/4/15 end*/
+	/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 start */
+	POWER_SUPPLY_ATTR(shutdown_delay),
+	/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 end */
 	POWER_SUPPLY_ATTR(ra_detected),
 	POWER_SUPPLY_ATTR(tx_adapter),
 	POWER_SUPPLY_ATTR(connector_temp),

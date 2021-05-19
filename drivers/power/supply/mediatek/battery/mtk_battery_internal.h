@@ -707,7 +707,9 @@ struct mtk_battery {
 
 /*custom related*/
 	int battery_id;
-
+/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 start */
+	bool shutdown_delay;
+/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 end */
 /*simulator log*/
 	struct simulator_log log;
 

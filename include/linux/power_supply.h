@@ -204,6 +204,9 @@ enum power_supply_property {
 	/*K19A-75 charge by wangchao at 2021/4/15 start*/
 	POWER_SUPPLY_PROP_HIZ_ENABLE,
 	/*K19A-75 charge by wangchao at 2021/4/15 end*/
+	/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 start */
+	POWER_SUPPLY_PROP_SHUTDOWN_DELAY,
+	/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 end */
 	POWER_SUPPLY_PROP_RA_DETECTED,
 	POWER_SUPPLY_PROP_TX_ADAPTER,
 	POWER_SUPPLY_PROP_CONNECTOR_TEMP,
