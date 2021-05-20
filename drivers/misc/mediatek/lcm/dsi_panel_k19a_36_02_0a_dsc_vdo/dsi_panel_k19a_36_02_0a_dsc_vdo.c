@@ -283,9 +283,10 @@ static struct LCM_setting_table init_setting_vdo[] = {
 	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
 	{0x11, 0, {} },
 	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
-        {REGFLAG_DELAY, 100, {} },
+	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 start */
+        {REGFLAG_DELAY, 70, {} },
         {0x29, 0, {} },
-        {REGFLAG_DELAY, 40, {} }
+	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 start */
 };
 
 
@@ -507,7 +508,9 @@ static void lcm_init_power(void)
 	MDELAY(3);
 
 	lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 1);
-	MDELAY(5);
+	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 start */
+	MDELAY(10);
+	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
 
 	LCM_LOGI("[nt36672D] %s exit\n", __func__);
 }
@@ -537,12 +540,14 @@ static void lcm_resume_power(void)
 
 static void lcm_init(void)
 {
+	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 start */
 	SET_RESET_PIN(1);
-	MDELAY(10);
+	MDELAY(5);
 	SET_RESET_PIN(0);
-	MDELAY(10);
+	MDELAY(1);
 	SET_RESET_PIN(1);
 	MDELAY(10);
+	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
 
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
