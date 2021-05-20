@@ -200,13 +200,13 @@ static struct SENSOR_VC_INFO_STRUCT SENSOR_VC_INFO[4] = {
 	{
 		0x02, 0x0A, 0x00, 0x08, 0x40, 0x00,
 		0x00, 0x2B, 0x0ff0, 0x08f8, 0x01, 0x00, 0x0000, 0x0000,
-		0x00, 0x2B, 0x09EC, 0x05F8, 0x03, 0x00, 0x0000, 0x0000
+		0x01, 0x30, 0x027C, 0x08f0, 0x03, 0x00, 0x0000, 0x0000
 	},
-    /* high_speed_video mode setting */
-    {
+	/* custom2 mode setting */
+	{
 		0x02, 0x0A, 0x00, 0x08, 0x40, 0x00,
-		0x00, 0x2B, 0x0500, 0x02D0, 0x01, 0x00, 0x0000, 0x0000,
-		0x00, 0x2B, 0x09EC, 0x05F8, 0x03, 0x00, 0x0000, 0x0000
+		0x00, 0x2B, 0x0ff0, 0x0c00, 0x01, 0x00, 0x0000, 0x0000,
+		0x01, 0x30, 0x027C, 0x0BF0, 0x03, 0x00, 0x0000, 0x0000
 	}
 };
 
@@ -242,6 +242,23 @@ static struct SET_PD_BLOCK_INFO_T imgsensor_pd_info = {
 	.iMirrorFlip = 0,
 	.i4BlockNumX = 508,
 	.i4BlockNumY = 382,
+};
+
+static struct SET_PD_BLOCK_INFO_T imgsensor_pd_normal_video_info = {
+ .i4OffsetX = 8,
+ .i4OffsetY = 4,
+ .i4PitchX = 8,
+ .i4PitchY = 8,
+ .i4PairNum = 4,
+ .i4SubBlkW = 8,
+ .i4SubBlkH = 2,
+ .i4PosL = {{8, 4}, {10, 7}, {14, 8}, {12, 11}
+ },
+ .i4PosR = {{9, 4}, {11, 7}, {15, 8}, {13, 11}
+ },
+ .iMirrorFlip = 0,
+ .i4BlockNumX = 508,
+ .i4BlockNumY = 286,
 };
 
 
@@ -4478,7 +4495,7 @@ write_cmos_sensor(0x0702, 0x0000);
 write_cmos_sensor(0x0202, 0x0100);
 write_cmos_sensor(0x0200, 0x0100);
 write_cmos_sensor(0x0D00, 0x0101);
-write_cmos_sensor(0x0D02, 0x0001);
+write_cmos_sensor(0x0D02, 0x0101);
 write_cmos_sensor(0x0D04, 0x0102);
 write_cmos_sensor(0x6226, 0x0000);
 }
@@ -5384,8 +5401,8 @@ static void custom2_setting(void)
     write_cmos_sensor(0x0702, 0x0000);
     write_cmos_sensor(0x0202, 0x0100);
     write_cmos_sensor(0x0200, 0x0100);
-    write_cmos_sensor(0x0D00, 0x0000);
-    write_cmos_sensor(0x0D02, 0x0001);
+    write_cmos_sensor(0x0D00, 0x0101);
+    write_cmos_sensor(0x0D02, 0x0101);
     write_cmos_sensor(0x0D04, 0x0102);
     write_cmos_sensor(0x6226, 0x0000);
 }
@@ -6512,13 +6529,16 @@ feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 		PDAFinfo =(struct SET_PD_BLOCK_INFO_T*)(uintptr_t) (*(feature_data + 1));
 
 		switch (*feature_data) {
-		case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
-		case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
 		case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
+		case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
+		case MSDK_SCENARIO_ID_CUSTOM2:
 			memcpy((void *)PDAFinfo, (void *)&imgsensor_pd_info,
 				sizeof(struct SET_PD_BLOCK_INFO_T));
 			break;
-
+		case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
+			memcpy((void *)PDAFinfo, (void *)&imgsensor_pd_normal_video_info,
+				sizeof(struct SET_PD_BLOCK_INFO_T));
+			break;
 		case MSDK_SCENARIO_ID_HIGH_SPEED_VIDEO:
 		case MSDK_SCENARIO_ID_SLIM_VIDEO:
 		default:
@@ -6537,6 +6557,10 @@ feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 			memcpy((void *)pvcinfo, (void *)&SENSOR_VC_INFO[2],
 				sizeof(struct SENSOR_VC_INFO_STRUCT));
 			break;
+		case MSDK_SCENARIO_ID_CUSTOM2:
+			memcpy((void *)pvcinfo, (void *)&SENSOR_VC_INFO[3],
+				sizeof(struct SENSOR_VC_INFO_STRUCT));
+			break;
 		case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
 		default:
 			memcpy((void *)pvcinfo, (void *)&SENSOR_VC_INFO[0],
@@ -6551,6 +6575,7 @@ feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 		 (UINT16) *feature_data);
 
 switch (*feature_data) {
+		case MSDK_SCENARIO_ID_CUSTOM2:
 		case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
 		case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
 		case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
