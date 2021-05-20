@@ -753,7 +753,9 @@ static struct bq2589x_platform_data *bq2589x_parse_dt(struct device_node *np,
 	ret = of_property_read_u32(np, "ti,bq2589x,precharge-current",
 				   &pdata->iprechg);
 	if (ret) {
-		pdata->iprechg = 180;
+/*K19A HQHW-881 K19A charger of 2.5v by wangqi at 2021/5/20 start*/
+		pdata->iprechg = 256;
+/*K19A HQHW-881 K19A charger of 2.5v by wangqi at 2021/5/20 end*/
 		pr_err("Failed to read node of ti,bq2589x,precharge-current\n");
 	}
 
