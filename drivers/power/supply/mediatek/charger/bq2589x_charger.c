@@ -849,6 +849,11 @@ static int bq2589x_get_charger_type(struct bq2589x *bq, enum charger_type *type)
 	case BQ2589X_VBUS_TYPE_NON_STD:
 		chg_type = NONSTANDARD_CHARGER;
 		break;
+/* Huaqin add for HQ-136291 by miaozhichao at 2021/5/20 start */
+	case BQ2589X_VBUS_TYPE_OTG:
+		chg_type = CHARGER_UNKNOWN;
+		break;
+/* Huaqin add for HQ-136291 by miaozhichao at 2021/5/20 end */
 	default:
 		chg_type = NONSTANDARD_CHARGER;
 		break;
