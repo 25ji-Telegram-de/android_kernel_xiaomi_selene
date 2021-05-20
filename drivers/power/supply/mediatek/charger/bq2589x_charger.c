@@ -1386,6 +1386,29 @@ static int bq2589x_set_boost_ilmt(struct charger_device *chg_dev, u32 curr)
 	return ret;
 }
 
+/*K19A HQ-135863 K19A charger of charge full by wangqi at 2021/5/20 start*/
+static int bq2589x_do_event(struct charger_device *chg_dev, u32 event,
+			    u32 args)
+{
+	if (chg_dev == NULL)
+		return -EINVAL;
+
+	pr_info("%s: event = %d\n", __func__, event);
+	switch (event) {
+	case EVENT_EOC:
+		charger_dev_notify(chg_dev, CHARGER_DEV_NOTIFY_EOC);
+		break;
+	case EVENT_RECHARGE:
+		charger_dev_notify(chg_dev, CHARGER_DEV_NOTIFY_RECHG);
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+/*K19A HQ-135863 K19A charger of charge full by wangqi at 2021/5/20 end*/
+
 static struct charger_ops bq2589x_chg_ops = {
 	/* Normal charging */
 	.plug_in = bq2589x_plug_in,
@@ -1425,6 +1448,9 @@ static struct charger_ops bq2589x_chg_ops = {
 	.set_otg_current = bq2589x_set_boost_ilmt,
 	/*K19A K19A-187 K19A charger of set boost current by wangqi at 2021/4/27 start*/
 	.enable_discharge = NULL,
+	/*K19A HQ-135863 K19A charger of charge full by wangqi at 2021/5/20 start*/
+	.event = bq2589x_do_event,
+	/*K19A HQ-135863 K19A charger of charge full by wangqi at 2021/5/20 end*/
 
 	/* PE+/PE+20 */
 	.send_ta_current_pattern = NULL,
