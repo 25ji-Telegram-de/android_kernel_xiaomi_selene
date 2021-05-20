@@ -934,12 +934,12 @@ void fg_custom_init_from_dts(struct platform_device *dev)
 
 	fgauge_get_profile_id();
 	bat_id = gm.battery_id;
-	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
+	/*K19A HQ-134272 K19A charger of fguage by wangqi at 2021/5/20 start*/
 	if (bat_id == 1)
 		bat_id = 0;
-	if (bat_id >= 3)
+	if (bat_id > 3)
 		bat_id = 2;
-	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 end*/
+	/*K19A HQ-134272 K19A charger of fguage by wangqi at 2021/5/20 end*/
 	bm_err("%s bat_id = %d\n", __func__, bat_id);
 
 	fg_read_dts_val(np, "MULTI_BATTERY", &(multi_battery), 1);
