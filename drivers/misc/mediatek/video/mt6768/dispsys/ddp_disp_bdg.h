@@ -22,12 +22,21 @@
 
 #define HW_NUM			(1)
 #define RX_V12			(1720)
+//#define _90HZ_
+#define _n36672c_
+#define _Disable_HS_DCO_
+#define _Disable_LP_TX_L023_
+//#define _G_MODE_EN_
+//#define _RX_V12_
 //#define _HIGH_FRM_
 #ifdef _HIGH_FRM_	 //for cmd 120Hz
 #define RXTX_RATIO		(299)
 #else
-//#define RXTX_RATIO		(230) //for vdo 120Hz
+#ifdef _90HZ_
 #define RXTX_RATIO		(225) //for vdo 90Hz
+#else
+#define RXTX_RATIO		(230) //for vdo 120Hz
+#endif
 #endif
 
 enum DISP_BDG_ENUM {
@@ -66,9 +75,12 @@ enum MIPI_TX_PAD_VALUE {
 int bdg_tx_init(enum DISP_BDG_ENUM module,
 		   struct disp_ddp_path_config *config, void *cmdq);
 int bdg_tx_deinit(enum DISP_BDG_ENUM module, void *cmdq);
+void bdg_first_init(void);
 int bdg_common_init(enum DISP_BDG_ENUM module,
 			struct disp_ddp_path_config *config, void *cmdq);
 int bdg_common_deinit(enum DISP_BDG_ENUM module, void *cmdq);
+void bdg_register_init(void);
+int bdg_is_bdg_connected(void);
 int bdg_common_init_for_rx_pat(enum DISP_BDG_ENUM module,
 			struct disp_ddp_path_config *config, void *cmdq);
 int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
@@ -90,9 +102,10 @@ int bdg_tx_reset(enum DISP_BDG_ENUM module, void *cmdq);
 int bdg_vm_mode_set(enum DISP_BDG_ENUM module, bool enable,
 			unsigned int long_pkt, void *cmdq); /* not use */
 int bdg_tx_wait_for_idle(enum DISP_BDG_ENUM module);
-int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module);
+int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module, unsigned int level);
 int bdg_set_dcs_read_cmd(bool enable, void *cmdq);
 int bdg_tx_clr_sta(enum DISP_BDG_ENUM module, void *cmdq);
+int bdg_dsi_stop_vdo_gce(void);
 
 unsigned int get_ap_data_rate(void);
 unsigned int get_bdg_data_rate(void);
@@ -102,6 +115,7 @@ unsigned int get_dsc_state(void);
 void set_mt6382_init(unsigned int value);
 unsigned int get_mt6382_init(void);
 unsigned int get_bdg_tx_mode(void);
+void set_bdg_tx_mode(unsigned int value);
 int check_stopstate(void *cmdq);
 int polling_status(void);
 

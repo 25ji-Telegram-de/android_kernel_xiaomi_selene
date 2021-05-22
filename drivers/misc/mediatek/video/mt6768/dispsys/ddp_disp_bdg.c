@@ -80,6 +80,7 @@ int bdg_dsi0_done_gce_event;
 int bdg_dsi0_target_gce_event;
 int bdg_rdma0_sof_gce_event;
 int bdg_rdma0_eof_gce_event;
+static int mt6382_connected;
 
 #define REGFLAG_DELAY		0xFFFC
 #define REGFLAG_UDELAY		0xFFFB
@@ -235,6 +236,25 @@ do { \
 	} \
 } while (0)
 #endif
+
+int bdg_is_bdg_connected(void)
+{
+	DISPFUNCSTART();
+	if (mt6382_connected == 0) {
+		unsigned int ret = 0;
+#ifdef CONFIG_MTK_MT6382_BDG
+		spislv_init();
+		spislv_switch_speed_hz(SPI_TX_LOW_SPEED_HZ, SPI_RX_LOW_SPEED_HZ);
+		ret = mtk_spi_read(0x0);
+#endif
+
+		if (ret == 0)
+			mt6382_connected = -1;
+		else
+			mt6382_connected = 1;
+	}
+	return mt6382_connected;
+}
 
 void bdg_tx_pull_6382_reset_pin(void)
 {
@@ -509,9 +529,12 @@ void ana_macro_on(void *cmdq)
 	 * bit 16-17 is display mm clk 1(270m)/2(405m)/3(540m)
 	 * dsc_on:vact * hact * vrefresh * (vtotal / vact) * bubble_ratio
 	 */
+#ifdef _90HZ_
 	reg = (3 << 24) | (1 << 16) | (1 << 8) | (1 << 0); //270M for 90Hz
-//	reg = (3 << 24) | (2 << 16) | (1 << 8) | (1 << 0); //405M for 120Hz
-//	reg = (3 << 24) | (3 << 16) | (1 << 8) | (1 << 0); //540M
+#else
+	reg = (3 << 24) | (2 << 16) | (1 << 8) | (1 << 0); //405M for 120Hz
+#endif
+
 	DSI_OUTREG32(cmdq, TOPCKGEN->CLK_CFG_0_SET, reg);
 	//config update
 	reg = (1 << 4) | (1 << 3) | (1 << 1) | (1 << 0);
@@ -1532,7 +1555,7 @@ int bdg_tx_vdo_timing_set(enum DISP_BDG_ENUM module,
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_VBP_NL,
 					(tx_params->vertical_backporch));
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_VFP_NL,
-					(tx_params->vertical_frontporch));
+					(tx_params->vertical_frontporch - 1));
 
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_HSA_WC, hsa_byte);
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_HBP_WC, hbp_byte);
@@ -1738,13 +1761,11 @@ int bdg_set_dcs_read_cmd(bool enable, void *cmdq)
 	DISPFUNCSTART();
 
 	if (enable) {
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 55);
 		DSI_OUTREGBIT(cmdq, struct DSI_TX_RACK_REG,
 			TX_REG[0]->DSI_TX_RACK, DSI_TX_RACK_BYPASS, 1);
 		DSI_OUTREGBIT(cmdq, struct MIPI_RX_POST_CTRL_REG,
 			DISPSYS_REG->MIPI_RX_POST_CTRL, MIPI_RX_MODE_SEL, 0);
 	} else {
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0);
 		DSI_OUTREGBIT(cmdq, struct DSI_TX_RACK_REG,
 			TX_REG[0]->DSI_TX_RACK, DSI_TX_RACK_BYPASS, 0);
 		DSI_OUTREGBIT(cmdq, struct MIPI_RX_POST_CTRL_REG,
@@ -1832,31 +1853,51 @@ int bdg_mutex_trigger(enum DISP_BDG_ENUM module, void *cmdq)
 	return 0;
 }
 
-int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module)
+int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module, unsigned int level)
 {
-	unsigned int i, k;
+	unsigned int i, k, tmp;
 
 //	DISPFUNCSTART();
 
+	DISPMSG("0x%08x: 0x%08x\n", 0x0000d314, mtk_spi_read(0x0000d314));
+	DISPMSG("0x%08x: 0x%08x\n", 0x00007310, mtk_spi_read(0x00007310));
+	DISPMSG("0x%08x: 0x%08x\n", 0x000231a8, mtk_spi_read(0x000231a8));
+	DISPMSG("0x%08x: 0x%08x\n", 0x00023174, mtk_spi_read(0x00023174));
+	DISPMSG("0x%08x: 0x%08x\n", 0x0002106c, mtk_spi_read(0x0002106c));
+	DISPMSG("0x%08x: 0x%08x\n", 0x00021300, mtk_spi_read(0x00021300));
+	DISPMSG("0x%08x: 0x%08x\n", 0x00003010, mtk_spi_read(0x00003010));
 	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++) {
 		unsigned long dsc_base_addr = (unsigned long)DSC_REG;
 		unsigned long dsi_base_addr = (unsigned long)TX_REG[i];
 		unsigned long mipi_base_addr = (unsigned long)MIPI_TX_REG;
 
 		DISPMSG("========================== mt6382 RX REGS ==\n", i);
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d00c, mtk_spi_read(0x0000d00c));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d2d0, mtk_spi_read(0x0000d2d0));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d2b0, mtk_spi_read(0x0000d2b0));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d270, mtk_spi_read(0x0000d270));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d250, mtk_spi_read(0x0000d250));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d230, mtk_spi_read(0x0000d230));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d210, mtk_spi_read(0x0000d210));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d280, mtk_spi_read(0x0000d280));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d260, mtk_spi_read(0x0000d260));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d240, mtk_spi_read(0x0000d240));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d220, mtk_spi_read(0x0000d220));
-		DISPMSG("0x%08x: 0x%08x\n", 0x0000d200, mtk_spi_read(0x0000d200));
-		DISPMSG("0x%08x: 0x%08x\n", 0x00023180,	mtk_spi_read(0x00023180));
+		tmp = mtk_spi_read(0x0000d00c);
+		DISPMSG("INT_ST_MAIN(0x0000d00c): 0x%08x\n", tmp);
+		if (tmp != 0) {
+			if (tmp & (1 << 0))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_phy_fatal\n", (1 << 0));
+			if (tmp & (1 << 1))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_dsi_fatal\n", (1 << 1));
+			if (tmp & (1 << 2))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_ddi_fatal\n", (1 << 2));
+			if (tmp & (1 << 3))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_ipi_fatal\n", (1 << 3));
+			if (tmp & (1 << 4))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_fifo_fatal\n", (1 << 4));
+			if (tmp & (1 << 16))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_phy\n", (1 << 16));
+			if (tmp & (1 << 17))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_dsi\n", (1 << 17));
+			if (tmp & (1 << 18))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_ddi\n", (1 << 18));
+			if (tmp & (1 << 19))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_ipi\n", (1 << 19));
+			if (tmp & (1 << 21))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_err_rpt\n", (1 << 21));
+			if (tmp & (1 << 22))
+				DISPMSG("INT_ST_MAIN(bit%d), int_st_rx_triggers\n", (1 << 22));
+		}
 
 		DISPMSG("========================== mt6382 DSI%d REGS ==\n", i);
 //		for (k = 0; k < sizeof(struct BDG_TX_REGS); k += 16) {
@@ -1869,8 +1910,7 @@ int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module)
 		}
 
 		DISPMSG("========================== mt6382 DSI%d CMD REGS ==\n", i);
-		/* only dump first 32 bytes cmd */
-		for (k = 0; k < 32; k += 16) {
+		for (k = 0; k < 32; k += 16) { /* only dump first 32 bytes cmd */
 			DISPMSG("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", 0xd00 + k,
 				mtk_spi_read((dsi_base_addr + 0xd00 + k)),
 				mtk_spi_read((dsi_base_addr + 0xd00 + k + 0x4)),
@@ -1878,24 +1918,26 @@ int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module)
 				mtk_spi_read((dsi_base_addr + 0xd00 + k + 0xc)));
 		}
 
-		DISPMSG("========================== mt6382 MIPI%d REGS ==\n", i);
-//		for (k = 0; k < sizeof(struct BDG_MIPI_TX_REGS); k += 16) {
-		for (k = 0; k < 0x100; k += 16) {
-			DISPMSG("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", k,
-				mtk_spi_read(mipi_base_addr + k),
-				mtk_spi_read(mipi_base_addr + k + 0x4),
-				mtk_spi_read(mipi_base_addr + k + 0x8),
-				mtk_spi_read(mipi_base_addr + k + 0xc));
-		}
-
-		if (dsc_en) {
-			DISPMSG("========================== mt6382 DSC%d REGS ==\n", i);
-			for (k = 0; k < sizeof(struct BDG_DISP_DSC_REGS); k += 16) {
+		if (level) {
+			DISPMSG("========================== mt6382 MIPI%d REGS ==\n", i);
+//			for (k = 0; k < sizeof(struct BDG_MIPI_TX_REGS); k += 16) {
+			for (k = 0; k < 0x100; k += 16) {
 				DISPMSG("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", k,
-					mtk_spi_read(dsc_base_addr + k),
-					mtk_spi_read(dsc_base_addr + k + 0x4),
-					mtk_spi_read(dsc_base_addr + k + 0x8),
-					mtk_spi_read(dsc_base_addr + k + 0xc));
+					mtk_spi_read(mipi_base_addr + k),
+					mtk_spi_read(mipi_base_addr + k + 0x4),
+					mtk_spi_read(mipi_base_addr + k + 0x8),
+					mtk_spi_read(mipi_base_addr + k + 0xc));
+			}
+
+			if (dsc_en) {
+				DISPMSG("========================== mt6382 DSC%d REGS ==\n", i);
+				for (k = 0; k < sizeof(struct BDG_DISP_DSC_REGS); k += 16) {
+					DISPMSG("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", k,
+						mtk_spi_read(dsc_base_addr + k),
+						mtk_spi_read(dsc_base_addr + k + 0x4),
+						mtk_spi_read(dsc_base_addr + k + 0x8),
+						mtk_spi_read(dsc_base_addr + k + 0xc));
+				}
 			}
 		}
 	}
@@ -2143,6 +2185,13 @@ unsigned int get_mt6382_init(void)
 	DISPMSG("%s, mt6382_init=%d\n", __func__, mt6382_init);
 
 	return mt6382_init;
+}
+
+void set_bdg_tx_mode(unsigned int value)
+{
+	DISPMSG("%s: %u\n", __func__, value);
+
+	bdg_tx_mode = value;
 }
 
 unsigned int get_bdg_tx_mode(void)
@@ -3613,6 +3662,7 @@ int bdg_tx_init(enum DISP_BDG_ENUM module,
 	ret |= bdg_dsi_line_timing_dphy_setting(module, cmdq, tx_params);
 
 	DSI_OUTREG32(cmdq, TX_REG[0]->DSI_TX_INTEN, 0x1004);
+	DSI_OUTREG32(cmdq, TX_REG[0]->DSI_TX_SHADOW_DEBUG, 0x80005);
 	/* panel init*/
 //	ret |= bdg_lcm_init(pgc->plcm, 1);
 
@@ -3945,7 +3995,7 @@ int polling_status(void)
 
 	if (timeout == 0) {
 		DISPMSG("%s, wait timeout!\n", __func__);
-		bdg_dsi_dump_reg(DISP_BDG_DSI0);
+		bdg_dsi_dump_reg(DISP_BDG_DSI0, 0);
 		return -1;
 	}
 
@@ -4031,6 +4081,45 @@ static void bdg_cmdq_cb(struct cmdq_cb_data data)
 //      kfree(cmdq_handle);
 }
 
+int bdg_dsi_stop_vdo_gce(void)
+{
+	struct cmdq_pkt *cmdq_handle;
+	int i;
+
+	if (!disp_bdg_gce_client) {
+		DDPERR("%s not valid gce client\n", __func__);
+		return -1;
+	}
+
+	cmdq_handle = cmdq_pkt_create(disp_bdg_gce_client);
+
+	cmdq_pkt_clear_event(cmdq_handle, bdg_rdma0_eof_gce_event);
+
+	cmdq_pkt_wait_no_clear(cmdq_handle, bdg_rdma0_eof_gce_event);
+
+	cmdq_pkt_write(cmdq_handle, disp_bdg_gce_base, 0x0002100c, 0x0, ~0);
+
+#if 0 /* stop dsi through AP DSI DCS CMD */
+	cmdq_pkt_write(cmdq_handle, disp_bdg_gce_base, 0x00021000, 0x0, ~0);
+	cmdq_pkt_write(cmdq_handle, disp_bdg_gce_base, 0x00021014, 0x0, ~0);
+
+	cmdq_pkt_poll(cmdq_handle, disp_bdg_gce_base, 0x0, 0x0002100c, 0x80000000, 0x7);
+#endif
+	/* trigger TE signal */
+	cmdq_pkt_write(cmdq_handle, disp_bdg_gce_base, 0x000231a8, 0x0, ~0);
+	cmdq_pkt_write(cmdq_handle, disp_bdg_gce_base, 0x000231a8, 0x100, ~0);
+	for (i = 0 ; i < 300 ; i++)
+		cmdq_pkt_write(cmdq_handle, disp_bdg_gce_base, 0x00021098, 0x0, ~0);
+
+	cmdq_pkt_write(cmdq_handle, disp_bdg_gce_base, 0x000231a8, 0x0, ~0);
+
+	cmdq_pkt_flush(cmdq_handle);
+
+	cmdq_pkt_destroy(cmdq_handle);
+
+	return 0;
+}
+
 void bdg_dsi_vfp_gce(unsigned int vfp)
 {
 	struct cmdq_pkt *cmdq_handle;
@@ -4054,6 +4143,8 @@ void bdg_dsi_vfp_gce(unsigned int vfp)
 	/* set DSI TARGET_LINE unmask */
 	/* TODO: remove fixed TARGET_NL count */
 	/* TODO: not to usd fixed address */
+	/* set 6382 TE source to target line */
+	cmdq_pkt_write(cmdq_handle, disp_bdg_gce_base, 0x000231a8, 0x2e, ~0);
 	cmdq_pkt_write(cmdq_handle, disp_bdg_gce_base, 0x00021300, 0x107d0, ~0);
 	cmdq_pkt_wait_no_clear(cmdq_handle, bdg_dsi0_target_gce_event);
 	/* set BDG VFP to vfp - 1 */
@@ -4127,98 +4218,131 @@ LEGACY_VFP:
 int bdg_dsc_init(enum DISP_BDG_ENUM module,
 			void *cmdq, struct LCM_DSI_PARAMS *tx_params)
 {
-	unsigned int width, height;
+
+	unsigned long width = tx_params->horizontal_active_pixel / 1;
+	unsigned long height = tx_params->vertical_active_line;
+	unsigned int init_delay_limit, init_delay_height;
+	unsigned int pic_group_width_m1;
+	unsigned int pic_height_m1, pic_height_ext_m1, pic_height_ext_num;
+	unsigned int slice_group_width_m1;
+	unsigned int pad_num;
+	unsigned int val;
+	struct LCM_DSC_CONFIG_PARAMS *params = &tx_params->dsc_params;
 
 	DISPFUNCSTART();
-	width = tx_params->horizontal_active_pixel / 1;
-	height = tx_params->vertical_active_line;
+	if (!dsc_en) {
+		DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_H, height - 1);
+		DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_W, width);
+		return 0;
+	}
 
-#ifdef _n36672c_
-/*
- * Resolution = 1080x2400
- * Slice width = 540
- * Slice height = 8
- * Format = RGB888
- * DSC version = v1.1
- * Compression rate = 1/3
- */
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_W, 0x01670438);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_H, 0x095f095f);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SLICE_W, 0x00b3021c);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SLICE_H, 0x012b0007);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_CHUNK_SIZE, 0x0000021c);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_BUF_SIZE, 0x000010e0);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_MODE, 0x00000101);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_CFG, 0x0000d022);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PAD, 0x00000000);
+	if (params->pic_width != width || params->pic_height != height) {
+		DISPERR("%s size mismatch...", __func__);
+		return 1;
+	}
+	DSI_OUTREGBIT(cmdq, struct DISP_DSC_CON_REG,
+		DSC_REG->DISP_DSC_CON, DSC_UFOE_SEL, 1);
 
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_OBUF, 0x00000000);
+	/* DSC Empty flag always high */
+	DSI_OUTREGBIT(cmdq, struct DISP_DSC_CON_REG,
+		DSC_REG->DISP_DSC_CON, DSC_EMPTY_FLAG_SEL, 1);
 
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[0], 0x000c8089);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[1], 0x020e00aa);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[2], 0x002b0020);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[3], 0x000c0007);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[4], 0x0cb70db7);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[5], 0x1ba01800);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[6], 0x20000c03);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[7], 0x330b0b06);
+	/* DSC output buffer as FHD(plus) */
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_OBUF, 0x800002C2);
+
+	init_delay_limit =
+		((128 + (params->xmit_delay + 2) / 3) * 3 +
+		params->slice_width - 1) / params->slice_width;
+	init_delay_height =
+		(init_delay_limit > 15) ? 15 : init_delay_limit;
+
+	val = params->slice_mode + (init_delay_height << 8) + (1 << 16);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_MODE, val);
+
+	pic_group_width_m1 = (width + 2) / 3 - 1;
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_W,
+		(pic_group_width_m1 << 16) + width);
+
+	pic_height_m1 = height - 1;
+	pic_height_ext_num = (height + params->slice_height - 1) /
+	    params->slice_height;
+	pic_height_ext_m1 = pic_height_ext_num * params->slice_height - 1;
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_H,
+		(pic_height_ext_m1 << 16) + pic_height_m1);
+
+	slice_group_width_m1 = (params->slice_width + 2) / 3 - 1;
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SLICE_W,
+		(slice_group_width_m1 << 16) + params->slice_width);
+
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SLICE_H,
+		((params->slice_width % 3) << 30) +
+		((pic_height_ext_num - 1) << 16) + params->slice_height - 1);
+
+	DSI_OUTREG32(cmdq,  DSC_REG->DISP_DSC_CHUNK_SIZE,
+		params->chunk_size);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_BUF_SIZE,
+		params->chunk_size * params->slice_height);
+
+	pad_num = (params->chunk_size + 2) / 3 * 3 - params->chunk_size;
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PAD, pad_num);
+
+	if (params->dsc_cfg)
+		DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_CFG, params->dsc_cfg);
+	else
+		DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_CFG, 0x22);
+
+	if ((params->ver & 0xf) == 2)
+		DSI_OUTREGBIT(cmdq, struct DISP_DSC_SHADOW_REG,
+			DSC_REG->DISP_DSC_SHADOW, DSC_VERSION_MINOR, 0x2);
+
+	else
+		DSI_OUTREGBIT(cmdq, struct DISP_DSC_SHADOW_REG,
+			DSC_REG->DISP_DSC_SHADOW, DSC_VERSION_MINOR, 0x1);
+
+	/* set PPS */
+	val = params->dsc_line_buf_depth + (params->bit_per_channel << 4) +
+		(params->bit_per_pixel << 8) + (params->rct_on << 18) +
+		(params->bp_enable << 19);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[0], val);
+
+	val = (params->xmit_delay) + (params->dec_delay << 16);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[1], val);
+
+	val = (params->scale_value) + (params->increment_interval << 16);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[2], val);
+
+	val = (params->decrement_interval) + (params->line_bpg_offset << 16);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[3], val);
+
+	val = (params->nfl_bpg_offset) + (params->slice_bpg_offset << 16);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[4], val);
+
+	val = (params->initial_offset) + (params->final_offset << 16);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[5], val);
+
+	val = (params->flatness_minqp) + (params->flatness_maxqp << 8) +
+		(params->rc_model_size << 16);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[6], val);
+
+	val = (params->rc_edge_factor) + (params->rc_quant_incr_limit0 << 8) +
+		(params->rc_quant_incr_limit1 << 16) +
+		(params->rc_tgt_offset_hi << 24) +
+		(params->rc_tgt_offset_lo << 28);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[7], val);
+
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[8], 0x382a1c0e);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[9], 0x69625446);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[10], 0x7b797770);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[11], 0x00007e7d);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[12], 0x00800880);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[11], 0x7e7d);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[12], 0x800880);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[13], 0xf8c100a1);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[14], 0xe8e3f0e3);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[15], 0xe103e0e3);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[16], 0xd943e123);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[17], 0xd185d965);
 	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[18], 0xd1a7d1a5);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[19], 0x0000d1ed);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SHADOW, 0x00000020);
-#else
-/*
- * r66451 cmd mode
- * Resolution = 1080x2340
- * Slice width = 540
- * Slice height = 20
- * Format = RGB888
- * DSC version = v1.1
- * Compression rate = 1/3
- */
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_W, 0x01670438);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PIC_H, 0x09230923);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SLICE_W, 0x00b3021c);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SLICE_H, 0x00740013);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_CHUNK_SIZE, 0x0000021c);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_BUF_SIZE, 0x00002a30);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_MODE, 0x00000201);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_CFG, 0x0000d022);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PAD, 0x00000000);
+	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[19], 0xd1ed);
 
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_OBUF, 0x00000000);
-
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[0], 0x000c8089);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[1], 0x020e0200);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[2], 0x01e80020);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[3], 0x000c0007);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[4], 0x0516050e);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[5], 0x10f01800);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[6], 0x20000c03);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[7], 0x330b0b06);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[8], 0x382a1c0e);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[9], 0x69625446);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[10], 0x7b797770);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[11], 0x00007e7d);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[12], 0x00800880);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[13], 0xf8c100a1);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[14], 0xe8e3f0e3);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[15], 0xe103e0e3);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[16], 0xd943e123);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[17], 0xd185d965);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[18], 0xd1a7d1a5);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_PPS[19], 0x0000d1ed);
-	DSI_OUTREG32(cmdq, DSC_REG->DISP_DSC_SHADOW, 0x00000020);
-#endif
 	DISPFUNCEND();
 	return 0;
 }
@@ -4326,7 +4450,13 @@ int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RDY_TO_CNT_OS, 0);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RESP_TO_CNT_OS, 0);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_VALID_VC_CFG_OS, 0xf);
-	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0);
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_VALID_VC_CFG_OS, 0xf);
+	/* 0x1b for MMCLK 270M 0x37 for MMCLK 407M */
+#ifdef _90HZ_
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0x1b);
+#else
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0x37);
+#endif
 //	}
 
 	//video mode/ipi
@@ -5472,7 +5602,7 @@ void startup_seq_dphy_specific(unsigned int data_rate)
 	mtk_spi_write(MIPI_RX_PHY_BASE + CORE_DIG_COMMON_RW_DESKEW_FINE_MEM * 4,
 		0x07FC);
 
-/* _Disable_HS_DCO_ */
+#ifdef _Disable_HS_DCO_
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
 		CORE_DIG_IOCTRL_RW_AFE_CB_CTRL_2_6 * 4,
 		CORE_DIG_IOCTRL_RW_AFE_CB_CTRL_2_6_OA_CB_HSTXLB_DCO_EN_OVR_EN_MASK,
@@ -5489,10 +5619,10 @@ void startup_seq_dphy_specific(unsigned int data_rate)
 		CORE_DIG_IOCTRL_RW_AFE_CB_CTRL_2_6 * 4,
 		CORE_DIG_IOCTRL_RW_AFE_CB_CTRL_2_6_OA_CB_LP_DCO_PON_OVR_VAL_MASK,
 		0);
-
-/* _Disable_LP_TX_L123_ */
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1228 * 4,	0x80, 1);
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1228 * 4,	0x40, 1);
+#endif
+#ifdef _Disable_LP_TX_L023_
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1028 * 4,	0x80, 1);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1028 * 4,	0x40, 1);
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1428 * 4,	0x80, 1);
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1428 * 4,	0x40, 1);
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1628 * 4,	0x80, 1);
@@ -5500,10 +5630,23 @@ void startup_seq_dphy_specific(unsigned int data_rate)
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1828 * 4,	0x80, 1);
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1828 * 4,	0x40, 1);
 
-	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1227 * 4, 0xf, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1027 * 4, 0xf, 0);
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1427 * 4, 0xf, 0);
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1627 * 4, 0xf, 0);
 	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE + 0x1827 * 4, 0xf, 0);
+#endif
+#ifdef _G_MODE_EN_
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE0_CTRL_2_9 * 4, 0x18, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE1_CTRL_2_9 * 4, 0x18, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE2_CTRL_2_9 * 4, 0x18, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE3_CTRL_2_9 * 4, 0x18, 0);
+	mtk_spi_mask_field_write(MIPI_RX_PHY_BASE +
+		CORE_DIG_IOCTRL_RW_AFE_LANE4_CTRL_2_9 * 4, 0x18, 0);
+#endif
 
 	DISPFUNCEND();
 }
@@ -5536,13 +5679,8 @@ void output_debug_signal(void)
 	mtk_spi_write(0x00007310, 0x11111111);
 
 }
-
-int bdg_common_init(enum DISP_BDG_ENUM module,
-			struct disp_ddp_path_config *config, void *cmdq)
+void bdg_first_init(void)
 {
-	int ret = 0;
-	struct LCM_DSI_PARAMS *tx_params;
-
 	DISPFUNCSTART();
 
 	DISPSYS_REG = (struct BDG_DISPSYS_CONFIG_REGS *)DISPSYS_BDG_MMSYS_CONFIG_BASE;
@@ -5567,6 +5705,31 @@ int bdg_common_init(enum DISP_BDG_ENUM module,
 	bdg_tx_pull_6382_reset_pin();
 	/* Huaqin modify for HQ-135591 by caogaojie at 2021/05/15 end */
 
+	spislv_init();
+	spislv_switch_speed_hz(SPI_TX_LOW_SPEED_HZ, SPI_RX_LOW_SPEED_HZ);
+
+	DSI_OUTREGBIT(NULL, struct GPIO_MODE1_REG, GPIO->GPIO_MODE1, GPIO12, 1);
+	output_debug_signal();
+
+	DSI_OUTREG32(cmdq, TX_REG[0]->DSI_TARGET_NL, 0x7d0);
+	DSI_OUTREG32(cmdq, TX_REG[0]->DSI_TX_SHADOW_DEBUG, 0x80005);
+	// request eint irq
+	bdg_request_eint_irq();
+
+	DISPFUNCEND();
+}
+
+int bdg_common_init(enum DISP_BDG_ENUM module,
+			struct disp_ddp_path_config *config, void *cmdq)
+{
+	int ret = 0;
+	struct LCM_DSI_PARAMS *tx_params;
+
+	DISPFUNCSTART();
+ 	clk_buf_disp_ctrl(true);
+	mdelay(1);
+	bdg_tx_pull_6382_reset_pin();
+	mdelay(3);
 	spislv_init();
 	spislv_switch_speed_hz(SPI_TX_LOW_SPEED_HZ, SPI_RX_LOW_SPEED_HZ);
 
@@ -5650,6 +5813,9 @@ int bdg_common_init(enum DISP_BDG_ENUM module,
 	}
 
 	calculate_datarate_cfgs_rx(ap_tx_data_rate);
+	if (!disp_bdg_gce_client)
+		disp_init_bdg_gce_obj();
+
 	startup_seq_common(cmdq);
 
 	if (tx_params->IsCphy) {
@@ -5663,10 +5829,8 @@ int bdg_common_init(enum DISP_BDG_ENUM module,
 	//TODO: Fix TARGET line
 	DSI_OUTREG32(cmdq, TX_REG[0]->DSI_TARGET_NL, 0x7d0);
 
-	DSI_OUTREG32(cmdq, DISPSYS_REG->TE_OUT_CON, 0x2e);
-
 	// request eint irq
-	bdg_request_eint_irq();
+//	bdg_request_eint_irq();
 
 	DISPFUNCEND();
 
@@ -5837,7 +6001,7 @@ int bdg_common_init_for_rx_pat(enum DISP_BDG_ENUM module,
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_IPI_PG_VBP_LINES_OS,
 			(tx_params->vertical_backporch));
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_IPI_PG_VFP_LINES_OS,
-			(tx_params->vertical_frontporch));
+			(tx_params->vertical_frontporch - 1));
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_IPI_PG_VACTIVE_LINES_OS,
 			(tx_params->vertical_active_line));
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_IPI_PG_EN_OS, 1);
@@ -5886,7 +6050,8 @@ static void bdg_dsi_irq_handler(void)
 	DSI_OUTREG32(NULL, TX_REG[0]->DSI_TX_INTSTA, ~val);
 }
 
-irqreturn_t bdg_eint_thread_handler(int irq, void *data)
+static struct work_struct bdg_eint_work;
+static void bdg_eint_work_thread(struct work_struct *data)
 {
 	unsigned int irq_ctrl3 = 0;
 
@@ -5903,7 +6068,7 @@ irqreturn_t bdg_eint_thread_handler(int irq, void *data)
 		// callback function for checking module's rg status
 		// todo..
 	}
-
+#ifdef CONFIG_MTK_MT6382_BDG
 	if (irq_ctrl3 & BIT(10)) {
 		s32 ret;
 
@@ -5913,6 +6078,7 @@ irqreturn_t bdg_eint_thread_handler(int irq, void *data)
 
 		ret = cmdq_bdg_irq_handler();
 	}
+#endif
 
 	if (irq_ctrl3 & BIT(4)) {
 		DSI_OUTREGBIT(NULL, struct IRQ_MSK_CLR_SET_REG,
@@ -5926,6 +6092,12 @@ irqreturn_t bdg_eint_thread_handler(int irq, void *data)
 	}
 	// disable irq (can't use disable_irq() in ISR)
 	/* disable_irq_nosync(bdg_eint_irq); */
+
+}
+
+irqreturn_t bdg_eint_thread_handler(int irq, void *data)
+{
+	schedule_work(&bdg_eint_work);
 
 	return IRQ_HANDLED;
 }
@@ -5961,6 +6133,7 @@ void bdg_request_eint_irq(void)
 	irq_already_requested = true;
 
 	// enable irq
+	INIT_WORK(&bdg_eint_work, bdg_eint_work_thread);
 	enable_irq(bdg_eint_irq);
 }
 

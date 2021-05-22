@@ -69,9 +69,7 @@
 #endif
 #include "layering_rule.h"
 #include "ddp_clkmgr.h"
-#ifdef CONFIG_MTK_MT6382_BDG
 #include "ddp_disp_bdg.h"
-#endif
 
 #if IS_ENABLED(CONFIG_DEBUG_FS)
 static struct dentry *mtkfb_dbgfs;
@@ -1055,7 +1053,7 @@ static void process_dbg_opt(const char *opt)
 
 	} else if (strncmp(opt, "xdump", 5) == 0) {
 
-		bdg_dsi_dump_reg(DISP_BDG_DSI0);
+		bdg_dsi_dump_reg(DISP_BDG_DSI0, 1);
 
 	} else if (strncmp(opt, "bdg_int", 7) == 0) {
 		struct LCM_PARAMS *lcm_param = NULL;

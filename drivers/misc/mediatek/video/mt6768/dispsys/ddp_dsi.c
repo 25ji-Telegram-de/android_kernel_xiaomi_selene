@@ -34,7 +34,6 @@
 #include "ddp_mmp.h"
 #include "disp_helper.h"
 #include "ddp_reg.h"
-#include "ddp_disp_bdg.h"
 
 #ifdef CONFIG_MTK_LEGACY
 #include <mach/mt_gpio.h>
@@ -51,10 +50,8 @@
 #endif
 
 #include <asm/arch_timer.h>
-#ifdef CONFIG_MTK_MT6382_BDG
 #include "ddp_disp_bdg.h"
 #include "ddp_reg_disp_bdg.h"
-#endif
 
 /*****************************************************************************/
 enum MIPITX_PAD_VALUE {
@@ -80,9 +77,7 @@ enum MIPITX_PAD_VALUE {
 #define DSI_READREG32(type, dst, src) mt_reg_sync_writel(INREG32(src), dst)
 
 static int dsi_reg_op_debug;
-#ifdef CONFIG_MTK_MT6382_BDG
 unsigned int data_phy_cycle;
-#endif
 
 #define BIT_TO_VALUE(TYPE, bit)  \
 do { \
@@ -361,7 +356,7 @@ enum DSI_STATUS DSI_DumpRegisters(enum DISP_MODULE_ENUM module, int level)
 			for (k = 0; k < sizeof(struct DSI_REGS); k += 16) {
 				offset = dsi_base_addr + k;
 				DDPDUMP("0x%04x: 0x%08x 0x%08x 0x%08x 0x%08x\n",
-					k, INREG32(offset),
+					0x200 + k, INREG32(offset),
 					INREG32(offset + 0x4),
 					INREG32(offset + 0x8),
 					INREG32(offset + 0xc));
@@ -852,6 +847,27 @@ enum DSI_STATUS DSI_BIST_Pattern_Test(enum DISP_MODULE_ENUM module,
 	return DSI_STATUS_OK;
 }
 
+static void DSI_send_cmd_cmd(struct cmdqRecStruct *cmdq,
+		enum DISP_MODULE_ENUM module,
+		bool hs, unsigned char data_id,
+		unsigned int cmd, unsigned char count,
+		unsigned char *para_list,
+		unsigned char force_update);
+int ddp_dsi_set_bdg_porch_setting(enum DISP_MODULE_ENUM module, void *handle,
+	unsigned int value)
+{
+	unsigned char setvfp[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x28
+
+	setvfp[3] = value & 0xff;
+	setvfp[4] = (value & 0xff00) >> 8;
+
+
+	DSI_send_cmd_cmd(handle, DISP_MODULE_DSI0, 1, 0x79, 0x28, 7,
+			setvfp, 1);
+
+	return 0;
+}
+
 int ddp_dsi_porch_setting(enum DISP_MODULE_ENUM module, void *handle,
 	enum DSI_PORCH_TYPE type, unsigned int value)
 {
@@ -861,6 +877,8 @@ int ddp_dsi_porch_setting(enum DISP_MODULE_ENUM module, void *handle,
 		if (type == DSI_VFP) {
 			DISPINFO("set dsi%d vfp to %d\n", i, value);
 			DSI_OUTREG32(handle, &DSI_REG[i]->DSI_VFP_NL, value);
+			if (bdg_is_bdg_connected() == 1)
+				ddp_dsi_set_bdg_porch_setting(module, handle, value - 1);
 		}
 		if (type == DSI_VSA) {
 			DISPINFO("set dsi%d vsa to %d\n", i, value);
@@ -920,7 +938,6 @@ static void DSI_Get_Porch_Addr(enum DISP_MODULE_ENUM module,
 	}
 }
 
-#ifdef CONFIG_MTK_MT6382_BDG
 void DSI_Config_VDO_Timing_with_DSC(enum DISP_MODULE_ENUM module,
 	struct cmdqRecStruct *cmdq, struct LCM_DSI_PARAMS *dsi_params)
 {
@@ -1084,7 +1101,6 @@ void DSI_Config_VDO_Timing_with_DSC(enum DISP_MODULE_ENUM module,
 			ALIGN_TO((t_hbllp), 4));
 	}
 }
-#endif
 
 void DSI_Config_VDO_Timing(enum DISP_MODULE_ENUM module,
 	struct cmdqRecStruct *cmdq, struct LCM_DSI_PARAMS *dsi_params)
@@ -1102,194 +1118,202 @@ void DSI_Config_VDO_Timing(enum DISP_MODULE_ENUM module,
 	DISPFUNC();
 
 	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++) {
-#ifdef CONFIG_MTK_MT6382_BDG
-
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
 		/*if not power on scenario
 		 * if disp_fps !=0 means dynfps happen
 		 */
-		if (_dsi_context[i].disp_fps) {
-			int j;
+		if (bdg_is_bdg_connected() == 1) {
+			if (_dsi_context[i].disp_fps) {
+				int j;
 
-			for (j = 0; j < dsi_params->dfps_num; j++) {
-				if ((dsi_params->dfps_params)[j].fps ==
-					_dsi_context[i].disp_fps) {
-					dfps_params =
-					&((dsi_params->dfps_params)[j]);
-					DISPMSG("%s,disp_fps=%d\n",
-					__func__, _dsi_context[i].disp_fps);
-					break;
+				for (j = 0; j < dsi_params->dfps_num; j++) {
+					if ((dsi_params->dfps_params)[j].fps ==
+						_dsi_context[i].disp_fps) {
+						dfps_params =
+							&((dsi_params->dfps_params)[j]);
+						DISPMSG("%s,disp_fps=%d\n",
+							__func__, _dsi_context[i].disp_fps);
+						break;
+					}
 				}
 			}
 		}
 #endif
-		t_vsa = (dfps_params) ? ((dfps_params->vertical_sync_active) ?
+		if (bdg_is_bdg_connected() == 1) {
+			t_vsa = (dfps_params) ? ((dfps_params->vertical_sync_active) ?
 				dfps_params->vertical_sync_active :
 				dsi_params->vertical_sync_active) :
-			dsi_params->vertical_sync_active;
-		t_vbp = (dfps_params) ? ((dfps_params->vertical_backporch) ?
+				dsi_params->vertical_sync_active;
+			t_vbp = (dfps_params) ? ((dfps_params->vertical_backporch) ?
 				dfps_params->vertical_backporch :
 				dsi_params->vertical_backporch) :
-			dsi_params->vertical_backporch;
-		t_vfp = (dfps_params) ? ((dfps_params->vertical_frontporch) ?
+				dsi_params->vertical_backporch;
+			t_vfp = (dfps_params) ? ((dfps_params->vertical_frontporch) ?
 				dfps_params->vertical_frontporch :
 				dsi_params->vertical_frontporch) :
-			dsi_params->vertical_frontporch;
+				dsi_params->vertical_frontporch;
 
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VSA_NL, t_vsa);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VBP_NL, t_vbp);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VFP_NL, t_vfp);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VACT_NL,
-			dsi_params->vertical_active_line);
-
-		switch (dsi_params->data_format.format) {
-		case LCM_DSI_FORMAT_RGB565:
-			dsiTmpBufBpp = 16;
-			break;
-		case LCM_DSI_FORMAT_RGB666:
-			dsiTmpBufBpp = 18;
-			break;
-		case LCM_DSI_FORMAT_RGB666_LOOSELY:
-		case LCM_DSI_FORMAT_RGB888:
-			dsiTmpBufBpp = 24;
-			break;
-		case LCM_DSI_FORMAT_RGB101010:
-			dsiTmpBufBpp = 30;
-			break;
-		default:
-			DISPMSG("format not support!!!\n");
-			return;
-		}
-
-		switch (dsi_params->mode) {
-		case DSI_CMD_MODE:
-			break;
-		case DSI_SYNC_PULSE_VDO_MODE:
-			horizontal_sync_active_byte = (((dsi_params->horizontal_sync_active *
-				dsiTmpBufBpp) / 8) - 10);
-			horizontal_backporch_byte = (((dsi_params->horizontal_backporch *
-				dsiTmpBufBpp) / 8) - 10);
-			horizontal_frontporch_byte = (((dsi_params->horizontal_frontporch *
-				dsiTmpBufBpp) / 8) - 12);
-			break;
-		case DSI_SYNC_EVENT_VDO_MODE:
-			horizontal_sync_active_byte = 0;	/* don't care */
-			horizontal_backporch_byte = (((dsi_params->horizontal_backporch +
-					dsi_params->horizontal_active_pixel) *
-					dsiTmpBufBpp) / 8) - 10;
-			horizontal_frontporch_byte = (((dsi_params->horizontal_frontporch *
-					dsiTmpBufBpp) / 8) - 12);
-			break;
-		case DSI_BURST_VDO_MODE:
-			horizontal_sync_active_byte = 0;	/* don't care */
-			horizontal_backporch_byte = (((dsi_params->horizontal_backporch +
-					dsi_params->horizontal_active_pixel) *
-					dsiTmpBufBpp) / 8) - 10;
-			horizontal_frontporch_byte = (((dsi_params->horizontal_frontporch *
-					dsiTmpBufBpp) / 8) - 12 - 6);
-			break;
-		}
-		line_byte = data_phy_cycle * dsi_params->LANE_NUM;
-		horizontal_bllp_byte = 16 * dsi_params->LANE_NUM;
-
-		if (horizontal_frontporch_byte > line_byte) {
-			horizontal_frontporch_byte -= line_byte;
-		} else {
-			horizontal_frontporch_byte = 4;
-			DISPMSG("hfp is too short!\n");
-		}
-
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HSA_WC,
-			ALIGN_TO((horizontal_sync_active_byte), 4));
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HBP_WC,
-			ALIGN_TO((horizontal_backporch_byte), 4));
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HFP_WC,
-			ALIGN_TO((horizontal_frontporch_byte), 4));
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_BLLP_WC,
-			ALIGN_TO((horizontal_bllp_byte), 4));
-#else
-		if (dsi_params->data_format.format ==
-			LCM_DSI_FORMAT_RGB565)
-			dsiTmpBufBpp = 2;
-		else
-			dsiTmpBufBpp = 3;
-
-		t_vsa = (dfps_params) ? ((dfps_params->vertical_sync_active) ?
-				dfps_params->vertical_sync_active :
-				dsi_params->vertical_sync_active) :
-			dsi_params->vertical_sync_active;
-		t_vbp = (dfps_params) ? ((dfps_params->vertical_backporch) ?
-				dfps_params->vertical_backporch :
-				dsi_params->vertical_backporch) :
-			dsi_params->vertical_backporch;
-		t_vfp = (dfps_params) ? ((dfps_params->vertical_frontporch) ?
-				dfps_params->vertical_frontporch :
-				dsi_params->vertical_frontporch) :
-			dsi_params->vertical_frontporch;
-
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VSA_NL, t_vsa);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VBP_NL, t_vbp);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VFP_NL, t_vfp);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VACT_NL,
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VSA_NL, t_vsa);
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VBP_NL, t_vbp);
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VFP_NL, t_vfp);
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VACT_NL,
 				dsi_params->vertical_active_line);
 
-		line_byte =
-			(dsi_params->horizontal_sync_active +
-			dsi_params->horizontal_backporch +
-			dsi_params->horizontal_frontporch +
-			dsi_params->horizontal_active_pixel) *
-			dsiTmpBufBpp;
-		horizontal_sync_active_byte =
-			(dsi_params->horizontal_sync_active *
-			dsiTmpBufBpp - 4);
+			switch (dsi_params->data_format.format) {
+			case LCM_DSI_FORMAT_RGB565:
+				dsiTmpBufBpp = 16;
+				break;
+			case LCM_DSI_FORMAT_RGB666:
+				dsiTmpBufBpp = 18;
+				break;
+			case LCM_DSI_FORMAT_RGB666_LOOSELY:
+			case LCM_DSI_FORMAT_RGB888:
+				dsiTmpBufBpp = 24;
+				break;
+			case LCM_DSI_FORMAT_RGB101010:
+				dsiTmpBufBpp = 30;
+				break;
+			default:
+				DISPMSG("format not support!!!\n");
+				return;
+			}
 
-		if (dsi_params->mode == SYNC_EVENT_VDO_MODE ||
-			dsi_params->mode == BURST_VDO_MODE ||
-		    dsi_params->switch_mode == SYNC_EVENT_VDO_MODE ||
-		    dsi_params->switch_mode == BURST_VDO_MODE) {
-			ASSERT((dsi_params->horizontal_backporch +
-				dsi_params->horizontal_sync_active) *
-				dsiTmpBufBpp > 9);
+			switch (dsi_params->mode) {
+			case DSI_CMD_MODE:
+				break;
+			case DSI_SYNC_PULSE_VDO_MODE:
+				horizontal_sync_active_byte =
+					(((dsi_params->horizontal_sync_active *
+					dsiTmpBufBpp) / 8) - 10);
+				horizontal_backporch_byte =
+					(((dsi_params->horizontal_backporch *
+					dsiTmpBufBpp) / 8) - 10);
+				horizontal_frontporch_byte =
+					(((dsi_params->horizontal_frontporch *
+					dsiTmpBufBpp) / 8) - 12);
+				break;
+			case DSI_SYNC_EVENT_VDO_MODE:
+				horizontal_sync_active_byte = 0;	/* don't care */
+				horizontal_backporch_byte =
+					(((dsi_params->horizontal_backporch +
+					dsi_params->horizontal_active_pixel) *
+					dsiTmpBufBpp) / 8) - 10;
+				horizontal_frontporch_byte =
+					(((dsi_params->horizontal_frontporch *
+					dsiTmpBufBpp) / 8) - 12);
+				break;
+			case DSI_BURST_VDO_MODE:
+				horizontal_sync_active_byte = 0;	/* don't care */
+				horizontal_backporch_byte =
+					(((dsi_params->horizontal_backporch +
+					dsi_params->horizontal_active_pixel) *
+					dsiTmpBufBpp) / 8) - 10;
+				horizontal_frontporch_byte =
+					(((dsi_params->horizontal_frontporch *
+					dsiTmpBufBpp) / 8) - 12 - 6);
+				break;
+			}
+			line_byte = data_phy_cycle * dsi_params->LANE_NUM;
+			horizontal_bllp_byte = 16 * dsi_params->LANE_NUM;
 
-			horizontal_backporch_byte =
-				((dsi_params->horizontal_backporch +
-				dsi_params->horizontal_sync_active) *
-				dsiTmpBufBpp - 10);
-		} else {
-			ASSERT(dsi_params->horizontal_sync_active *
-				dsiTmpBufBpp > 9);
+			if (horizontal_frontporch_byte > line_byte) {
+				horizontal_frontporch_byte -= line_byte;
+			} else {
+				horizontal_frontporch_byte = 4;
+				DISPMSG("hfp is too short!\n");
+			}
 
-			horizontal_sync_active_byte =
-				(dsi_params->horizontal_sync_active *
-				dsiTmpBufBpp - 10);
-
-			ASSERT(dsi_params->horizontal_backporch *
-				dsiTmpBufBpp > 9);
-
-			horizontal_backporch_byte =
-				(dsi_params->horizontal_backporch *
-				dsiTmpBufBpp - 10);
-		}
-
-		ASSERT(dsi_params->horizontal_frontporch * dsiTmpBufBpp > 11);
-		horizontal_frontporch_byte =
-		    (dsi_params->horizontal_frontporch * dsiTmpBufBpp - 12);
-		horizontal_bllp_byte =
-			(dsi_params->horizontal_bllp * dsiTmpBufBpp);
-
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HSA_WC,
-			ALIGN_TO((horizontal_sync_active_byte), 4));
-		if (def_dsi_hbp)
-			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HBP_WC,
-			 def_dsi_hbp);
-		else
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HSA_WC,
+				ALIGN_TO((horizontal_sync_active_byte), 4));
 			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HBP_WC,
 				ALIGN_TO((horizontal_backporch_byte), 4));
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HFP_WC,
-			ALIGN_TO((horizontal_frontporch_byte), 4));
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_BLLP_WC,
-			ALIGN_TO((horizontal_bllp_byte), 4));
-#endif
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HFP_WC,
+				ALIGN_TO((horizontal_frontporch_byte), 4));
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_BLLP_WC,
+				ALIGN_TO((horizontal_bllp_byte), 4));
+		} else {
+			if (dsi_params->data_format.format ==
+				LCM_DSI_FORMAT_RGB565)
+				dsiTmpBufBpp = 2;
+			else
+				dsiTmpBufBpp = 3;
+
+			t_vsa = (dfps_params) ? ((dfps_params->vertical_sync_active) ?
+				dfps_params->vertical_sync_active :
+				dsi_params->vertical_sync_active) :
+				dsi_params->vertical_sync_active;
+			t_vbp = (dfps_params) ? ((dfps_params->vertical_backporch) ?
+				dfps_params->vertical_backporch :
+				dsi_params->vertical_backporch) :
+				dsi_params->vertical_backporch;
+			t_vfp = (dfps_params) ? ((dfps_params->vertical_frontporch) ?
+				dfps_params->vertical_frontporch :
+				dsi_params->vertical_frontporch) :
+				dsi_params->vertical_frontporch;
+
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VSA_NL, t_vsa);
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VBP_NL, t_vbp);
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VFP_NL, t_vfp);
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_VACT_NL,
+					dsi_params->vertical_active_line);
+
+			line_byte =
+				(dsi_params->horizontal_sync_active +
+				dsi_params->horizontal_backporch +
+				dsi_params->horizontal_frontporch +
+				dsi_params->horizontal_active_pixel) *
+				dsiTmpBufBpp;
+			horizontal_sync_active_byte =
+				(dsi_params->horizontal_sync_active *
+				dsiTmpBufBpp - 4);
+
+			if (dsi_params->mode == SYNC_EVENT_VDO_MODE ||
+				dsi_params->mode == BURST_VDO_MODE ||
+			    dsi_params->switch_mode == SYNC_EVENT_VDO_MODE ||
+			    dsi_params->switch_mode == BURST_VDO_MODE) {
+				ASSERT((dsi_params->horizontal_backporch +
+					dsi_params->horizontal_sync_active) *
+					dsiTmpBufBpp > 9);
+
+				horizontal_backporch_byte =
+					((dsi_params->horizontal_backporch +
+					dsi_params->horizontal_sync_active) *
+					dsiTmpBufBpp - 10);
+			} else {
+				ASSERT(dsi_params->horizontal_sync_active *
+					dsiTmpBufBpp > 9);
+
+				horizontal_sync_active_byte =
+					(dsi_params->horizontal_sync_active *
+					dsiTmpBufBpp - 10);
+
+				ASSERT(dsi_params->horizontal_backporch *
+					dsiTmpBufBpp > 9);
+
+				horizontal_backporch_byte =
+					(dsi_params->horizontal_backporch *
+					dsiTmpBufBpp - 10);
+			}
+
+			ASSERT(dsi_params->horizontal_frontporch * dsiTmpBufBpp > 11);
+			horizontal_frontporch_byte =
+			    (dsi_params->horizontal_frontporch * dsiTmpBufBpp - 12);
+			horizontal_bllp_byte =
+				(dsi_params->horizontal_bllp * dsiTmpBufBpp);
+
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HSA_WC,
+				ALIGN_TO((horizontal_sync_active_byte), 4));
+			if (def_dsi_hbp)
+				DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HBP_WC,
+				 def_dsi_hbp);
+			else
+				DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HBP_WC,
+					ALIGN_TO((horizontal_backporch_byte), 4));
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_HFP_WC,
+				ALIGN_TO((horizontal_frontporch_byte), 4));
+			DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_BLLP_WC,
+				ALIGN_TO((horizontal_bllp_byte), 4));
+		}
 	}
 }
 
@@ -1430,9 +1454,7 @@ enum DSI_STATUS DSI_TXRX_Control(enum DISP_MODULE_ENUM module,
 	bool dis_eotp_en = FALSE;
 	bool hstx_cklp_en = dsi_params->cont_clock ? FALSE : TRUE;
 	int max_return_size = 0;
-#ifdef CONFIG_MTK_MT6382_BDG
 	hstx_cklp_en = false;
-#endif
 	switch (lane_num) {
 	case LCM_ONE_LANE:
 		lane_num_bitvalue = 0x1;
@@ -1579,9 +1601,9 @@ static void _DSI_PHY_clk_setting(enum DISP_MODULE_ENUM module,
 		PAD_D3P_V, PAD_CKP_V, PAD_CKP_V};
 
 	DISPFUNC();
-#ifdef CONFIG_MTK_MT6382_BDG
-	dsi_params->data_rate = get_ap_data_rate();
-#endif
+	if (bdg_is_bdg_connected() == 1)
+		dsi_params->data_rate = get_ap_data_rate();
+
 	data_Rate = def_data_rate ? def_data_rate : data_Rate;
 	data_Rate = dsi_params->data_rate != 0 ?
 		dsi_params->data_rate : dsi_params->PLL_CLOCK * 2;
@@ -2093,6 +2115,8 @@ void DSI_PHY_clk_switch(enum DISP_MODULE_ENUM module,
 	}
 }
 
+#define NS_TO_CYCLE(n, c)	((n) / (c))
+#define NS_TO_CYCLE_MOD(n, c)	(((n) % (c)) ? 1 : 0)
 void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 	struct cmdqRecStruct *cmdq, struct LCM_DSI_PARAMS *dsi_params)
 {
@@ -2104,12 +2128,9 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 	unsigned int lane_no;
 	unsigned int cycle_time = 0;
 	unsigned int ui = 0;
-#ifdef CONFIG_MTK_MT6382_BDG
 	unsigned int hs_trail;
-#else
 	unsigned int hs_trail_m, hs_trail_n;
 	unsigned char timcon_temp;
-#endif
 	DISPFUNC();
 
 #ifdef CONFIG_FPGA_EARLY_PORTING
@@ -2129,192 +2150,174 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 	return;
 #endif
 
-#if 0
-	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++) {
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_PHY_TIMECON0, 0x140f0708);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_PHY_TIMECON1, 0x10280c20);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_PHY_TIMECON2, 0x14280000);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_PHY_TIMECON3, 0x00101a06);
-		DSI_OUTREG32(cmdq, &DSI_REG[i]->DSI_PHY_TIMECON4, 0x00023000);
-	}
-	return;
-#endif
 	lane_no = dsi_params->LANE_NUM;
 	if (dsi_params->data_rate != 0) {
-#ifdef CONFIG_MTK_MT6382_BDG
-		ui = 1000 / dsi_params->data_rate;
-		cycle_time = 8000 / dsi_params->data_rate;
-		DISPINFO(
-			"%s, data_rate=%d, Cycle Time=%d, interval=%d, lane#=%d\n",
-			__func__, dsi_params->data_rate, cycle_time, ui, lane_no);
-	} else if (dsi_params->PLL_CLOCK) {
-		ui = 1000 / (dsi_params->PLL_CLOCK * 2);
-		cycle_time = 8000 / (dsi_params->PLL_CLOCK * 2);
-		DISPINFO(
-			"[DISP] - kernel - %s, PLL_CLOCK = %d, Cycle Time = %d(ns), Unit Interval = %d(ns)., lane# = %d\n",
-			__func__, dsi_params->PLL_CLOCK, cycle_time, ui, dsi_params->LANE_NUM);
-#else
 		ui = 1000 / dsi_params->data_rate + 0x01;
 		cycle_time = 8000 / dsi_params->data_rate + 0x01;
-		DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI",
-			"[DISP] - kernel - %s, Cycle Time = %d(ns), Unit Interval = %d(ns). , lane# = %d\n",
-			__func__, cycle_time, ui, lane_no);
-	} else if (dsi_params->PLL_CLOCK != 0) {
+	} else if (dsi_params->PLL_CLOCK) {
 		ui = 1000 / (dsi_params->PLL_CLOCK * 2) + 0x01;
 		cycle_time = 8000 / (dsi_params->PLL_CLOCK * 2) + 0x01;
-		DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI",
-			"[DISP] - kernel - %s, Cycle Time = %d(ns), Unit Interval = %d(ns). , lane# = %d\n",
-			__func__, cycle_time, ui, lane_no);
-#endif
-	} else {
+	}
+	if (bdg_is_bdg_connected() == 1) {
+		ui = ui - 0x01;
+		cycle_time = cycle_time - 0x01;
+	}
+
+	else {
 		DISPINFO("[dsi_dsi.c] PLL clock should not be 0!\n");
 		ASSERT(0);
 	}
+	DISPINFO("Cycle Time=%d, interval=%d, lane#=%d\n",
+		__func__, cycle_time, ui, lane_no);
 
-#define NS_TO_CYCLE(n, c)	((n) / (c) + (((n) % (c)) ? 1 : 0))
-#ifdef CONFIG_MTK_MT6382_BDG
-	/* lpx >= 50ns (spec) */
-	/* lpx = 60ns */
-	timcon0.LPX = NS_TO_CYCLE(60, cycle_time);
-	if (timcon0.LPX < 2)
-		timcon0.LPX = 2;
+	if (bdg_is_bdg_connected() == 1) {
+		/* lpx >= 50ns (spec) */
+		/* lpx = 60ns */
+		timcon0.LPX = NS_TO_CYCLE(60, cycle_time) + NS_TO_CYCLE_MOD(60, cycle_time);
+		if (timcon0.LPX < 2)
+			timcon0.LPX = 2;
 
-	/* hs_prep = 40ns+4*UI ~ 85ns+6*UI (spec) */
-	/* hs_prep = 64ns+5*UI */
-	timcon0.HS_PRPR = NS_TO_CYCLE((64 + 5 * ui), cycle_time) + 1;
+		/* hs_prep = 40ns+4*UI ~ 85ns+6*UI (spec) */
+		/* hs_prep = 64ns+5*UI */
+		timcon0.HS_PRPR = NS_TO_CYCLE((64 + 5 * ui), cycle_time) +
+			+ NS_TO_CYCLE_MOD((64 + 5 * ui), cycle_time) + 1;
 
-	/* hs_zero = (200+10*UI) - hs_prep */
-	timcon0.HS_ZERO = NS_TO_CYCLE((200 + 10 * ui), cycle_time);
-	timcon0.HS_ZERO = timcon0.HS_ZERO > timcon0.HS_PRPR ?
-			timcon0.HS_ZERO - timcon0.HS_PRPR : timcon0.HS_ZERO;
-	if (timcon0.HS_ZERO < 1)
-		timcon0.HS_ZERO = 1;
+		/* hs_zero = (200+10*UI) - hs_prep */
+		timcon0.HS_ZERO = NS_TO_CYCLE((200 + 10 * ui), cycle_time) +
+				NS_TO_CYCLE_MOD((200 + 10 * ui), cycle_time);
+		timcon0.HS_ZERO = timcon0.HS_ZERO > timcon0.HS_PRPR ?
+				timcon0.HS_ZERO - timcon0.HS_PRPR : timcon0.HS_ZERO;
+		if (timcon0.HS_ZERO < 1)
+			timcon0.HS_ZERO = 1;
 
-	/* hs_trail > max(8*UI, 60ns+4*UI) (spec) */
-	/* hs_trail = 80ns+4*UI */
+		/* hs_trail > max(8*UI, 60ns+4*UI) (spec) */
+		/* hs_trail = 80ns+4*UI */
 /*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
-	hs_trail = 76 + 4 * ui;
-	timcon0.HS_TRAIL = (hs_trail > cycle_time) ?
-				NS_TO_CYCLE(hs_trail, cycle_time) + 1 : 2;
+		hs_trail = 76 + 4 * ui;
+		timcon0.HS_TRAIL = (hs_trail > cycle_time) ?
+				(NS_TO_CYCLE(hs_trail, cycle_time) +
+				NS_TO_CYCLE_MOD(hs_trail, cycle_time) + 1) : 2;
 /*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
-	/* hs_exit > 100ns (spec) */
-	/* hs_exit = 120ns */
-	/* timcon1.DA_HS_EXIT = NS_TO_CYCLE(120, cycle_time); */
-	/* hs_exit = 2*lpx */
-	timcon1.DA_HS_EXIT = 2 * timcon0.LPX;
+		/* hs_exit > 100ns (spec) */
+		/* hs_exit = 120ns */
+		/* timcon1.DA_HS_EXIT = NS_TO_CYCLE(120, cycle_time); */
+		/* hs_exit = 2*lpx */
+		timcon1.DA_HS_EXIT = 2 * timcon0.LPX;
 
-	/* ta_go = 4*lpx (spec) */
-	timcon1.TA_GO = 4 * timcon0.LPX;
+		/* ta_go = 4*lpx (spec) */
+		timcon1.TA_GO = 4 * timcon0.LPX;
 
-	/* ta_get = 5*lpx (spec) */
-	timcon1.TA_GET = 5 * timcon0.LPX;
+		/* ta_get = 5*lpx (spec) */
+		timcon1.TA_GET = 5 * timcon0.LPX;
 
-	/* ta_sure = lpx ~ 2*lpx (spec) */
-	timcon1.TA_SURE = 3 * timcon0.LPX / 2;
+		/* ta_sure = lpx ~ 2*lpx (spec) */
+		timcon1.TA_SURE = 3 * timcon0.LPX / 2;
 
-	/* clk_hs_prep = 38ns ~ 95ns (spec) */
-	/* clk_hs_prep = 80ns */
-	timcon3.CLK_HS_PRPR = NS_TO_CYCLE(80, cycle_time);
+		/* clk_hs_prep = 38ns ~ 95ns (spec) */
+		/* clk_hs_prep = 80ns */
+		timcon3.CLK_HS_PRPR = NS_TO_CYCLE(80, cycle_time) +
+					NS_TO_CYCLE_MOD(80, cycle_time);
 
-	/* clk_zero + clk_hs_prep > 300ns (spec) */
-	/* clk_zero = 400ns - clk_hs_prep */
-	timcon2.CLK_ZERO = NS_TO_CYCLE(400, cycle_time) -
-				timcon3.CLK_HS_PRPR;
-	if (timcon2.CLK_ZERO < 1)
-		timcon2.CLK_ZERO = 1;
+		/* clk_zero + clk_hs_prep > 300ns (spec) */
+		/* clk_zero = 400ns - clk_hs_prep */
+		timcon2.CLK_ZERO = NS_TO_CYCLE(400, cycle_time) +
+					NS_TO_CYCLE_MOD(400, cycle_time) -
+					timcon3.CLK_HS_PRPR;
+		if (timcon2.CLK_ZERO < 1)
+			timcon2.CLK_ZERO = 1;
 
-	/* clk_trail > 60ns (spec) */
-	/* clk_trail = 100ns */
+		/* clk_trail > 60ns (spec) */
+		/* clk_trail = 100ns */
 /*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
-	timcon2.CLK_TRAIL = NS_TO_CYCLE(88, cycle_time) + 1;
-	if (timcon2.CLK_TRAIL < 2)
-		timcon2.CLK_TRAIL = 2;
+		timcon2.CLK_TRAIL = NS_TO_CYCLE(88, cycle_time) + 1;
+		if (timcon2.CLK_TRAIL < 2)
+			timcon2.CLK_TRAIL = 2;
 /*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
-	/* clk_exit > 100ns (spec) */
-	/* clk_exit = 200ns */
-	/* timcon3.CLK_EXIT = NS_TO_CYCLE(200, cycle_time); */
-	/* clk_exit = 2*lpx */
-	timcon3.CLK_HS_EXIT = 2 * timcon0.LPX;
+		/* clk_exit > 100ns (spec) */
+		/* clk_exit = 200ns */
+		/* timcon3.CLK_EXIT = NS_TO_CYCLE(200, cycle_time); */
+		/* clk_exit = 2*lpx */
+		timcon3.CLK_HS_EXIT = 2 * timcon0.LPX;
 
-	/* clk_post > 60ns+52*UI (spec) */
-	/* clk_post = 96ns+52*UI */
-	timcon3.CLK_HS_POST = NS_TO_CYCLE((96 + 52 * ui), cycle_time);
-#else
+		/* clk_post > 60ns+52*UI (spec) */
+		/* clk_post = 96ns+52*UI */
+		timcon3.CLK_HS_POST = NS_TO_CYCLE((96 + 52 * ui), cycle_time) +
+					NS_TO_CYCLE_MOD((96 + 52 * ui), cycle_time);
+	} else {
+		hs_trail_m = 1;
+		hs_trail_n = (dsi_params->HS_TRAIL == 0) ?
+			(NS_TO_CYCLE(((hs_trail_m * 0x4 * ui) + 0x50)
+			* dsi_params->PLL_CLOCK * 2, 0x1F40) + 0x1) :
+			dsi_params->HS_TRAIL;
+		/* +3 is recommended from designer becauase of HW latency */
+		timcon0.HS_TRAIL = (hs_trail_m > hs_trail_n) ? hs_trail_m : hs_trail_n;
 
-	hs_trail_m = 1;
-	hs_trail_n = (dsi_params->HS_TRAIL == 0) ?
-		(NS_TO_CYCLE(((hs_trail_m * 0x4 * ui) + 0x50)
-		* dsi_params->PLL_CLOCK * 2, 0x1F40) + 0x1) :
-		dsi_params->HS_TRAIL;
-	/* +3 is recommended from designer becauase of HW latency */
-	timcon0.HS_TRAIL = (hs_trail_m > hs_trail_n) ? hs_trail_m : hs_trail_n;
+		timcon0.HS_PRPR = (dsi_params->HS_PRPR == 0) ?
+			(NS_TO_CYCLE((0x40 + 0x5 * ui), cycle_time) + 0x1) :
+			dsi_params->HS_PRPR;
+		/* HS_PRPR can't be 1. */
+		if (timcon0.HS_PRPR < 1)
+			timcon0.HS_PRPR = 1;
 
-	timcon0.HS_PRPR = (dsi_params->HS_PRPR == 0) ?
-		(NS_TO_CYCLE((0x40 + 0x5 * ui), cycle_time) + 0x1) :
-		dsi_params->HS_PRPR;
-	/* HS_PRPR can't be 1. */
-	if (timcon0.HS_PRPR < 1)
-		timcon0.HS_PRPR = 1;
+		timcon0.HS_ZERO = (dsi_params->HS_ZERO == 0) ?
+					NS_TO_CYCLE((0xC8 + 0x0a * ui), cycle_time) :
+					dsi_params->HS_ZERO;
+		timcon_temp = timcon0.HS_PRPR;
+		if (timcon_temp < timcon0.HS_ZERO)
+			timcon0.HS_ZERO -= timcon0.HS_PRPR;
 
-	timcon0.HS_ZERO = (dsi_params->HS_ZERO == 0) ?
-				NS_TO_CYCLE((0xC8 + 0x0a * ui), cycle_time) :
-				dsi_params->HS_ZERO;
-	timcon_temp = timcon0.HS_PRPR;
-	if (timcon_temp < timcon0.HS_ZERO)
-		timcon0.HS_ZERO -= timcon0.HS_PRPR;
+		timcon0.LPX = (dsi_params->LPX == 0) ?
+			(NS_TO_CYCLE(dsi_params->PLL_CLOCK * 2 * 0x4B, 0x1F40)	+ 0x1) :
+			dsi_params->LPX;
+		if (timcon0.LPX < 1)
+			timcon0.LPX = 1;
 
-	timcon0.LPX = (dsi_params->LPX == 0) ?
-		(NS_TO_CYCLE(dsi_params->PLL_CLOCK * 2 * 0x4B, 0x1F40)	+ 0x1) :
-		dsi_params->LPX;
-	if (timcon0.LPX < 1)
-		timcon0.LPX = 1;
+		timcon1.TA_GET = (dsi_params->TA_GET == 0) ?  (0x5 * timcon0.LPX) :
+								dsi_params->TA_GET;
+		timcon1.TA_SURE = (dsi_params->TA_SURE == 0) ?
+			(0x3 * timcon0.LPX / 0x2) : dsi_params->TA_SURE;
+		timcon1.TA_GO = (dsi_params->TA_GO == 0) ?  (0x4 * timcon0.LPX) :
+								dsi_params->TA_GO;
+		/* --------------------------------------------------------------
+		 * NT35510 need fine tune timing
+		 * Data_hs_exit = 60 ns + 128UI
+		 * Clk_post = 60 ns + 128 UI.
+		 * --------------------------------------------------------------
+		 */
+		timcon1.DA_HS_EXIT = (dsi_params->DA_HS_EXIT == 0) ?
+			(0x2 * timcon0.LPX) : dsi_params->DA_HS_EXIT;
 
-	timcon1.TA_GET = (dsi_params->TA_GET == 0) ?  (0x5 * timcon0.LPX) :
-							dsi_params->TA_GET;
-	timcon1.TA_SURE = (dsi_params->TA_SURE == 0) ?
-		(0x3 * timcon0.LPX / 0x2) : dsi_params->TA_SURE;
-	timcon1.TA_GO = (dsi_params->TA_GO == 0) ?  (0x4 * timcon0.LPX) :
-							dsi_params->TA_GO;
-	/* --------------------------------------------------------------
-	 * NT35510 need fine tune timing
-	 * Data_hs_exit = 60 ns + 128UI
-	 * Clk_post = 60 ns + 128 UI.
-	 * --------------------------------------------------------------
-	 */
-	timcon1.DA_HS_EXIT = (dsi_params->DA_HS_EXIT == 0) ?
-		(0x2 * timcon0.LPX) : dsi_params->DA_HS_EXIT;
+		timcon2.CLK_TRAIL = ((dsi_params->CLK_TRAIL == 0) ?
+			NS_TO_CYCLE(0x64 * dsi_params->PLL_CLOCK * 2,
+			0x1F40) : dsi_params->CLK_TRAIL) + 0x01;
+		/* CLK_TRAIL can't be 1. */
+		if (timcon2.CLK_TRAIL < 2)
+			timcon2.CLK_TRAIL = 2;
 
-	timcon2.CLK_TRAIL = ((dsi_params->CLK_TRAIL == 0) ?
-		NS_TO_CYCLE(0x64 * dsi_params->PLL_CLOCK * 2,
-		0x1F40) : dsi_params->CLK_TRAIL) + 0x01;
-	/* CLK_TRAIL can't be 1. */
-	if (timcon2.CLK_TRAIL < 2)
-		timcon2.CLK_TRAIL = 2;
+		timcon2.CONT_DET = dsi_params->CONT_DET;
+		timcon2.CLK_ZERO = (dsi_params->CLK_ZERO == 0) ?
+			NS_TO_CYCLE(0x190, cycle_time) :
+			dsi_params->CLK_ZERO;
 
-	timcon2.CONT_DET = dsi_params->CONT_DET;
-	timcon2.CLK_ZERO = (dsi_params->CLK_ZERO == 0) ?
-		NS_TO_CYCLE(0x190, cycle_time) :
-		dsi_params->CLK_ZERO;
+		timcon3.CLK_HS_PRPR = (dsi_params->CLK_HS_PRPR == 0) ?
+			NS_TO_CYCLE(0x50 * dsi_params->PLL_CLOCK * 2,
+			0x1F40) : dsi_params->CLK_HS_PRPR;
 
-	timcon3.CLK_HS_PRPR = (dsi_params->CLK_HS_PRPR == 0) ?
-		NS_TO_CYCLE(0x50 * dsi_params->PLL_CLOCK * 2,
-		0x1F40) : dsi_params->CLK_HS_PRPR;
+		if (timcon3.CLK_HS_PRPR < 1)
+			timcon3.CLK_HS_PRPR = 1;
 
-	if (timcon3.CLK_HS_PRPR < 1)
-		timcon3.CLK_HS_PRPR = 1;
+		timcon3.CLK_HS_EXIT = (dsi_params->CLK_HS_EXIT == 0) ?
+			(0x2 * timcon0.LPX) : dsi_params->CLK_HS_EXIT;
+		timcon3.CLK_HS_POST = (dsi_params->CLK_HS_POST == 0) ?
+			NS_TO_CYCLE((0x60 + 0x34 * ui), cycle_time) :
+			dsi_params->CLK_HS_POST;
+	}
 
-	timcon3.CLK_HS_EXIT = (dsi_params->CLK_HS_EXIT == 0) ?
-		(0x2 * timcon0.LPX) : dsi_params->CLK_HS_EXIT;
-	timcon3.CLK_HS_POST = (dsi_params->CLK_HS_POST == 0) ?
-		NS_TO_CYCLE((0x60 + 0x34 * ui), cycle_time) :
-		dsi_params->CLK_HS_POST;
-#endif
-#ifdef CONFIG_MTK_MT6382_BDG
-	data_phy_cycle = (timcon1.DA_HS_EXIT + 1) + timcon0.LPX +
-				timcon0.HS_PRPR + timcon0.HS_ZERO + 1;
-#endif
+	if (bdg_is_bdg_connected() == 1)
+		data_phy_cycle = (timcon1.DA_HS_EXIT + 1) + timcon0.LPX +
+					timcon0.HS_PRPR + timcon0.HS_ZERO + 1;
 /*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
 	printk("[DISP] - kernel - %s, HS_TRAIL = %d, HS_ZERO = %d, HS_PRPR = %d, LPX = %d, TA_GET = %d, TA_SURE = %d, TA_GO = %d, CLK_TRAIL = %d, CLK_ZERO = %d, CLK_HS_PRPR = %d, cycle_time = %d\n",
 			__func__, timcon0.HS_TRAIL, timcon0.HS_ZERO,
@@ -2378,7 +2381,6 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 			INREG32(&DSI_REG[i]->DSI_PHY_TIMECON3));
 	}
 }
-
 
 int DSI_enable_checksum(enum DISP_MODULE_ENUM module,
 	struct cmdqRecStruct *cmdq)
@@ -4378,7 +4380,6 @@ int DSI_Send_ROI(enum DISP_MODULE_ENUM module, void *handle, unsigned int x,
 	return 0;
 }
 
-#ifdef CONFIG_MTK_MT6382_BDG
 static void DSI_send_read_cmd_via_bdg(struct cmdqRecStruct *cmdq,
 			enum DISP_MODULE_ENUM module, bool hs,
 			UINT8 cmd)
@@ -4848,7 +4849,6 @@ void ap_send_bdg_tx_set_mode(enum DISP_MODULE_ENUM module, struct cmdqRecStruct 
 	else
 		DSI_send_cmdq_to_bdg(module, cmdq, 0x70, 7, para2, 1);
 }
-#endif
 
 static void lcm_set_reset_pin(UINT32 value)
 {
@@ -5583,6 +5583,10 @@ static void _dsi_basic_irq_enable(enum DISP_MODULE_ENUM module, void *cmdq)
 		DSI_OUTREGBIT(cmdq, struct DSI_INT_ENABLE_REG,
 			DSI_REG[i]->DSI_INTEN, TE_RDY, 1);
 
+	if (bdg_is_bdg_connected() == 1)
+		DSI_OUTREGBIT(cmdq, struct DSI_INT_ENABLE_REG,
+			DSI_REG[i]->DSI_INTEN, TE_RDY, 1);
+
 	if (_dsi_context[i].dsi_params.mode != CMD_MODE ||
 	    ((_dsi_context[i].dsi_params.switch_mode_enable == 1) &&
 	     (_dsi_context[i].dsi_params.switch_mode != CMD_MODE))) {
@@ -5628,12 +5632,11 @@ int ddp_dsi_config(enum DISP_MODULE_ENUM module,
 		_dump_dsi_params(&(_dsi_context[i].dsi_params));
 	}
 
-#ifdef CONFIG_MTK_MT6382_BDG
 	dsi_config->data_rate = get_ap_data_rate();
 	DISPINFO(
 		"%s, PLL_CLOCK=%d, data_rate=%d, mode=%d\n",
 		__func__, dsi_config->PLL_CLOCK, dsi_config->data_rate, dsi_config->mode);
-#endif
+
 	if (!MIPITX_IsEnabled(module, cmdq) || PanelMaster_is_enable()) {
 		DISPCHECK("MIPITX is not inited, will config mipitx clk=%d\n",
 			_dsi_context[0].dsi_params.PLL_CLOCK);
@@ -5667,11 +5670,9 @@ int ddp_dsi_config(enum DISP_MODULE_ENUM module,
 	if (dsi_config->mode != CMD_MODE ||
 		((dsi_config->switch_mode_enable == 1) &&
 		(dsi_config->switch_mode != CMD_MODE))) {
-#ifdef CONFIG_MTK_MT6382_BDG
-		if (get_dsc_state())
+		if (bdg_is_bdg_connected() == 1 && get_dsc_state())
 			DSI_Config_VDO_Timing_with_DSC(module, cmdq, dsi_config);
 		else
-#endif
 			DSI_Config_VDO_Timing(module, cmdq, dsi_config);
 		DSI_Set_VM_CMD(module, cmdq);
 	}
@@ -5754,10 +5755,9 @@ int ddp_dsi_start(enum DISP_MODULE_ENUM module, void *cmdq)
 	DSI_SetMode(module, cmdq, _dsi_context[i].dsi_params.mode);
 	DSI_clk_HS_mode(module, cmdq, TRUE);
 
-#ifdef CONFIG_MTK_MT6382_BDG
-	if (get_mt6382_init() == 1 && get_ap_data_rate() > RX_V12)
-		DSI_MIPI_deskew(module, cmdq);
-#endif
+	if (bdg_is_bdg_connected() == 1)
+		if (get_mt6382_init() == 1 && get_ap_data_rate() > RX_V12)
+			DSI_MIPI_deskew(module, cmdq);
 
 	return 0;
 }
@@ -5919,13 +5919,13 @@ int ddp_dsi_stop(enum DISP_MODULE_ENUM module, void *cmdq_handle)
 
 	DSI_OUTREG32(cmdq_handle, &DSI_REG[i]->DSI_INTEN, 0);
 	DSI_OUTREG32(cmdq_handle, &DSI_REG[i]->DSI_INTSTA, 0);
-#ifdef CONFIG_MTK_MT6382_BDG
-	if (get_mt6382_init()) {
+
+	if (bdg_is_bdg_connected() == 1 && get_mt6382_init()) {
 		ap_send_bdg_tx_stop(module, cmdq_handle);
 		ap_send_bdg_tx_reset(module, cmdq_handle);
 		ap_send_bdg_tx_set_mode(module, cmdq_handle, CMD_MODE);
 	}
-#endif
+
 	DSI_clk_HS_mode(module, cmdq_handle, FALSE);
 
 	return 0;
@@ -6267,13 +6267,13 @@ int ddp_dsi_trigger(enum DISP_MODULE_ENUM module, void *cmdq)
 			DSI_REG[1]->DSI_COM_CTRL, DSI_DUAL_EN, 1);
 	}
 
-#ifdef CONFIG_MTK_MT6382_BDG
-	if (get_mt6382_init() &&  (get_bdg_tx_mode() == CMD_MODE)) {
+	if (bdg_is_bdg_connected() == 1 && get_mt6382_init() &&
+		(get_bdg_tx_mode() == CMD_MODE)) {
 		bdg_tx_cmd_mode(DISP_BDG_DSI0, NULL);
 		bdg_tx_start(DISP_BDG_DSI0, NULL);
 		bdg_mutex_trigger(DISP_BDG_DSI0, NULL);
 	}
-#endif
+
 	DSI_Start(module, cmdq);
 
 	if (module == DISP_MODULE_DSIDUAL &&
@@ -6356,9 +6356,8 @@ int ddp_dsi_power_on(enum DISP_MODULE_ENUM module, void *cmdq_handle)
 
 	/* DSI_RestoreRegisters(module, NULL); */
 	DSI_exit_ULPS(module);
-#ifdef CONFIG_MTK_MT6382_BDG
-	check_stopstate(NULL);
-#endif
+	if (bdg_is_bdg_connected() == 1)
+		check_stopstate(NULL);
 
 	DSI_Reset(module, NULL);
 	_set_power_on_status(module, 1);
@@ -6590,6 +6589,18 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 			return -1;
 		}
 	} else if (state == CMDQ_ESD_CHECK_READ) {
+#ifdef CONFIG_MTK_MT6382_BDG
+		unsigned char rxbypass0[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x84
+		unsigned char rxbypass1[] = {0x10, 0x02, 0x00, 0x02, 0x00, 0x00, 0x00}; //ID 0x84
+		unsigned char rxsel0[] = {0x31, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x70
+		unsigned char rxsel1[] = {0x31, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00}; //ID 0x70
+
+		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x84, 7,
+				rxbypass1, 1);
+
+		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x70, 7,
+				rxsel0, 1);
+#endif
 		/* enable dsi interrupt: RD_RDY/CMD_DONE (need do this here?) */
 		DSI_OUTREGBIT(cmdq_trigger_handle, struct DSI_INT_ENABLE_REG,
 			      DSI_REG[dsi_i]->DSI_INTEN, RD_RDY, 1);
@@ -6620,13 +6631,30 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 			DSI_OUTREG32(cmdq_trigger_handle,
 				&DSI_CMDQ_REG[dsi_i]->data[1], AS_UINT32(&t0));
 			DSI_OUTREG32(cmdq_trigger_handle,
-				&DSI_REG[dsi_i]->DSI_CMDQ_SIZE, 2);
+				&DSI_REG[dsi_i]->DSI_CMDQ_SIZE, 1);
 
 			/* start DSI */
 			DSI_OUTREG32(cmdq_trigger_handle,
 				&DSI_REG[dsi_i]->DSI_START, 0);
 			DSI_OUTREG32(cmdq_trigger_handle,
 				&DSI_REG[dsi_i]->DSI_START, 1);
+			if (dsi_i == 0) {
+				DSI_POLLREG32(cmdq_trigger_handle,
+					&DSI_REG[dsi_i]->DSI_INTSTA,
+					0x80000000, 0);
+			}
+
+			DSI_OUTREG32(cmdq_trigger_handle,
+				&DSI_CMDQ_REG[dsi_i]->data[0], AS_UINT32(&t0));
+
+			DSI_OUTREG32(cmdq_trigger_handle,
+				&DSI_REG[dsi_i]->DSI_CMDQ_SIZE, 1);
+
+			DSI_OUTREG32(cmdq_trigger_handle,
+				&DSI_REG[dsi_i]->DSI_START, 0);
+			DSI_OUTREG32(cmdq_trigger_handle,
+				&DSI_REG[dsi_i]->DSI_START, 1);
+
 
 			/* 1. wait DSI RD_RDY(must clear,
 			 * in case of cpu RD_RDY interrupt handler)
@@ -6667,6 +6695,13 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 			}
 			/* loop: 0~4 */
 		}
+
+#ifdef CONFIG_MTK_MT6382_BDG
+		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x84, 7,
+				rxbypass0, 1);
+		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x70, 7,
+				rxsel1, 1);
+#endif
 
 	} else if (state == CMDQ_ESD_CHECK_CMP) {
 		struct LCM_esd_check_item *lcm_esd_tb;
@@ -6836,6 +6871,10 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 			}
 		}
 	} else if (state == CMDQ_STOP_VDO_MODE) {
+#ifdef CONFIG_MTK_MT6382_BDG
+		unsigned char stopdsi[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x00
+		unsigned char setcmd[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x14
+#endif
 		/* use cmdq to stop dsi vdo mode */
 		/* 0. set dsi cmd mode */
 		DSI_SetMode(module, cmdq_trigger_handle, CMD_MODE);
@@ -6876,7 +6915,27 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 		if (i == 1) /* DUAL */
 			DSI_POLLREG32(cmdq_trigger_handle,
 				&DSI_REG[i]->DSI_INTSTA, 0x80000000, 0);
+
+#ifdef CONFIG_MTK_MT6382_BDG
+		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
+				stopdsi, 1);
+		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
+				setcmd, 1);
+#endif
 	} else if (state == CMDQ_START_VDO_MODE) {
+#ifdef CONFIG_MTK_MT6382_BDG
+		unsigned char setvdo[] = {0x10, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00}; //ID 0x14
+		unsigned char stopdsi[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x00
+		unsigned char startdsi[] = {0x10, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00}; //ID 0x00
+
+		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
+				setvdo, 1);
+
+		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
+				stopdsi, 1);
+		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
+				startdsi, 1);
+#endif
 		/* 0. dual dsi set DSI_START/DSI_DUAL_EN */
 		if (module == DISP_MODULE_DSIDUAL) {
 			DSI_OUTREGBIT(cmdq_trigger_handle, struct DSI_START_REG,
@@ -7988,7 +8047,7 @@ void ddp_dsi_dynfps_chg_fps(
 			DDPMSG("%s, change HFP\n", __func__);
 			/* DynFPS ToDo whether need change PHY timing */
 			/* DSI_PHY_TIMCONFIG(module, handle, dsi); */
-#if 0			/* maybe not only HFP changed, update all parameters */
+#if 0		/* maybe not only HFP changed, update all parameters */
 			ddp_dsi_porch_setting(module, handle, DSI_HFP,
 					_dsi_context[i].hfp_byte);
 #endif
@@ -8059,7 +8118,7 @@ void ddp_dsi_bdg_dynfps_chg_fps(
 			DDPMSG("%s, change HFP\n", __func__);
 			/* DynFPS ToDo whether need change PHY timing */
 			/* DSI_PHY_TIMCONFIG(module, handle, dsi); */
-#if 0			/* maybe not only HFP changed, update all parameters */
+#if 0		/* maybe not only HFP changed, update all parameters */
 			ddp_dsi_porch_setting(module, handle, DSI_HFP,
 					_dsi_context[i].hfp_byte);
 #endif

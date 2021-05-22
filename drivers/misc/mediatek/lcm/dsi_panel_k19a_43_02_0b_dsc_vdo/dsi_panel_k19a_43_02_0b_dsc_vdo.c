@@ -403,7 +403,7 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	struct dfps_info *dfps_params = dsi->dfps_params;
 
 	dsi->dfps_enable = 1;
-	dsi->dfps_default_fps = 9000;/*real fps * 100, to support float*/
+	dsi->dfps_default_fps = 6000;/*real fps * 100, to support float*/
 	dsi->dfps_def_vact_tim_fps = 9000;/*real vact timing fps * 100*/
 	/* traversing array must less than DFPS_LEVELS */
 	/* DPFS_LEVEL0 */
@@ -476,7 +476,41 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 	params->dsi.horizontal_frontporch = 165;
 	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
 	params->dsi.ssc_disable = 1;
+#ifdef CONFIG_MTK_MT6382_BDG
 	params->dsi.bdg_ssc_disable = 1;
+	params->dsi.dsc_params.ver = 17;
+	params->dsi.dsc_params.slice_mode = 1;
+	params->dsi.dsc_params.rgb_swap = 0;
+	params->dsi.dsc_params.dsc_cfg = 34;
+	params->dsi.dsc_params.rct_on = 1;
+	params->dsi.dsc_params.bit_per_channel = 8;
+	params->dsi.dsc_params.dsc_line_buf_depth = 9;
+	params->dsi.dsc_params.bp_enable = 1;
+	params->dsi.dsc_params.bit_per_pixel = 128;
+	params->dsi.dsc_params.pic_height = 2400;
+	params->dsi.dsc_params.pic_width = 1080;
+	params->dsi.dsc_params.slice_height = 8;
+	params->dsi.dsc_params.slice_width = 540;
+	params->dsi.dsc_params.chunk_size = 540;
+	params->dsi.dsc_params.xmit_delay = 170;
+	params->dsi.dsc_params.dec_delay = 526;
+	params->dsi.dsc_params.scale_value = 32;
+	params->dsi.dsc_params.increment_interval = 43;
+	params->dsi.dsc_params.decrement_interval = 7;
+	params->dsi.dsc_params.line_bpg_offset = 12;
+	params->dsi.dsc_params.nfl_bpg_offset = 3511;
+	params->dsi.dsc_params.slice_bpg_offset = 3255;
+	params->dsi.dsc_params.initial_offset = 6144;
+	params->dsi.dsc_params.final_offset = 7072;
+	params->dsi.dsc_params.flatness_minqp = 3;
+	params->dsi.dsc_params.flatness_maxqp = 12;
+	params->dsi.dsc_params.rc_model_size = 8192;
+	params->dsi.dsc_params.rc_edge_factor = 6;
+	params->dsi.dsc_params.rc_quant_incr_limit0 = 11;
+	params->dsi.dsc_params.rc_quant_incr_limit1 = 11;
+	params->dsi.dsc_params.rc_tgt_offset_hi = 3;
+	params->dsi.dsc_params.rc_tgt_offset_lo = 3;
+#endif
 	params->dsi.dsc_enable = 0;
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	/* this value must be in MTK suggested table */
@@ -500,10 +534,11 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 	params->dsi.esd_check_enable = 1;
 #endif
 /* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end */
+	//params->dsi.esd_check_enable = 1;
 	params->dsi.customization_esd_check_enable = 0;
-	//params->dsi.lcm_esd_check_table[0].cmd = 0x0a;
-	//params->dsi.lcm_esd_check_table[0].count = 1;
-	//params->dsi.lcm_esd_check_table[0].para_list[0] = 0x9d;
+	/*params->dsi.lcm_esd_check_table[0].cmd = 0x0a;
+	params->dsi.lcm_esd_check_table[0].count = 1;
+	params->dsi.lcm_esd_check_table[0].para_list[0] = 0x9c;*/
 
 	/* for ARR 2.0 */
 	// params->max_refresh_rate = 60;

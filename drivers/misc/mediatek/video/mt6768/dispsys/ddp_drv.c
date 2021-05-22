@@ -65,6 +65,7 @@
 #include "ddp_info.h"
 #include "ddp_m4u.h"
 #include "display_recorder.h"
+#include "ddp_disp_bdg.h"
 
 /* #define DISP_NO_DPI */
 #ifndef DISP_NO_DPI
@@ -562,7 +563,8 @@ static int disp_probe_1(void)
 	disp_m4u_init();
 
 #ifdef CONFIG_MTK_MT6382_BDG
-	disp_init_bdg_gce_obj();
+	if (bdg_is_bdg_connected() == 1)
+		disp_init_bdg_gce_obj();
 #endif
 
 	pr_info("disp driver(1) %s end\n", __func__);

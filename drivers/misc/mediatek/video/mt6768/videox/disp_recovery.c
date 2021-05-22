@@ -198,11 +198,28 @@ int _esd_check_config_handle_cmd(struct cmdqRecStruct *qhandle)
 	return ret;
 }
 
+
 /**
  * For Vdo Mode Read LCM Check
  * Config cmdq_handle_config_esd
  * return value: 0:success, 1:fail
  */
+static atomic_t flag_6382 = ATOMIC_INIT(0);
+static int esd_callback(unsigned long userdata)
+{
+	int ret = 0;
+	CmdqInterruptCB orig_callback = (CmdqInterruptCB)userdata;
+
+	if (orig_callback)
+		ret = orig_callback(0);
+
+	atomic_set(&flag_6382, 1);
+	DDPMSG("MIPI_RX_POST_CTRL %x, DDIPOST_SETTING %x, DDI_POST_DEBUG0 %x\n",
+		mtk_spi_read(0x00023170), mtk_spi_read(0x00023174), mtk_spi_read(0x00023180));
+
+	return ret;
+}
+
 int _esd_check_config_handle_vdo(struct cmdqRecStruct *qhandle)
 {
 	int ret = 0;
@@ -215,11 +232,19 @@ int _esd_check_config_handle_vdo(struct cmdqRecStruct *qhandle)
 	/*cmdq_task_set_timeout(qhandle, 200);*/
 	/* wait stream eof first */
 	/* cmdqRecWait(qhandle, CMDQ_EVENT_DISP_RDMA0_EOF); */
+#ifdef CONFIG_MTK_MT6382_BDG
+	cmdqRecClearEventToken(qhandle, CMDQ_EVENT_DSI_TE);
+#endif
 	cmdqRecWait(qhandle, CMDQ_EVENT_MUTEX0_STREAM_EOF);
 
 	primary_display_manual_lock();
 
 	esd_checking = 1;
+
+#ifdef CONFIG_MTK_MT6382_BDG
+	atomic_set(&flag_6382, 0);
+	cmdqRecWait(qhandle, CMDQ_EVENT_DSI_TE);
+#endif
 
 	/* 2.stop dsi vdo mode */
 	dpmgr_path_build_cmdq(phandle, qhandle, CMDQ_STOP_VDO_MODE, 0);
@@ -241,10 +266,23 @@ int _esd_check_config_handle_vdo(struct cmdqRecStruct *qhandle)
 
 	/* 6.flush instruction */
 	dprec_logger_start(DPREC_LOGGER_ESD_CMDQ, 0, 0);
+#ifdef CONFIG_MTK_MT6382_BDG
+	_blocking_flush();
+
+	ret = cmdqRecFlushAsyncCallback(qhandle, esd_callback, 0);
+#else
 	ret = cmdqRecFlush(qhandle);
+#endif
 	dprec_logger_done(DPREC_LOGGER_ESD_CMDQ, 0, 0);
 
+#ifdef CONFIG_MTK_MT6382_BDG
+	udelay(500);
+	bdg_dsi_stop_vdo_gce();
+	while (atomic_read(&flag_6382) != 1)
+		udelay(50);
+#endif
 	DISPINFO("[ESD]%s ret=%d\n", __func__, ret);
+	primary_display_manual_unlock();
 
 	if (ret)
 		ret = 1;
@@ -804,9 +842,6 @@ int primary_display_esd_recovery(void)
 	enum DISP_STATUS ret = DISP_STATUS_OK;
 	struct LCM_PARAMS *lcm_param = NULL;
 	mmp_event mmp_r = ddp_mmp_get_events()->esd_recovery_t;
-#ifdef CONFIG_MTK_MT6382_BDG
-	struct disp_ddp_path_config *data_config;
-#endif
 
 	DISPFUNC();
 
@@ -836,9 +871,10 @@ int primary_display_esd_recovery(void)
 		primary_display_idlemgr_kick((char *)__func__, 0);
 		mmprofile_log_ex(mmp_r, MMPROFILE_FLAG_PULSE, 0, 2);
 
-		/* blocking flush before stop trigger loop */
-		_blocking_flush();
 	}
+	/* blocking flush before stop trigger loop */
+	_blocking_flush();
+
 
 	mmprofile_log_ex(mmp_r, MMPROFILE_FLAG_PULSE, 0, 3);
 
@@ -882,31 +918,48 @@ int primary_display_esd_recovery(void)
 
 	DISPDBG("[ESD]dsi power reset[begine]\n");
 	dpmgr_path_dsi_power_off(primary_get_dpmgr_handle(), NULL);
-#ifdef CONFIG_MTK_MT6382_BDG
-	bdg_common_deinit(DISP_BDG_DSI0, NULL);
+	if (bdg_is_bdg_connected() == 1) {
+		struct disp_ddp_path_config *data_config;
 
-	data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
-	bdg_common_init(DISP_BDG_DSI0, data_config, NULL);
-	mipi_dsi_rx_mac_init(DISP_BDG_DSI0, data_config, NULL);
-#endif
+		bdg_common_deinit(DISP_BDG_DSI0, NULL);
+
+
+		data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
+		bdg_common_init(DISP_BDG_DSI0, data_config, NULL);
+		mipi_dsi_rx_mac_init(DISP_BDG_DSI0, data_config, NULL);
+	}
+
 	dpmgr_path_dsi_power_on(primary_get_dpmgr_handle(), NULL);
 	if (!primary_display_is_video_mode())
 		dpmgr_path_ioctl(primary_get_dpmgr_handle(), NULL,
 				DDP_DSI_ENABLE_TE, NULL);
+	dpmgr_path_reset(primary_get_dpmgr_handle(), CMDQ_DISABLE);
 	DISPCHECK("[ESD]dsi power reset[end]\n");
+	if (bdg_is_bdg_connected() == 1) {
+		struct disp_ddp_path_config *data_config;
+ 
+//		extern ddp_dsi_config(enum DISP_MODULE_ENUM module,
+//		struct disp_ddp_path_config *config, void *cmdq);
+ 
+		data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
+		data_config->dst_dirty = 1;
+		dpmgr_path_config(primary_get_dpmgr_handle(), data_config, NULL);
+//		ddp_dsi_config(DISP_MODULE_DSI0, data_config, NULL);
+ 
+		data_config->dst_dirty = 0;
+	}
 
 	DISPDBG("[ESD]lcm recover[begin]\n");
 	disp_lcm_esd_recover(primary_get_lcm());
 	DISPCHECK("[ESD]lcm recover[end]\n");
 	mmprofile_log_ex(mmp_r, MMPROFILE_FLAG_PULSE, 0, 8);
 
-#ifdef CONFIG_MTK_MT6382_BDG
-	if (get_mt6382_init()) {
+if (bdg_is_bdg_connected() == 1 && get_mt6382_init()) {
 		DISPCHECK("set 6382 mode start\n");
 		bdg_tx_set_mode(DISP_BDG_DSI0, NULL, get_bdg_tx_mode());
 		bdg_tx_start(DISP_BDG_DSI0, NULL);
 	}
-#endif
+
 	DISPDBG("[ESD]start dpmgr path[begin]\n");
 	if (disp_partial_is_support()) {
 		struct disp_ddp_path_config *data_config =

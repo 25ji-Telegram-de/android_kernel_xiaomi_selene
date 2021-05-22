@@ -381,8 +381,8 @@ struct LCM_UFOE_CONFIG_PARAMS {
 /* ------------------------------------------------------------------------- */
 
 struct LCM_DSC_CONFIG_PARAMS {
+	unsigned int ver; /* [7:4] major [3:0] minor */
 	unsigned int slice_width;
-	unsigned int slice_hight;
 	unsigned int bit_per_pixel;
 	unsigned int slice_mode;
 	unsigned int rgb_swap;
@@ -391,11 +391,13 @@ struct LCM_DSC_CONFIG_PARAMS {
 	unsigned int bit_per_channel;
 	unsigned int rct_on;
 	unsigned int bp_enable;
-
+	unsigned int pic_height; /* need to check */
+	unsigned int pic_width;  /* need to check */
+	unsigned int slice_height;
+	unsigned int chunk_size;
 	unsigned int dec_delay;
 	unsigned int xmit_delay;
 	unsigned int scale_value;
-
 	unsigned int increment_interval;
 	unsigned int line_bpg_offset;
 	unsigned int decrement_interval;
@@ -403,10 +405,14 @@ struct LCM_DSC_CONFIG_PARAMS {
 	unsigned int slice_bpg_offset;
 	unsigned int initial_offset;
 	unsigned int final_offset;
-
 	unsigned int flatness_minqp;
 	unsigned int flatness_maxqp;
-	unsigned int rc_mode1_size;
+	unsigned int rc_model_size;
+	unsigned int rc_edge_factor;
+	unsigned int rc_quant_incr_limit0;
+	unsigned int rc_quant_incr_limit1;
+	unsigned int rc_tgt_offset_hi;
+	unsigned int rc_tgt_offset_lo;
 };
 
 

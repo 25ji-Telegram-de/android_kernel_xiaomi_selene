@@ -14,8 +14,6 @@
 #ifndef __DSI_DRV_H__
 #define __DSI_DRV_H__
 
-
-
 #include "lcm_drv.h"
 #include "ddp_hal.h"
 #include "fbconfig_kdebug.h"
@@ -103,7 +101,6 @@ enum DSI_CMDQ_RPT {
 	ENABLE_RPT = 1,
 };
 
-
 struct DSI_CMDQ_CONFG {
 	unsigned type:2;
 	unsigned BTA:1;
@@ -113,7 +110,6 @@ struct DSI_CMDQ_CONFG {
 	unsigned Rsv:1;
 	unsigned RPT:1;
 };
-
 
 struct DSI_T0_INS {
 	unsigned CONFG:8;

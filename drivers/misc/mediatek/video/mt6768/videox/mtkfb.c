@@ -3165,6 +3165,10 @@ static void mtkfb_late_resume(void)
 	DISPMSG("[FB Driver] enter late_resume\n");
 
 	ret = primary_display_resume();
+	mdelay(3);
+	primary_display_suspend();
+	mdelay(3);
+	primary_display_resume();
 	if (ret) {
 		DISPERR("primary display resume failed\n");
 		return;
