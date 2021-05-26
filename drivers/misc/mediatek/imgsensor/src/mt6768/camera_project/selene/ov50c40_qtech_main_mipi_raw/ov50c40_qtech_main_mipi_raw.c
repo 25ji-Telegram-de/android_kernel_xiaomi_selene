@@ -136,15 +136,15 @@ static struct imgsensor_info_struct imgsensor_info = {
 		},
 	 .custom1 = {
 		.pclk = 100000000,
-		.linelength = 2550,
-		.framelength = 3267,
+		.linelength = 1050,
+		.framelength = 3174,
 		.startx = 0,
 		.starty = 0,
-		.grabwindow_width = 8192,
-		.grabwindow_height = 6144,
-		.mipi_data_lp2hs_settle_dc = 19,	//unit(ns), 16/23/65/85 recommanded
-		.mipi_pixel_rate = 960000000,
-		.max_framerate = 120,
+		.grabwindow_width = 4096,
+		.grabwindow_height = 3072,
+		.mipi_data_lp2hs_settle_dc = 85,	//unit(ns), 16/23/65/85 recommanded
+		.mipi_pixel_rate = 512000000,
+		.max_framerate = 300,
 		},
 	.custom2 = {
 		.pclk = 100000000,
@@ -223,7 +223,7 @@ static struct SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[7] = {
      //slim-video
 	{8224, 6176,  224,  912, 7776, 4352, 1944, 1088, 12, 4, 1920, 1080, 0, 0, 1920, 1080},
 	 //custom1
-	{8224, 6176,    0,    8, 8224, 6160, 8224, 6160, 16, 8, 8192, 6144, 0, 0, 8192, 6144},
+	{8224, 6176,    0,    8, 8224, 6160, 4112, 3080,  8, 4, 4096, 3072, 0, 0, 4096, 3072},
 	//custom2
 #ifdef FACTORY_CAMERA_MODE
 	{8224, 6176,    0,    8, 8224, 6160, 4112, 3080,  16, 4, 4080, 3072, 0, 0, 4080, 3072}
@@ -232,7 +232,7 @@ static struct SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[7] = {
 #endif
 };
 
-static struct SENSOR_VC_INFO_STRUCT SENSOR_VC_INFO[4] = {
+static struct SENSOR_VC_INFO_STRUCT SENSOR_VC_INFO[5] = {
 #ifdef FACTORY_CAMERA_MODE
 	/* preview mode setting */
     {
@@ -265,6 +265,12 @@ static struct SENSOR_VC_INFO_STRUCT SENSOR_VC_INFO[4] = {
         0x02, 0x0a, 0x0000, 0x0008, 0x40, 0x00,
         0x00, 0x2b, 0x1000, 0x0900, 0x00, 0x00, 0x0000, 0x0000,
         0x01, 0x2B, 0x04F6, 0x0240, 0x03, 0x00, 0x0000, 0x0000
+    },
+    /* custom1 mode setting */
+    {
+        0x02, 0x0a, 0x0000, 0x0008, 0x40, 0x00,
+        0x00, 0x2b, 0x1000, 0x0C00, 0x00, 0x00, 0x0000, 0x0000,
+        0x01, 0x2B, 0x04F6, 0x02F8, 0x03, 0x00, 0x0000, 0x0000
     },
 	/* custom2 mode setting */
 #ifdef FACTORY_CAMERA_MODE
