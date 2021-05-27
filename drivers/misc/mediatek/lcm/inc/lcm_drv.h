@@ -797,7 +797,6 @@ struct LCM_PARAMS {
 	unsigned int min_luminance;
 	unsigned int average_luminance;
 	unsigned int max_luminance;
-
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
 	enum LCM_Send_Cmd_Mode sendmode;
 #endif

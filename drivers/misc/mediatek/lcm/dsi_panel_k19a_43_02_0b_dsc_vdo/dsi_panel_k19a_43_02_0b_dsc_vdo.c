@@ -125,9 +125,6 @@ static unsigned ENN = 494; //gpio169
 #define GPIO_LCD_BIAS_ENP   ENP
 #define GPIO_LCD_BIAS_ENN   ENN
 
-int esd_flag_pin2 = 0;
-
-
 /* Huaqin add for HQ-132637 by liunianliang at 2021/05/04 start */
 extern bool nvt_gesture_flag;
 /* Huaqin add for HQ-132637 by liunianliang at 2021/05/04 end */
@@ -275,6 +272,7 @@ static struct LCM_setting_table init_setting_vdo[] = {
         {0X1C, 1, {0X01} },
         {0X33, 1, {0X01} },
         {0X5A, 1, {0X00} },
+	{0X9C, 1, {0X00} },
 
         {0xFF, 1, {0XD0} },
         {0xFB, 1, {0x01} },
@@ -637,19 +635,20 @@ static void lcm_resume_power(void)
 static void lcm_init(void)
 {
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 start */
-	SET_RESET_PIN(1);
-	MDELAY(5);
-	SET_RESET_PIN(0);
-	MDELAY(1);
-	SET_RESET_PIN(1);
-	MDELAY(10);
+      	SET_RESET_PIN(0);
+      	MDELAY(5);
+      	SET_RESET_PIN(1);
+      	MDELAY(10);
+      	SET_RESET_PIN(0);
+      	MDELAY(5);
+      	SET_RESET_PIN(1);
+      	MDELAY(5);
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
 
 	LCM_LOGI("[DENNIS__v2][%s][%d]\n", __func__, __LINE__);
 	push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
 	LCM_LOGI("nt36672c_fhdp----tps6132----lcm mode = vdo mode :%d----\n",
 		 lcm_dsi_mode);
-	esd_flag_pin2 = 1;
 }
 
 static void lcm_suspend(void)
@@ -661,7 +660,6 @@ static void lcm_suspend(void)
 
 static void lcm_resume(void)
 {
-	esd_flag_pin2 = 0;
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	lcm_init();
 }

@@ -22,7 +22,7 @@
 
 #define HW_NUM			(1)
 #define RX_V12			(1720)
-//#define _90HZ_
+#define _90HZ_
 #define _n36672c_
 #define _Disable_HS_DCO_
 #define _Disable_LP_TX_L023_
@@ -32,11 +32,8 @@
 #ifdef _HIGH_FRM_	 //for cmd 120Hz
 #define RXTX_RATIO		(299)
 #else
-#ifdef _90HZ_
 #define RXTX_RATIO		(225) //for vdo 90Hz
-#else
-#define RXTX_RATIO		(230) //for vdo 120Hz
-#endif
+//#define RXTX_RATIO		(230) //for vdo 120Hz
 #endif
 
 enum DISP_BDG_ENUM {

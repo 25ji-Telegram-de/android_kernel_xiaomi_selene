@@ -465,7 +465,7 @@ static int spi_slave_probe(struct spi_device *spi)
 		CT_TRANSFER.tx_buf = cmd_trans_type_4byte_single;
 		CT_TRANSFER.len = ARRAY_SIZE(cmd_trans_type_4byte_single);
 	} else {
-		pr_err("spi slave: don't support other transfer type.\n");
+		pr_notice("spi slave: don't support other transfer type.\n");
 		return -EINVAL;
 	}
 	CT_TRANSFER.tx_nbits = slv_data.tx_nbits;

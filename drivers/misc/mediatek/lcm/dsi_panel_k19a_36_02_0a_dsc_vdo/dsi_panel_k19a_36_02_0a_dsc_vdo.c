@@ -122,8 +122,6 @@ static unsigned ENN = 494; //gpio169
 #define GPIO_LCD_BIAS_ENP   ENP
 #define GPIO_LCD_BIAS_ENN   ENN
 
-int esd_flag_pin = 0;
-
 /* Huaqin modify for HQ-124216 by shujiawang at 2021/04/30 start */
 extern bool nvt_gesture_flag;
 /* Huaqin modify for HQ-124216 by shujiawang at 2021/04/30 end */
@@ -236,6 +234,8 @@ static struct LCM_setting_table lcm_suspend_setting[] = {
 static struct LCM_setting_table init_setting_vdo[] = {
 	{0xFF, 1, {0x10} },
         {0xFB, 1, {0x01} },
+	{0X36, 1, {0x00} },
+	{0X3B, 5, {0x03,0x14,0x36,0x04,0x04} },
 	{0XB0, 1, {0x00} },
 	{0XC0, 1, {0x03} },
 	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
@@ -257,6 +257,7 @@ static struct LCM_setting_table init_setting_vdo[] = {
         {0X1C, 1, {0X01} },
         {0X33, 1, {0X01} },
         {0X5A, 1, {0X00} },
+	{0X9C, 1, {0X00} },
 
         {0xFF, 1, {0XD0} },
         {0xFB, 1, {0x01} },
@@ -578,24 +579,24 @@ static void lcm_resume_power(void)
 static void lcm_init(void)
 {
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 start */
-	SET_RESET_PIN(1);
-	MDELAY(5);
-	SET_RESET_PIN(0);
-	MDELAY(1);
-	SET_RESET_PIN(1);
-	MDELAY(10);
+      	SET_RESET_PIN(0);
+      	MDELAY(5);
+      	SET_RESET_PIN(1);
+      	MDELAY(10);
+      	SET_RESET_PIN(0);
+      	MDELAY(5);
+      	SET_RESET_PIN(1);
+      	MDELAY(5);
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
 
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
 	LCM_LOGI("nt36672c_fhdp----tps6132----lcm mode = vdo mode :%d----\n",
 		 lcm_dsi_mode);
-	esd_flag_pin = 1;
 }
 
 static void lcm_suspend(void)
 {
-	esd_flag_pin = 0;
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	push_table(NULL, lcm_suspend_setting,
 		   ARRAY_SIZE(lcm_suspend_setting), 1);

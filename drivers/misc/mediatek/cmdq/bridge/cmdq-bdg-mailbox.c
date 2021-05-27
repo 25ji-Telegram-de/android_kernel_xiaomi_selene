@@ -65,7 +65,7 @@
 #define CMDQ_OP_JUMP_OFFSET	0x10000000
 #define CMDQ_OP_JUMP_PA		0x10000001
 
-#define ceil(x, y)		((x) / (y)) + ((x) % (y) ? 1 : 0)
+#define ceil(x, y)		(((x) / (y)) + ((x) % (y) ? 1 : 0))
 #define CMDQ_SET_ADDR(addr)	(((addr) >> 3) | BIT(24))
 #define CMDQ_GET_ADDR(addr)	(((addr) & ~BIT(24)) << 3)
 
@@ -134,13 +134,13 @@ inline s32 spi_write_mem(const u32 addr, void *val, const s32 len)
 	return spislv_write(addr, val, len);
 }
 
-static u32 inline cmdq_bdg_thread_get_reg(struct cmdq_thread *thread,
+static inline u32 cmdq_bdg_thread_get_reg(struct cmdq_thread *thread,
 	const u32 addr)
 {
 	return spi_read_reg((u32)thread->base + addr);
 }
 
-static void inline cmdq_bdg_thread_set_reg(struct cmdq_thread *thread,
+static inline void cmdq_bdg_thread_set_reg(struct cmdq_thread *thread,
 	const u32 addr, const u32 val)
 {
 	spi_write_reg((u32)thread->base + addr, val);
@@ -212,7 +212,7 @@ static s32 cmdq_bdg_thread_suspend(struct cmdq_thread *thread)
 	return -EFAULT;
 }
 
-static void inline cmdq_bdg_thread_resume(struct cmdq_thread *thread)
+static inline void cmdq_bdg_thread_resume(struct cmdq_thread *thread)
 {
 	struct cmdq *cmdq =
 		container_of(thread->chan->mbox, typeof(*cmdq), mbox);
@@ -223,24 +223,24 @@ static void inline cmdq_bdg_thread_resume(struct cmdq_thread *thread)
 		thread->idx, cmdq_bdg_thread_get_reg(thread, CMDQ_THR_STATUS));
 }
 
-static phys_addr_t inline cmdq_bdg_thread_get_pc(struct cmdq_thread *thread)
+static inline phys_addr_t cmdq_bdg_thread_get_pc(struct cmdq_thread *thread)
 {
 	return CMDQ_GET_ADDR(cmdq_bdg_thread_get_reg(thread, CMDQ_THR_PC));
 }
 
-static void inline cmdq_bdg_thread_set_pc(struct cmdq_thread *thread,
+static inline void cmdq_bdg_thread_set_pc(struct cmdq_thread *thread,
 	const phys_addr_t val)
 {
 	cmdq_bdg_thread_set_reg(thread, CMDQ_THR_PC, CMDQ_SET_ADDR(val));
 }
 
-static phys_addr_t inline cmdq_bdg_thread_get_end(struct cmdq_thread *thread)
+static inline phys_addr_t cmdq_bdg_thread_get_end(struct cmdq_thread *thread)
 {
 	return CMDQ_GET_ADDR(
 		cmdq_bdg_thread_get_reg(thread, CMDQ_THR_END_ADDR));
 }
 
-static void inline cmdq_bdg_thread_set_end(struct cmdq_thread *thread,
+static inline void cmdq_bdg_thread_set_end(struct cmdq_thread *thread,
 	const phys_addr_t val)
 {
 	cmdq_bdg_thread_set_reg(thread, CMDQ_THR_END_ADDR, CMDQ_SET_ADDR(val));

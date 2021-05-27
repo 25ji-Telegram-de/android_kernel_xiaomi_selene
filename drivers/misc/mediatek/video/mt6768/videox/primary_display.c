@@ -1654,6 +1654,10 @@ void _cmdq_start_trigger_loop(void)
 	int ret = 0;
 
 	ret = cmdqRecStartLoop(pgc->cmdq_handle_trigger);
+	if (ret < 0) {
+		DISPERR("%s cmdq start loop fail\n", __func__);
+		return;
+	}
 	if (!primary_display_is_video_mode()) {
 		if (need_wait_esd_eof()) {
 			/* Need set esd check eof synctoken to
@@ -1683,6 +1687,8 @@ void _cmdq_stop_trigger_loop(void)
 	 * trigger loop will never stop
 	 */
 	ret = cmdqRecStopLoop(pgc->cmdq_handle_trigger);
+	if (ret < 0)
+		DISPERR("%s cmdq stop loop fail\n", __func__);
 	DISPINFO("primary display STOP cmdq trigger loop finished\n");
 }
 
@@ -2041,10 +2047,8 @@ static int init_sec_buf(void)
 
 static int deinit_sec_buf(void)
 {
-	int ret  = 0;
-
 	if (sec_mva) {
-		ret  = sec_buf_ion_free();
+		sec_buf_ion_free();
 		sec_mva = 0;
 		/* DISPMSG("deinit_sec_mva 0x%x\n", sec_mva); */
 	}
@@ -3836,11 +3840,16 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 
 	DISPCHECK("%s begin lcm=%s, inited=%d\n",
 		__func__, lcm_name, is_lcm_inited);
-	
+
 	dprec_init();
 	dpmgr_init();
-	if (bdg_is_bdg_connected() == 1)
-		bdg_first_init();
+	if (bdg_is_bdg_connected() == 1) {
+		if (is_lcm_inited) {
+			bdg_first_init();
+			set_mt6382_init(1);
+		} else
+			set_mt6382_init(0);
+	}
 
 	init_cmdq_slots(&(pgc->ovl_config_time), 3, 0);
 	init_cmdq_slots(&(pgc->cur_config_fence),
@@ -4228,19 +4237,15 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 	disp_switch_data.state = DISP_ALIVE;
 	ret = switch_dev_register(&disp_switch_data);
 #endif
+
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
 	/*DynFPS*/
 	primary_display_init_multi_cfg_info();
 #endif
+
 	DISPCHECK("%s done\n", __func__);
 
 done:
-
-	if (is_lcm_inited)
-		set_mt6382_init(1);
-	else
-		set_mt6382_init(0);
-
 	DISPCHECK("init and hold wakelock...\n");
 	wakeup_source_init(&pri_wk_lock, "pri_disp_wakelock");
 	lock_primary_wake_lock(1);
@@ -4958,6 +4963,10 @@ static int check_switch_lcm_mode_for_debug(void)
 		return 0;
 
 	lcm_param_cv = disp_lcm_get_params(pgc->plcm);
+	if (lcm_param_cv == NULL) {
+		DISPERR("(%s)lcm_param_cv == NULL\n", __func__);
+		return 0;
+	}
 	DISPCHECK("lcm_mode_status=%d, lcm_param_cv->dsi.mode %d\n",
 		  lcm_mode_status, lcm_param_cv->dsi.mode);
 	if (lcm_param_cv->dsi.mode != CMD_MODE)
@@ -9020,7 +9029,6 @@ done:
 		}
 	}
 	return false;
-
 }
 
 static int Panel_Master_primary_display_config_dsi(const char *name,
@@ -10288,4 +10296,3 @@ void _primary_display_fps_change_callback(void)
 #endif
 /*-----------------DynFPS end-------------------------------*/
 #endif
-
