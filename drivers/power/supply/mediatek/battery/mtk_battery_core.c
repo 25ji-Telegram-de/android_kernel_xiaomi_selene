@@ -935,8 +935,6 @@ void fg_custom_init_from_dts(struct platform_device *dev)
 	fgauge_get_profile_id();
 	bat_id = gm.battery_id;
 	/*K19A HQ-134272 K19A charger of fguage by wangqi at 2021/5/20 start*/
-	if (bat_id == 1)
-		bat_id = 0;
 	if (bat_id > 3)
 		bat_id = 2;
 	/*K19A HQ-134272 K19A charger of fguage by wangqi at 2021/5/20 end*/
