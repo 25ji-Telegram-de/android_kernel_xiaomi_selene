@@ -407,6 +407,11 @@ static int mt_usb_get_property(struct power_supply *psy,
 		case  HVDCP_CHARGER:
 			val->intval = POWER_SUPPLY_TYPE_USB_HVDCP;
 			break;
+/* Huaqin add  for HQ-134476  by miaozhichao 2021/5/28 start */
+		case NONSTANDARD_CHARGER:
+			val->intval = POWER_SUPPLY_TYPE_USB_FLOAT;
+			break;
+/* Huaqin add  for HQ-134476  by miaozhichao 2021/5/28 end */
 		default:
 			val->intval = POWER_SUPPLY_TYPE_UNKNOWN;
 			break;

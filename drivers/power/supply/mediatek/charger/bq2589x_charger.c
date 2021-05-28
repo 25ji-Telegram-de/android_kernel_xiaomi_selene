@@ -108,6 +108,9 @@ struct bq2589x {
 extern enum hvdcp_status hvdcp_type_tmp;
 /* Huaqin modify for WXYFB-592 by miaozhichao at 2021/3/29 end */
 static int g_charger_type = 0;
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 start */
+static int charger_detect_count = 3;
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 end */
 int get_charger_type()
 {
 	return g_charger_type;
@@ -918,16 +921,10 @@ static int bq2589x_inform_charger_type(struct bq2589x *bq)
 /*K19A WXYFB-996 K19A charger by wangchao at 2021/4/22 start*/
 static int bq2589x_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 {
-	int ret;
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
-
-	ret = bq2589x_get_charger_type(bq, &bq->chg_type);
-	if (!ret)
-		bq2589x_inform_charger_type(bq);
-
-	bq2589x_force_dpdm(bq);
-
-	pr_err("end,bq->chg_type = %d\n",bq->chg_type);
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 start */
+	schedule_delayed_work(&bq->read_byte_work, msecs_to_jiffies(600));
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 end */
 	return 0;
 }
 /*K19A WXYFB-996 K19A charger by wangchao at 2021/4/22 end*/
@@ -948,27 +945,42 @@ static void bq2589x_read_byte_work(struct work_struct *work)
 	prev_chg_type = bq->chg_type;
 	ret = bq2589x_get_charger_type(bq, &bq->chg_type);
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/27 start */
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 start */
+	ret = bq2589x_read_byte(bq, BQ2589X_REG_0B, &reg_val);
+	vbus_stat = (reg_val & BQ2589X_VBUS_STAT_MASK);
+	vbus_stat >>= BQ2589X_VBUS_STAT_SHIFT;
+	ret = bq2589x_read_byte(bq, BQ2589X_REG_11, &reg_val);
+	vbus_gd = (reg_val & BQ2589X_VBUS_GD_MASK);
+	vbus_gd >>= BQ2589X_VBUS_GD_SHIFT;
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 end */
 	ret = bq2589x_read_byte(bq,BQ2589X_REG_14,&reg_val);
 	id_dis = (reg_val & BQ2589X_PN_MASK);
 	id_dis >>= BQ2589X_PN_SHIFT;
 	pr_err(" bq2589x:id_dis:%d",id_dis);
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 start */
 	if(id_dis == 3){
-		bq2589x_inform_charger_type(bq);
-		ret = bq2589x_read_byte(bq, BQ2589X_REG_0B, &reg_val);
-		vbus_stat = (reg_val & BQ2589X_VBUS_STAT_MASK);
-		vbus_stat >>= BQ2589X_VBUS_STAT_SHIFT;
-		ret = bq2589x_read_byte(bq, BQ2589X_REG_11, &reg_val);
-		vbus_gd = (reg_val & BQ2589X_VBUS_GD_MASK);
-		vbus_gd >>= BQ2589X_VBUS_GD_SHIFT;
-		if(vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_DCP) {
-			pr_err("bq2589x:enable hvdcp\n");
-			ret = bq2589x_enable_hvdcp(bq);
+		if(charger_detect_count > 0){
+			if(vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_DCP) {
+				pr_err("bq2589x:enable hvdcp\n");
+				ret = bq2589x_enable_hvdcp(bq);
+				bq2589x_force_dpdm(bq);
+			}else if(vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_HVDCP ) {
+				ret = bq2589x_disable_hvdcp(bq);
+				pr_err("bq2589x:reset\n");
+			}else if(vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_SDP ) {
+				pr_err("foce dpdm ti\n");
+				bq2589x_force_dpdm(bq);
+			} 
+			charger_detect_count --;
+			pr_err("charger_detect_count:%d\n",charger_detect_count);
+		}
+	}else{
+		if(vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_SDP ){
 			bq2589x_force_dpdm(bq);
-		}else if(vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_HVDCP ) {
-			ret = bq2589x_disable_hvdcp(bq);
-			pr_err("bq2589x:reset\n");
+			pr_err("foce dpdm silergy\n");
 		}
 	}
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 end */
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/27 end */
 	if (prev_chg_type != bq->chg_type && bq->chg_det_enable)
 		bq2589x_inform_charger_type(bq);
@@ -989,12 +1001,18 @@ static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 	bq->power_good = !!(reg_val & BQ2589X_PG_STAT_MASK);
 
 /* Huaqin modify for WXYFB-592 by miaozhichao at 2021/3/29 start */
-	if (!prev_pg && bq->power_good)
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 start */
+	if (!prev_pg && bq->power_good) {
 		pr_err("adapter/usb inserted\n");
-	else if (prev_pg && !bq->power_good){
+		charger_detect_count = 3;
+	}else if (prev_pg && !bq->power_good){
 		hvdcp_type_tmp = HVDCP_NULL;
+		charger_detect_count = 0;
 		pr_err("adapter/usb removed\n");
+	}else{
+		pr_err("prev_pg = %d  bq->power_good = %d\n",prev_pg,bq->power_good);
 	}
+/* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 end */
 /* Huaqin modify for WXYFB-592 by miaozhichao at 2021/3/29 end */
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 start */
 	schedule_delayed_work(&bq->read_byte_work, msecs_to_jiffies(600));
