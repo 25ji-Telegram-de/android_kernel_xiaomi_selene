@@ -1002,6 +1002,9 @@ static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 	int ret;
 	u8 reg_val;
 	bool prev_pg;
+/* Huaqin add for K19A-309 by wangchao at 2021/5/29 start */
+	enum charger_type prev_chg_type;
+/* Huaqin add for K19A-309 by wangchao at 2021/5/29 end */
 	struct bq2589x *bq = data;
 	ret = bq2589x_read_byte(bq, BQ2589X_REG_0B, &reg_val);
 	if (ret)
@@ -1025,6 +1028,12 @@ static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 	}
 /* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 end */
 /* Huaqin modify for WXYFB-592 by miaozhichao at 2021/3/29 end */
+/* Huaqin add for K19A-309 by wangchao at 2021/5/29 start */
+	prev_chg_type = bq->chg_type;
+	ret = bq2589x_get_charger_type(bq, &bq->chg_type);
+	if (!ret &&prev_chg_type != bq->chg_type)
+		bq2589x_inform_charger_type(bq);
+/* Huaqin add for K19A-309 by wangchao at 2021/5/29 end */
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 start */
 	schedule_delayed_work(&bq->read_byte_work, msecs_to_jiffies(600));
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/6 end */
