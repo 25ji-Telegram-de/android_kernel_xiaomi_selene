@@ -1306,8 +1306,17 @@ static int spi_init_queue(struct spi_controller *ctlr)
 	ctlr->busy = false;
 
 	kthread_init_worker(&ctlr->kworker);
-	ctlr->kworker_task = kthread_run(kthread_worker_fn, &ctlr->kworker,
-					 "%s", dev_name(&ctlr->dev));
+	/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/03 start */
+	/*ctlr->kworker_task = kthread_run(kthread_worker_fn, &ctlr->kworker,
+					 "%s", dev_name(&ctlr->dev));*/
+	ctlr->kworker_task = kthread_create_on_cpu(kthread_worker_fn, &ctlr->kworker,
+					6, dev_name(&ctlr->dev));
+	kthread_bind(ctlr->kworker_task, 6);
+	if (!IS_ERR(ctlr->kworker_task)) {
+		wake_up_process(ctlr->kworker_task);
+	}
+	/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/03 end */
+
 	if (IS_ERR(ctlr->kworker_task)) {
 		dev_err(&ctlr->dev, "failed to create message pump task\n");
 		return PTR_ERR(ctlr->kworker_task);

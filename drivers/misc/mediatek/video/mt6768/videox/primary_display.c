@@ -109,6 +109,32 @@
 
 #define FRM_UPDATE_SEQ_CACHE_NUM (DISP_INTERNAL_BUFFER_COUNT+1)
 
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+#define _SUPPORT_LCM_BOOST_
+#define SWITCH_FPS_IN_WORKQUEUE
+
+#ifdef _SUPPORT_LCM_BOOST_
+#include "mtk_ppm_api.h"
+#include "cpu_ctrl.h"
+#include <linux/pm_qos.h>
+#include "helio-dvfsrc-opp.h"
+#include "mtk_boot_common.h"
+
+#define BSP_CERVINO_CLUSTER_NUMBERS 2
+
+static struct ppm_limit_data fb_blank_freq_to_set[BSP_CERVINO_CLUSTER_NUMBERS];
+static struct ppm_limit_data fb_blank_freq_to_release[BSP_CERVINO_CLUSTER_NUMBERS];
+static struct pm_qos_request fb_blank_ddr_req;
+static int fb_boost_start(void);
+static int fb_boost_release(void);
+#endif
+
+#ifdef SWITCH_FPS_IN_WORKQUEUE
+static struct work_struct sWork;
+static struct workqueue_struct *fb_resume_workqueue;
+#endif
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
+
 static struct disp_internal_buffer_info
 	*decouple_buffer_info[DISP_INTERNAL_BUFFER_COUNT];
 static struct RDMA_CONFIG_STRUCT decouple_rdma_config;
@@ -255,6 +281,84 @@ void lock_primary_wake_lock(bool lock)
 	}
 
 }
+
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+#ifdef _SUPPORT_LCM_BOOST_
+static int fb_boost_start(void)
+{
+	int i, cluster_num;
+
+	cluster_num = arch_get_nr_clusters();
+	if(cluster_num > BSP_CERVINO_CLUSTER_NUMBERS)
+		cluster_num = BSP_CERVINO_CLUSTER_NUMBERS;
+
+	pm_qos_update_request(&fb_blank_ddr_req, DDR_OPP_0);
+
+	for (i = 0; i < BSP_CERVINO_CLUSTER_NUMBERS; i++) {
+		fb_blank_freq_to_set[i].min = 2001000;
+		fb_blank_freq_to_set[i].max = -1;
+	}
+
+	if(cluster_num > 0){
+		update_userlimit_cpu_freq(CPU_KIR_BOOT, cluster_num, fb_blank_freq_to_set);
+		return 0;
+	}
+
+	return -1;
+}
+
+static int fb_boost_release(void)
+{
+	int i,cluster_num;
+
+	cluster_num = arch_get_nr_clusters();
+	if(cluster_num > BSP_CERVINO_CLUSTER_NUMBERS)
+		cluster_num = BSP_CERVINO_CLUSTER_NUMBERS;
+
+	pm_qos_update_request(&fb_blank_ddr_req, DDR_OPP_UNREQ);
+
+	for (i = 0; i < BSP_CERVINO_CLUSTER_NUMBERS; i++) {
+		fb_blank_freq_to_release[i].min = -1;
+		fb_blank_freq_to_release[i].max = -1;
+	}
+
+	if(cluster_num > 0){
+		update_userlimit_cpu_freq(CPU_KIR_BOOT, cluster_num, fb_blank_freq_to_release);
+		return 0;
+	}
+
+	return -1;
+}
+#endif
+
+#ifdef SWITCH_FPS_IN_WORKQUEUE
+static void fb_resume_func(struct work_struct *work)
+{
+	DISPMSG("Enter %s", __func__);
+#ifdef CONFIG_MTK_KERNEL_POWER_OFF_CHARGING
+	if (get_boot_mode() == KERNEL_POWER_OFF_CHARGING_BOOT
+		|| get_boot_mode() == LOW_POWER_OFF_CHARGING_BOOT) {
+		DISPMSG("power off charging mode, skip switch fps!");
+		return;
+	}
+#endif
+	if (primary_display_is_support_DynFPS()) {
+		int last_cfg = primary_display_get_current_cfg_id();
+
+		DISPMSG("DynFPS. switch fps in fb_resume_func");
+
+		/* easy way to force change fps */
+		primary_display_update_cfg_id(!last_cfg);
+		primary_display_dynfps_chg_fps(last_cfg);
+	}
+}
+
+void fb_resume_queue_work(void)
+{
+	queue_work(fb_resume_workqueue, &sWork);
+}
+#endif
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
 
 static int smart_ovl_try_switch_mode_nolock(void);
 
@@ -4009,6 +4113,19 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 	init_decouple_buffer_thread =
 		kthread_run(_init_decouple_buffers_thread,
 			NULL, "init_decouple_buffer");
+
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+#ifdef SWITCH_FPS_IN_WORKQUEUE
+	INIT_WORK(&sWork, fb_resume_func);
+	fb_resume_workqueue = create_workqueue("fb_resume_wq");
+	if (fb_resume_workqueue == NULL) {
+		DISPERR("Failed to create fb_resume_workqueue!!!");
+		ret = DISP_STATUS_ERROR;
+		goto done;
+	}
+#endif
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
+
 	if (IS_ERR(init_decouple_buffer_thread))
 		DISPERR("kthread_run init_decouple_buffer_thread err = %d",
 			IS_ERR(init_decouple_buffer_thread));
@@ -4727,6 +4844,10 @@ int primary_display_suspend(void)
 #endif
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
 
+#ifdef _SUPPORT_LCM_BOOST_
+	fb_boost_start();
+#endif
+
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_suspend,
 		MMPROFILE_FLAG_START, 0, 0);
 	primary_display_idlemgr_kick(__func__, 1);
@@ -4935,6 +5056,10 @@ done:
 		HRT_LEVEL_DEFAULT);
 #endif
 
+#ifdef _SUPPORT_LCM_BOOST_
+	fb_boost_release();
+#endif
+
 	return ret;
 }
 
@@ -5029,6 +5154,7 @@ int primary_display_lcm_power_on_state(int alive)
 	return skip_update;
 }
 
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/03 start */
 int primary_display_resume(void)
 {
 	enum DISP_STATUS ret = DISP_STATUS_OK;
@@ -5040,12 +5166,17 @@ int primary_display_resume(void)
 	unsigned int in_fps = 60;
 	unsigned int out_fps = 60;
 #endif
-	DISPCHECK("primary_display_resume begin\n");
+	DISPCHECK("%s begin\n", __func__);
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
 	atomic_set(&lcm_valid_irq, 1);
 #endif
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
+
+#ifdef _SUPPORT_LCM_BOOST_
+	fb_boost_start();
+#endif
+
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_START, 0, 0);
 	_primary_path_lock(__func__);
@@ -5057,6 +5188,7 @@ int primary_display_resume(void)
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_PULSE, 0, 1);
 
+	DISPCHECK("%s: primary_display_request_dvfs_perf begin\n", __func__);
 #ifdef MTK_FB_MMDVFS_SUPPORT
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
 	/* for suspend/doze_suspend->doze/resume 90hz*/
@@ -5064,7 +5196,9 @@ int primary_display_resume(void)
 					0, HRT_LEVEL_LEVEL0);
 #endif
 #endif
+	DISPCHECK("%s: primary_display_request_dvfs_perf end\n", __func__);
 
+	DISPCHECK("%s: is_ipoh_bootup begin\n", __func__);
 	if (is_ipoh_bootup) {
 		DISPCHECK(
 			"[primary display path] leave %s -- IPOH\n", __func__);
@@ -5081,6 +5215,7 @@ int primary_display_resume(void)
 		/* pgc->state = DISP_ALIVE; */
 		goto done;
 	}
+	DISPCHECK("%s: is_ipoh_bootup end\n", __func__);
 
 	if (disp_helper_get_option(DISP_OPT_CV_BYSUSPEND)) {
 		int dsi_force_config = 0;
@@ -5090,11 +5225,13 @@ int primary_display_resume(void)
 			DSI_ForceConfig(1);
 	}
 
+	DISPCHECK("%s: bdg_common_init begin\n", __func__);
 	if (bdg_is_bdg_connected() == 1) {
 		data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
 		bdg_common_init(DISP_BDG_DSI0, data_config, NULL);
 		mipi_dsi_rx_mac_init(DISP_BDG_DSI0, data_config, NULL);
 	}
+	DISPCHECK("%s: bdg_common_init end\n", __func__);
  
 
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
@@ -5256,10 +5393,12 @@ int primary_display_resume(void)
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_PULSE, 0, 5);
 
+	DISPCHECK("%s: bdg set mode. begin\n", __func__);
 	if (bdg_is_bdg_connected() == 1 && get_mt6382_init()) {
 		bdg_tx_set_mode(DISP_BDG_DSI0, NULL, get_bdg_tx_mode());
 		bdg_tx_start(DISP_BDG_DSI0, NULL);
 	}
+	DISPCHECK("%s: bdg set mode. end\n", __func__);
 /* SW workaround.
  * Enable polling RDMA output line isn't 0 && RDMA status is run,
  * before path resume.
@@ -5365,6 +5504,7 @@ int primary_display_resume(void)
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_PULSE, 0, 11);
 
+	DISPCHECK("update bandwidth. begin\n");
 #ifdef MTK_FB_MMDVFS_SUPPORT
 	/* update bandwidth */
 	disp_get_ovl_bandwidth(in_fps, out_fps, &bandwidth);
@@ -5376,7 +5516,7 @@ int primary_display_resume(void)
 			MMPROFILE_FLAG_END,
 			!primary_display_is_decouple_mode(), bandwidth);
 #endif
-
+	DISPCHECK("update bandwidth. end\n");
 	/*
 	 * (in suspend) when we stop trigger loop
 	 * if no other thread is running, cmdq may disable its clock
@@ -5405,7 +5545,11 @@ int primary_display_resume(void)
 		}
 	}
 
+	DISPCHECK("DynFPS. begin\n");
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
+#ifdef SWITCH_FPS_IN_WORKQUEUE
+	fb_resume_queue_work();
+#else
 	/*DynFPS*/
 	/*check whether need change fps according cfg*/
 	if (primary_display_is_support_DynFPS()) {
@@ -5416,12 +5560,15 @@ int primary_display_resume(void)
 		primary_display_dynfps_chg_fps(last_cfg);
 	}
 #endif
+#endif
+	DISPCHECK("DynFPS. end\n");
 done:
 	primary_set_state(DISP_ALIVE);
 #if 0 //def CONFIG_TRUSTONIC_TRUSTED_UI
 	switch_set_state(&disp_switch_data, DISP_ALIVE);
 #endif
 
+	DISPCHECK("done. begin\n");
 	/* need enter share sram for resume */
 	if (disp_helper_get_option(DISP_OPT_SHARE_SRAM))
 		enter_share_sram(CMDQ_SYNC_RESOURCE_WROT1);
@@ -5450,8 +5597,15 @@ done:
 	DISPERR("[ESD] atomic_set(&lcm_ready, 1)\n");
 #endif
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
+
+#ifdef _SUPPORT_LCM_BOOST_
+	fb_boost_release();
+#endif
+
+	DISPCHECK("%s: done. end\n", __func__);
 	return ret;
 }
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/03 end */
 
 int primary_display_aod_backlight(int level)
 {

@@ -987,6 +987,12 @@ KBUILD_CFLAGS += -DFACTORY_VERSION_ENABLE
 endif
 # =============FACTORY==================================
 
+# Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start
+ifeq ($(strip ENABLE_MIUI_DEBUGGING), true)
+KBUILD_CFLAGS += -DENABLE_MIUI_DEBUGGING
+endif
+# Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end
+
 # =============PROJECT==================================
 # Add macros by TARGET_PRODUCT for different projects
 ifeq ($(strip $(TARGET_PRODUCT)) , lancelot)

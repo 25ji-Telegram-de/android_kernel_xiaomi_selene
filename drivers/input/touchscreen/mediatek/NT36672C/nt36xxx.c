@@ -42,6 +42,10 @@
 #include "../xiaomi/xiaomi_touch.h"
 #endif
 
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+#include "mtk_boot_common.h"
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
+
 #include "nt36xxx.h"
 #if NVT_TOUCH_ESD_PROTECT
 #include <linux/jiffies.h>
@@ -1965,6 +1969,17 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		ret = -ENOMEM;
 		goto err_malloc_rbuf;
 	}
+
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+#ifdef CONFIG_MTK_KERNEL_POWER_OFF_CHARGING
+	if (get_boot_mode() == KERNEL_POWER_OFF_CHARGING_BOOT
+		||get_boot_mode() == LOW_POWER_OFF_CHARGING_BOOT) {
+		NVT_ERR("power off charging mode, skip load tp driver!\n");
+		return -EXDEV;
+	}
+#endif
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
+
 	#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
 	memset(&xiaomi_touch_interfaces, 0x00, sizeof(struct xiaomi_touch_interface));
 	xiaomi_touch_interfaces.palm_sensor_write = nvt_palm_sensor_write;
