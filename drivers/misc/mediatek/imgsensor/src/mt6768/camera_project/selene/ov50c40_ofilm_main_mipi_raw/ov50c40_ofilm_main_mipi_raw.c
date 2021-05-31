@@ -560,6 +560,9 @@ static void set_shutter(kal_uint64 shutter)
 	imgsensor.shutter = shutter;
 	spin_unlock_irqrestore(&imgsensor_drv_lock, flags);
 	write_shutter(shutter);
+
+	LOG_INF("set_shutter 50c_ov  read_cmos_sensor 3840 == %d, 380e == %d, 380f == %d, 3500 == %d, 3501 == %d, 3502 == %d",
+	read_cmos_sensor(0x3840),read_cmos_sensor(0x380e),read_cmos_sensor(0x380f),read_cmos_sensor(0x3500),read_cmos_sensor(0x3501),read_cmos_sensor(0x3502));
 }
 static kal_uint32 streaming_control(kal_bool enable)
 {
