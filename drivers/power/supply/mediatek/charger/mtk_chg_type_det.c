@@ -349,7 +349,9 @@ static int mt_usb_get_property(struct power_supply *psy,
 	enum power_supply_property psp, union power_supply_propval *val)
 {
 	struct mt_charger *mtk_chg = power_supply_get_drvdata(psy);
-	//struct tcpc_device *tcpc = tcpc_dev_get_by_name("type_c_port0");
+	/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
+	struct tcpc_device *tcpc = tcpc_dev_get_by_name("type_c_port0");
+	/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 	int typec_mode = 0;
 	switch (psp) {
 	case POWER_SUPPLY_PROP_ONLINE:
@@ -379,7 +381,14 @@ static int mt_usb_get_property(struct power_supply *psy,
 			val->intval = 0;
 		break;
 	case POWER_SUPPLY_PROP_TYPEC_MODE:
-		typec_mode == 0;
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
+		if (tcpc && tcpc->ops ) {
+			tcpc->ops->get_mode(tcpc, &typec_mode);
+			pr_err("dev %s get mode =  %d\n",tcpc->desc.name,typec_mode);
+		} else {
+			pr_err("tcpc or tcpc->ops is NULL\n");
+		}
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 		val->intval = typec_mode;
 		break;
 	case POWER_SUPPLY_PROP_TYPEC_CC_ORIENTATION:

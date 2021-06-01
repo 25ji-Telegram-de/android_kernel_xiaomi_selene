@@ -81,10 +81,17 @@ static const char * const power_supply_scope_text[] = {
 	"Unknown", "System", "Device"
 };
 
+/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
 static const char * const typec_text[] = {
-		"Nothing attached", "Source attached",
-		"Sink attached",
+		"Nothing attached", "Sink attached", "Powered cable w/ sink",
+		"Debug Accessory", "Audio Adapter", "Powered cable w/o sink",
+		"Source attached (default current)",
+		"Source attached (medium current)",
+		"Source attached (high current)",
+		"Non compliant",
 };
+/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
+
 static ssize_t power_supply_show_property(struct device *dev,
 					  struct device_attribute *attr,
 					  char *buf) {

@@ -231,6 +231,9 @@ static int test_cc_patch(struct wusb3801_chip *chip)
 	if (ret & WUSB3801_FORCE_ERR_RCY_MASK) {
 		pr_err("wusb3801 [%s]enter error recovery :0x%x\n", __func__, ret);
 		wusb3801_i2c_write8(chip->tcpc, WUSB3801_REG_TEST_02, 0x00);
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
+		wusb3801_i2c_write8(chip->tcpc, WUSB3801_REG_TEST_09, 0x00);
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 	}
     return BITS_GET(rc, 0x40);
 }
@@ -314,6 +317,7 @@ static void wusb3801_irq_work_handler(struct kthread_work *work)
 	}
 	typec_cc_orientation = BITS_GET(rc, WUSB3801_CC_STS_MASK);
 #endif	/* __TEST_CC_PATCH__ */
+	pr_err("%s:  type = %d \n",__func__, type);
 	switch (type) {
 	case WUSB3801_TYPE_SNK:
 		/*if ( tcpc->typec_role != TYPEC_ROLE_SRC) {
@@ -415,6 +419,9 @@ static int wusb3801_init_alert(struct tcpc_device *tcpc)
 	if (ret & WUSB3801_FORCE_ERR_RCY_MASK) {
 		pr_err("wusb3801 [%s]enter error recovery :0x%x\n", __func__, ret);
 		wusb3801_i2c_write8(chip->tcpc, WUSB3801_REG_TEST_02, 0x00);
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
+		wusb3801_i2c_write8(chip->tcpc, WUSB3801_REG_TEST_09, 0x00);
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 	}
 	/*K19A-108 mdify by wangchao at 2021/4/12 start*/
 	ret = request_irq(chip->irq, wusb3801_intr_handler,
@@ -528,21 +535,39 @@ static int wusb3801_tcpc_get_mode(struct tcpc_device *tcpc, int *typec_mode)
 	status = (rc & WUSB3801_ATTACH) ? true : false;
 	type = status ? \
 			rc & WUSB3801_TYPE_MASK : WUSB3801_TYPE_INVALID;
-	pr_info("sts[0x%02x], type[0x%02x]\n", status, type);
-
+	pr_err(" sts[0x%02x], type[0x%02x]\n", status, type);
+	/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
 	switch (type) {
 	case WUSB3801_TYPE_SNK:
-		*typec_mode = 2;
+		*typec_mode = AUDIO_ADAPTER;
 		break;
 	case WUSB3801_TYPE_SRC:
-		*typec_mode = 1;
+		*typec_mode = SINK_ATTACHED;
+		break;
+	case WUSB3801_TYPE_DBG_ACC:
+		*typec_mode = DEBUG_ACCESSORY;
+		break;
+	case WUSB3801_TYPE_AUD_ACC:
+		*typec_mode = WUSB3801_TYPE_AUD_ACC;
+		break;
+	case WUSB3801_SNK_DEFAULT:
+		*typec_mode = SOURCE_ATTACHED_DEFAULT_CURRENT;
+		break;
+	case WUSB3801_SNK_1500MA:
+		*typec_mode = SOURCE_ATTACHED_MEDIUM_CURRENT;
+		break;
+	case WUSB3801_SNK_3000MA:
+		*typec_mode = SOURCE_ATTACHED_HIGH_CURRENT;
+		break;
+	case WUSB3801_TYPE_INVALID:
+		*typec_mode = WUSB3801_TYPE_INVALID;
 		break;
 	default:
 		*typec_mode = 0;
 		break;
 	}
-	pr_err("%s: wusb3801 type[0x%02x]\n", __func__, type);
-
+	pr_err("%s: wusb3801 type[0x%02x] typec_mode=%d\n", __func__, type,*typec_mode);
+	/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 	return 0;
 }
 
@@ -951,7 +976,6 @@ static int wusb3801_i2c_probe(struct i2c_client *client,
 	int i, rc;
 	bool use_dt = client->dev.of_node;
 
-	pr_err("ljj124 %s\n", __func__);
 	if (i2c_check_functionality(client->adapter,
 			I2C_FUNC_SMBUS_I2C_BLOCK | I2C_FUNC_SMBUS_BYTE_DATA))
 		pr_info("I2C functionality : OK...\n");

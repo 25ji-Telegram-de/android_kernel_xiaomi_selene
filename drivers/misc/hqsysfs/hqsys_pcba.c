@@ -28,7 +28,9 @@ PCBA_CONFIG huaqin_pcba_config = PCBA_UNKNOW;
 //extern char *saved_command_line;
 extern int IMM_GetOneChannelValue(int dwChannel, int data[4], int *rawdata);
 static bool read_pcba_config(void);
-
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+int hq_selene_pcba_config;
+/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
 typedef struct {
 	int voltage_min;
 	int voltage_max;
@@ -83,11 +85,6 @@ static board_id_map_t PCBA_DETECT_POCO_GLOBAL[] = {
 static int selene_pcba_config;
 static int selene_pcba_stage;
 static int selene_pcba_count;
-/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
-int hq_selene_pcba_config;
-/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
-
-
 
 #else
 static const board_id_map_t board_id_map[] = {

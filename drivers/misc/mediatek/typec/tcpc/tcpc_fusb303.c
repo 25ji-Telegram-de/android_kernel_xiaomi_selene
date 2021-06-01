@@ -27,6 +27,9 @@
 #include <linux/delay.h>
 #include <linux/workqueue.h>
 #include "inc/tcpci.h"
+/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
+#include "inc/wusb3801.h"
+/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 #ifdef HAVE_DR
 #include <linux/usb/class-dual-role.h>
 #endif /* HAVE_DR */
@@ -416,6 +419,8 @@ static int fusb303_set_mode(struct fusb303_chip *chip, u8 mode)
 {
 	struct device *cdev = &chip->client->dev;
 	int rc = 0;
+
+	dev_err(cdev, "%s: mode=0x%02x\n", __func__, mode);
 	if (mode != chip->mode) {
 		rc = i2c_smbus_write_byte_data(chip->client,
 				FUSB303_REG_PORTROLE, mode);
@@ -1807,9 +1812,8 @@ static void fusb303_attach(struct fusb303_chip *chip)
 
 	type = (status & FUSB303_ATTACH) ?
 		(rc & FUSB303_TYPE_MASK) : FUSB303_TYPE_INVALID;
-	dev_info(cdev, "%s: status=0x%02x, status1=0x%02x, type=0x%02x\n",
-			__func__, status, status1, type);
-
+	dev_info(cdev, "%s: rc=0x%02x,status=0x%02x, status1=0x%02x, type=0x%02x\n",
+			__func__, rc,status, status1, type);
 	switch (type) {
 	case FUSB303_TYPE_SRC:
 	case FUSB303_TYPE_SRC_ACC:
@@ -2280,6 +2284,9 @@ int fusb303_get_mode(struct tcpc_device *tcpc, int *typec_mode)
 	struct device *cdev = &g_client->dev;
 	int rc;
 	u8 type;
+/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
+	u8 status;
+/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 
 
 	rc = i2c_smbus_read_byte_data(g_client,
@@ -2291,23 +2298,59 @@ int fusb303_get_mode(struct tcpc_device *tcpc, int *typec_mode)
 	}
 
 	type = rc & FUSB303_TYPE_MASK;
-
+	/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
 	switch (type) {
 	case FUSB303_TYPE_SRC:
+		*typec_mode = AUDIO_ADAPTER;
+		break;
 	case FUSB303_TYPE_SRC_ACC:
+		break;
 	case FUSB303_TYPE_DBG_ACC_SRC:
-		*typec_mode = 2;
+		*typec_mode = DEBUG_ACCESSORY;
 		break;
 	case FUSB303_TYPE_SNK:
+		*typec_mode = SINK_ATTACHED;
+		break;
 	case FUSB303_TYPE_DBG_ACC_SNK:
-		*typec_mode = 1;
+		*typec_mode = DEBUG_ACCESSORY;
+		break;
+	case FUSB303_TYPE_ACTV_CABLE:
+		*typec_mode = POWERED_CABLE_W_O_SINK;
 		break;
 	default:
 		*typec_mode = 0;
 		dev_err(cdev, "%s: Invaild type[0x%02x]\n", __func__, type);
 		break;
 	}
+	if(*typec_mode == 0) {
+		rc = i2c_smbus_read_byte_data(g_client,
+		FUSB303_REG_STATUS );
+		if (rc < 0) {
+			*typec_mode = 0;
+			dev_err(cdev, "%s: failed to read status\n", __func__);
+			return 0;
+		}
+		pr_err("%s: status reg [0x%02x]\n", __func__, rc);
+		status = rc & FUSB303_BCLVL_MASK;
+		pr_err("%s: status = %d \n", __func__, status);
+		switch (status*2) {
+		case FUSB303_SNK_DEFAULT:
+			*typec_mode = SOURCE_ATTACHED_DEFAULT_CURRENT;
+			break;
+		case FUSB303_SNK_1500MA:
+			*typec_mode = SOURCE_ATTACHED_MEDIUM_CURRENT;
+			break;
+		case FUSB303_SNK_3000MA:
+			*typec_mode = SOURCE_ATTACHED_HIGH_CURRENT;
+			break;
+		default:
+			*typec_mode = 0;
+			dev_err(cdev, "%s: Invaild status[0x%02x]\n", __func__, status);
+			break;
+		}
+	}
 	pr_err("dhx---fusb303 get typec mode type:%d, reg:%x\n", *typec_mode, type);
+	/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 	return 0;
 
 }
