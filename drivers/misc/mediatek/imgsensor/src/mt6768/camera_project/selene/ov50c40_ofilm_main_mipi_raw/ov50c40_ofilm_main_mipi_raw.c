@@ -62,7 +62,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 	.pre = {
 		.pclk = 100000000,
 		.linelength = 1050,
-		.framelength = 3174,
+		.framelength = 3175,
 		.startx = 0,
 		.starty = 0,
 		.grabwindow_width = 4096,
@@ -147,14 +147,14 @@ static struct imgsensor_info_struct imgsensor_info = {
 	.custom2 = {
 		.pclk = 100000000,
 		.linelength = 1050,
-		.framelength = 3174,
+		.framelength = 3175,
 		.startx = 0,
 		.starty = 0,
 		.grabwindow_width = 4096,
 		.grabwindow_height = 3072,
 		.mipi_data_lp2hs_settle_dc = 85,	//unit(ns), 16/23/65/85 recommanded
 		.mipi_pixel_rate = 768000000,
-		.max_framerate = 300,
+		.max_framerate = 299,
 		},
 
 	.margin = 0x16,
@@ -2123,7 +2123,7 @@ kal_uint16 addr_data_pair_preview_OV50C40[] = {
 	0x380c, 0x04,
 	0x380d, 0x1a,
 	0x380e, 0x0c,
-	0x380f, 0x66,
+	0x380f, 0x67,
 	0x3811, 0x08,
 	0x3814, 0x11,
 	0x3815, 0x11,
@@ -5117,7 +5117,7 @@ kal_uint16 addr_data_pair_custom2_OV50C40_ofilm[] = {
 	0x380c, 0x04,
 	0x380d, 0x1a,
 	0x380e, 0x0c,
-	0x380f, 0x66,
+	0x380f, 0x67,
 	0x3811, 0x08,
 	0x3812, 0x00,
 	0x3813, 0x04,
