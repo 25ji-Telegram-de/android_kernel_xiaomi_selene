@@ -40,6 +40,10 @@
 #include <linux/platform_data/spi-mt65xx.h>
 #endif
 
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 start */
+#define TP_RESUME_EN 1
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 end */
+
 #define NVT_DEBUG 1
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - start*/
 #define NVT_LOCKDOWN 1

@@ -166,6 +166,29 @@ const struct mtk_chip_config spi_ctrdata = {
 
 uint8_t bTouchIsAwake;
 
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 start */
+static int32_t nvt_ts_resume(struct device *dev);
+
+#if TP_RESUME_EN
+
+#define TP_RESUME_WAIT_TIME             20
+static struct delayed_work nvt_resume_work;
+static struct workqueue_struct *nvt_resume_workqueue;
+
+static void nvt_resume_func(struct work_struct *work)
+{
+	NVT_LOG("Enter %s", __func__);
+	nvt_ts_resume(&ts->client->dev);
+}
+
+void nvt_resume_queue_work(void)
+{
+	cancel_delayed_work(&nvt_resume_work);
+	queue_delayed_work(nvt_resume_workqueue, &nvt_resume_work, msecs_to_jiffies(TP_RESUME_WAIT_TIME));
+}
+#endif
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 end */
+
 /*******************************************************
 Description:
 	Novatek touchscreen irq enable/disable function.
@@ -2144,6 +2167,18 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 			msecs_to_jiffies(NVT_TOUCH_ESD_CHECK_PERIOD));
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
 
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 start */
+#if TP_RESUME_EN
+	INIT_DELAYED_WORK(&nvt_resume_work, nvt_resume_func);
+	nvt_resume_workqueue = create_workqueue("nvt_resume_wq");
+	if (nvt_resume_workqueue == NULL) {
+		NVT_ERR("Failed to create nvt_resume_workqueue!!!");
+		ret = -ENOMEM;
+		goto err_nvt_resume_init_wq_failed;
+	}
+#endif
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 end */
+
 	//---set device node---
 #if NVT_TOUCH_PROC
 	ret = nvt_flash_proc_init();
@@ -2260,6 +2295,16 @@ err_lockdown_proc_init_failed:
 nvt_tp_selftest_proc_deinit();
 err_tp_selftest_proc_init_failed:
 #endif
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 start */
+#if TP_RESUME_EN
+if (nvt_resume_workqueue) {
+		cancel_delayed_work_sync(&nvt_resume_work);
+		destroy_workqueue(nvt_resume_workqueue);
+		nvt_resume_workqueue = NULL;
+	}
+err_nvt_resume_init_wq_failed:
+#endif
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 end */
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - end*/
 #if NVT_TOUCH_ESD_PROTECT
 	if (nvt_esd_check_wq) {
@@ -2795,7 +2840,13 @@ static int nvt_fb_notifier_callback(struct notifier_block *self, unsigned long e
 		blank = evdata->data;
 		if (*blank == FB_BLANK_UNBLANK) {
 			NVT_LOG("event=%lu, *blank=%d\n", event, *blank);
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 start */
+#ifdef TP_RESUME_EN
+			nvt_resume_queue_work();
+#else
 			nvt_ts_resume(&ts->client->dev);
+#endif
+/* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 end */
 		}
 	}
 
