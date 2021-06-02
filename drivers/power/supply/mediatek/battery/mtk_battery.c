@@ -397,8 +397,6 @@ static int bms_get_property(struct power_supply *psy,
 
 	int fgcurrent = 0;
 	bool b_ischarging = 0;
-	int qmax = 5020 * 1000;
-
 	switch (psp) {
 	case POWER_SUPPLY_PROP_CAPACITY:
 		val->intval = gm.ui_soc;
@@ -428,11 +426,11 @@ static int bms_get_property(struct power_supply *psy,
 		val->intval = gm.battery_id;
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL:
-		pr_err("mtk_qmax_agin:%d qmax:%d\n", mtk_qmax_aging, qmax);
-		if (mtk_qmax_aging < 50200)
-			qmax = mtk_qmax_aging * 100;
-		val->intval = qmax;
+/*K19A HQ-138551 K19A charger of charge_full by miaozhichao at 2021/6/2 start*/
+		pr_err("gm.algo_qmax:%d gm.aging_factor:%d\n", gm.algo_qmax, gm.aging_factor);
+		val->intval = gm.algo_qmax * gm.aging_factor / 100;
 		break;
+/*K19A HQ-138551 K19A charger of charge_full by miaozhichao at 2021/6/2 end*/
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 		val->intval = 5020000;
 		break;
@@ -528,7 +526,6 @@ static int battery_get_property(struct power_supply *psy,
 	int fgcurrent = 0;
 	bool b_ischarging = 0;
 	int input_suspend;
-	int qmax = 5020 * 1000;
 	u32 type;
 	static struct charger_device *primary_charger;
 	/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 start */
@@ -620,11 +617,11 @@ static int battery_get_property(struct power_supply *psy,
 		val->intval = battery_get_bat_avg_current() * 100;
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL:
-		pr_err("mtk_qmax_agin:%d qmax:%d\n", mtk_qmax_aging, qmax);
-		if (mtk_qmax_aging < 50200)
-			qmax = mtk_qmax_aging * 100;
-		val->intval = qmax;
+/*K19A HQ-138551 K19A charger of charge_full by miaozhichao at 2021/6/2 start*/
+		pr_err("gm.algo_qmax:%d gm.aging_factor:%d\n", gm.algo_qmax, gm.aging_factor);
+		val->intval = gm.algo_qmax * gm.aging_factor / 100;
 		break;
+/*K19A HQ-138551 K19A charger of charge_full by miaozhichao at 2021/6/2 end*/
 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
 		val->intval = gm.ui_soc * 5020 * 1000 / 100;
 		break;
