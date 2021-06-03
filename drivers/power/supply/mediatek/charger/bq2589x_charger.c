@@ -921,10 +921,21 @@ static int bq2589x_inform_charger_type(struct bq2589x *bq)
 /*K19A WXYFB-996 K19A charger by wangchao at 2021/4/22 start*/
 static int bq2589x_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 {
+/* Huaqin add for HQ-138817 by miaozhichao at 2021/6/3 start */
+	int ret;
+/* Huaqin add for HQ-138817 by miaozhichao at 2021/6/3 end*/
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
+/* Huaqin add for HQ-138817 by miaozhichao at 2021/6/3 start */
+	ret = bq2589x_get_charger_type(bq, &bq->chg_type);
+	if (!ret)
+		bq2589x_inform_charger_type(bq);
+/* Huaqin add for HQ-138817 by miaozhichao at 2021/6/3 end*/
 /* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 start */
 	schedule_delayed_work(&bq->read_byte_work, msecs_to_jiffies(600));
 /* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 end */
+/* Huaqin add for HQ-138817 by miaozhichao at 2021/6/3 start */
+	pr_err("end,bq->chg_type = %d\n",bq->chg_type);
+/* Huaqin add for HQ-138817 by miaozhichao at 2021/6/3 end*/
 	return 0;
 }
 /*K19A WXYFB-996 K19A charger by wangchao at 2021/4/22 end*/
