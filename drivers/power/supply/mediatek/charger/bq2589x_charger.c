@@ -1059,6 +1059,9 @@ static int bq2589x_register_interrupt(struct bq2589x *bq)
 
 	return 0;
 }
+/* Huaqin add for K19A-312 by wangchao at 2021/6/3 start */
+static void bq2589x_dump_regs(struct bq2589x *bq);
+/* Huaqin add for K19A-312 by wangchao at 2021/6/3 end */
 
 static int bq2589x_init_device(struct bq2589x *bq)
 {
@@ -1067,6 +1070,10 @@ static int bq2589x_init_device(struct bq2589x *bq)
 	int id_dis = 0;
 	u8 reg_val = 0;
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/27 end */
+/* Huaqin add for K19A-312 by wangchao at 2021/6/3 start */
+	pr_err("bq2589x_dump_regs before init: \n");
+	bq2589x_dump_regs(bq);
+/* Huaqin add for K19A-312 by wangchao at 2021/6/3 end */
 	bq2589x_disable_watchdog_timer(bq);
 	/*K19A HQ-133582 K19A charger time by wangqi at 2021/5/6 start*/
 	bq2589x_disable_safety_timer(bq);
@@ -1115,6 +1122,16 @@ static int bq2589x_init_device(struct bq2589x *bq)
 		pr_err("enable hvdcp,ret = %d\n",ret);
 	}
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/27 end */
+
+/* Huaqin add for K19A-312 by wangchao at 2021/6/3 start */
+	ret = bq2589x_exit_hiz_mode(bq);
+	if (ret)
+		pr_err("Failed to set exit_hiz_mode, ret = %d\n", ret);
+
+	pr_err("bq2589x_dump_regs after init: \n");
+	bq2589x_dump_regs(bq);
+/* Huaqin add for K19A-312 by wangchao at 2021/6/3 end */
+
 	return 0;
 }
 
