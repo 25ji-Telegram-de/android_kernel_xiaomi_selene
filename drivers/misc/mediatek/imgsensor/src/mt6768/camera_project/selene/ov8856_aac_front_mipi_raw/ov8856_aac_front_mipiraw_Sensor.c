@@ -38,14 +38,11 @@
 #include "ov8856_aac_front_mipiraw_Sensor.h"
 #include <linux/slab.h>
 
-#define PFX "OV8856"
+#define PFX "OV8856_AAC"
 
-//#define OV8856OTP
-
-//#define LOG_WRN(format, args...) xlog_printk(ANDROID_LOG_WARN ,PFX, "[%S] " format, __FUNCTION__, ##args)
-//#defineLOG_INF(format, args...) xlog_printk(ANDROID_LOG_INFO ,PFX, "[%s] " format, __FUNCTION__, ##args)
-//#define LOG_DBG(format, args...) xlog_printk(ANDROID_LOG_DEBUG ,PFX, "[%S] " format, __FUNCTION__, ##args)
-#define LOG_INF(format, args...)    pr_err(PFX "[%s] " format, __func__, ##args)
+#define LOG_DBG(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_INF(format, args...)    pr_info(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_ERR(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
 
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
@@ -207,7 +204,7 @@ static void write_cmos_sensor(kal_uint32 addr, kal_uint32 para)
 
 static void set_dummy(void)
 {
-	LOG_INF("dummyline = %d, dummypixels = %d\n", imgsensor.dummy_line, imgsensor.dummy_pixel);
+	LOG_DBG("dummyline = %d, dummypixels = %d\n", imgsensor.dummy_line, imgsensor.dummy_pixel);
 	/* you can set dummy by imgsensor.dummy_line and imgsensor.dummy_pixel, or you can set dummy by imgsensor.frame_length and imgsensor.line_length */
 	//write_cmos_sensor(0x0100, 0x00);
 	write_cmos_sensor(0x380e, imgsensor.frame_length >> 8);
@@ -234,7 +231,7 @@ static void set_max_framerate(UINT16 framerate, kal_bool min_framelength_en)
 	kal_uint32 frame_length = imgsensor.frame_length;
 	//unsigned long flags;
 
-	LOG_INF("framerate = %d, min framelength should be = %d?\n", framerate, min_framelength_en);
+	LOG_DBG("framerate = %d, min framelength should be = %d?\n", framerate, min_framelength_en);
 
 	frame_length = imgsensor.pclk / framerate * 10 / imgsensor.line_length;
 	spin_lock(&imgsensor_drv_lock);
@@ -410,7 +407,7 @@ static void set_shutter(kal_uint64 shutter)
 	write_cmos_sensor(0x3501, (shutter >> 4) & 0xFF);
 	write_cmos_sensor(0x3500, (shutter >> 12) & 0x0F);
 	//write_cmos_sensor(0x0100, 0x01);
-	LOG_INF("Exit! shutter =%d, framelength =%d, realtime_fps =%d \n", shutter, imgsensor.frame_length, realtime_fps);
+	LOG_DBG("Exit! shutter =%d, framelength =%d, realtime_fps =%d \n", shutter, imgsensor.frame_length, realtime_fps);
 	} else{
 		LOG_INF("ZT Enter Long Exposure shutter:%d ", shutter);
 		bNeedSetNormalMode = KAL_TRUE;
@@ -726,7 +723,6 @@ static kal_uint16 set_gain(kal_uint16 gain)
 {
 	kal_uint16 reg_gain;
 
-	LOG_INF("set_gain %d\n", gain);
 	if (gain < BASEGAIN || gain > 15.5 * BASEGAIN) {
 		LOG_INF("Error gain setting");
 
@@ -741,7 +737,7 @@ static kal_uint16 set_gain(kal_uint16 gain)
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.gain = reg_gain;
 	spin_unlock(&imgsensor_drv_lock);
-	LOG_INF("gain = %d , reg_gain = 0x%x\n ", gain, reg_gain);
+	LOG_DBG("gain = %d , reg_gain = 0x%x\n ", gain, reg_gain);
 
 	write_cmos_sensor(0x3508, (reg_gain>>8));
 	write_cmos_sensor(0x3509, (reg_gain&0xFF));
@@ -1300,193 +1296,6 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 	return ERROR_SENSOR_CONNECT_FAIL;
 }
 
-
-//#ifdef OV8856OTP
-#if 0
-
-struct otp_struct {
-int flag; // bit[7]: info, bit[6]:wb, bit[5]:vcm, bit[4]:lenc
-int module_integrator_id;
-int lens_id;
-int production_year;
-int production_month;
-int production_day;
-int rg_ratio;
-int bg_ratio;
-int lenc[240];
-int checksum;
-int VCM_start;
-int VCM_end;
-int VCM_dir;
-};
-//struct otp_struct otp_ptr;
-
-#define RG_Ratio_Typical   0x12F
-#define BG_Ratio_Typical   0x13F
-
-static int read_otp(struct otp_struct *otp_ptr)
-{
-	int otp_flag, addr, temp, i;
-	//set 0x5001[3] to ???0???\A1\EC?\A8\A8
-	int temp1;
-	int checksum2 = 0;
-
-	temp1 = read_cmos_sensor(0x5001);
-	write_cmos_sensor(0x5001, (0x00 & 0x08) | (temp1 & (~0x08)));
-	// read OTP into bufferwrite_cmos_sensor
-	write_cmos_sensor(0x3d84, 0xC0);
-	write_cmos_sensor(0x3d88, 0x70); // OTP start address
-	write_cmos_sensor(0x3d89, 0x10);
-	write_cmos_sensor(0x3d8A, 0x72); // OTP end address
-	write_cmos_sensor(0x3d8B, 0x0a);
-	write_cmos_sensor(0x3d81, 0x01); // load otp into buffer
-	mdelay(10);
-	// OTP base information and WB calibration data
-	otp_flag = read_cmos_sensor(0x7010);
-	addr = 0;
-	if ((otp_flag & 0xc0) == 0x40) {
-	addr = 0x7011; // base address of info group 1
-	} else if ((otp_flag & 0x30) == 0x10) {
-	addr = 0x7019; // base address of info group 2
-	}  else
-	if (addr != 0) {
-	(*otp_ptr).flag = 0xC0; // valid info and AWB in OTP
-	(*otp_ptr).module_integrator_id = read_cmos_sensor(addr);
-	(*otp_ptr).lens_id = read_cmos_sensor(addr + 1);
-	(*otp_ptr).production_year = read_cmos_sensor(addr + 2);
-	(*otp_ptr).production_month = read_cmos_sensor(addr + 3);
-	(*otp_ptr).production_day = read_cmos_sensor(addr + 4);
-	temp = read_cmos_sensor(addr + 7);
-	(*otp_ptr).rg_ratio = (read_cmos_sensor(addr + 5)<<2) + ((temp>>6) & 0x03);
-	(*otp_ptr).bg_ratio = (read_cmos_sensor(addr + 6)<<2) + ((temp>>4) & 0x03);
-	LOG_INF("module_integrator_id=%x ,lens_id=%x\n", (*otp_ptr).module_integrator_id, (*otp_ptr).lens_id);
-	LOG_INF("rg_ratio=%x ,bg_ratio=%x\n", (*otp_ptr).rg_ratio, (*otp_ptr).bg_ratio);
-	} else {
-	(*otp_ptr).flag = 0x00; // not info and AWB in OTP
-	(*otp_ptr).module_integrator_id = 0;
-	(*otp_ptr).lens_id = 0;
-	(*otp_ptr).production_year = 0;
-	(*otp_ptr).production_month = 0;
-	(*otp_ptr).production_day = 0;
-	(*otp_ptr).rg_ratio = 0;
-	(*otp_ptr).bg_ratio = 0;
-	LOG_INF("invalid AWB in OTP\n");
-	}
-	// OTP VCM Calibration
-	otp_flag = read_cmos_sensor(0x7021);
-	addr = 0;
-	if ((otp_flag & 0xc0) == 0x40) {
-	addr = 0x7022; // base address of VCM Calibration group 1
-	} else if ((otp_flag & 0x30) == 0x10) {
-	addr = 0x7025; // base address of VCM Calibration group 2
-	}
-	if (addr != 0) {
-	(*otp_ptr).flag |= 0x20;
-	temp = read_cmos_sensor(addr + 2);
-	(*otp_ptr).VCM_start = (read_cmos_sensor(addr)<<2) | ((temp>>6) & 0x03);
-	(*otp_ptr).VCM_end = (read_cmos_sensor(addr + 1) << 2) | ((temp>>4) & 0x03);
-	(*otp_ptr).VCM_dir = (temp>>2) & 0x03;
-	//LOG_INF("(* otp_ptr).VCM_start=%x ,(* otp_ptr).VCM_end=%x,(* otp_ptr).VCM_dir=%x\n",(* otp_ptr).VCM_start,(* otp_ptr).VCM_end,(* otp_ptr).VCM_dir);
-	} else {
-	(*otp_ptr).VCM_start = 0;
-	(*otp_ptr).VCM_end = 0;
-	(*otp_ptr).VCM_dir = 0;
-	LOG_INF("invalid VCM Calibration in OTP\n");
-	}
-	// OTP Lenc Calibration
-	otp_flag = read_cmos_sensor(0x7028);
-	addr = 0;
-
-	if ((otp_flag & 0xc0) == 0x40) {
-	addr = 0x7029; // base address of Lenc Calibration group 1
-	} else if ((otp_flag & 0x30) == 0x10) {
-	addr = 0x711a; // base address of Lenc Calibration group 2
-	}
-	if (addr != 0) {
-	for (i = 0; i < 240; i++) {
-	(*otp_ptr).lenc[i] = read_cmos_sensor(addr + i);
-	checksum2 += (*otp_ptr).lenc[i];
-	//LOG_INF("(* otp_ptr).lenc[%d]=%x ,checksum2=%x\n",i,(* otp_ptr).lenc[i],checksum2);
-	}
-	checksum2 = (checksum2)%255 + 1;
-	(*otp_ptr).checksum = read_cmos_sensor(addr + 240);
-	//LOG_INF("(* otp_ptr).checksum=%x\n",(* otp_ptr).checksum);
-	if ((*otp_ptr).checksum == checksum2) {
-	(*otp_ptr).flag |= 0x10;
-	}
-	} else {
-	for (i = 0; i < 240; i++) {
-	(*otp_ptr).lenc[i] = 0;
-	}
-	LOG_INF("invalid Lenc Calibration in OTP\n");
-	}
-	for (i = 0x7010; i <= 0x720a; i++) {
-	write_cmos_sensor(i, 0); // clear OTP buffer, recommended use continuous write to accelarate
-	}
-	//set 0x5001[3] to ???1???\A1\EC?\A8\A8
-	temp1 = read_cmos_sensor(0x5001);
-	write_cmos_sensor(0x5001, (0x08 & 0x08) | (temp1 & (~0x08)));
-	return (*otp_ptr).flag;
-}
-// return value:
-// bit[7]: 0 no otp info, 1 valid otp info
-// bit[6]: 0 no otp wb, 1 valib otp wb
-// bit[5]: 0 no otp vcm, 1 valid otp vcm
-// bit[4]: 0 no otp lenc, 1 valid otp lenc
-/*
-static int apply_otp(struct otp_struct *otp_ptr)
-{
-	int rg, bg, R_gain, G_gain, B_gain, Base_gain, temp, i;
-	// apply OTP WB Calibration
-
-	LOG_INF("rg_ratio=%x ,bg_ratio=%x\n", (*otp_ptr).rg_ratio, (*otp_ptr).bg_ratio);
-
-	if ((*otp_ptr).flag & 0x40) {
-	rg = (*otp_ptr).rg_ratio;
-	bg = (*otp_ptr).bg_ratio;
-	//calculate G gain
-	R_gain = (RG_Ratio_Typical*1000) / rg;
-	B_gain = (BG_Ratio_Typical*1000) / bg;
-	G_gain = 1000;
-	if (R_gain < 1000 || B_gain < 1000) {
-	if (R_gain < B_gain)
-		 Base_gain = R_gain;
-	else
-		Base_gain = B_gain;
-	} else{
-	 Base_gain = G_gain;
-	}
-	R_gain = 0x400 * R_gain / (Base_gain);
-	B_gain = 0x400 * B_gain / (Base_gain);
-	G_gain = 0x400 * G_gain / (Base_gain);
-	// update sensor WB gain
-	if (R_gain > 0x400) {
-	write_cmos_sensor(0x5019, R_gain>>8);
-	write_cmos_sensor(0x501a, R_gain & 0x00ff);
-	}
-	if (G_gain > 0x400) {
-	write_cmos_sensor(0x501b, G_gain>>8);
-	write_cmos_sensor(0x501c, G_gain & 0x00ff);
-	}
-	if (B_gain > 0x400) {
-	write_cmos_sensor(0x501d, B_gain>>8);
-	write_cmos_sensor(0x501e, B_gain & 0x00ff);
-	}
-	}
-	// apply OTP Lenc Calibration
-	if ((*otp_ptr).flag & 0x10) {
-	temp = read_cmos_sensor(0x5000);
-	temp = 0x20 | temp;
-	write_cmos_sensor(0x5000, temp);
-	for (i = 0; i < 240; i++) {
-	write_cmos_sensor(0x5900 + i, (*otp_ptr).lenc[i]);
-	//LOG_INF("(* otp_ptr).lenc[%d]=%x\n",i,(*otp_ptr).lenc[i]);
-	}
-	}
-	return (*otp_ptr).flag;
-}*/
-
-#endif
 /*************************************************************************
 * FUNCTION
 *	open
@@ -1509,12 +1318,6 @@ static kal_uint32 open(void)
 	kal_uint8 i = 0;
 	kal_uint8 retry = 2;
 	kal_uint16 sensor_id = 0;
-//#ifdef OV8856OTP
-#if 0
-	struct otp_struct *otp_ptr = (struct otp_struct *)kzalloc(sizeof(struct otp_struct), GFP_KERNEL);
-#endif
-	LOG_INF("PLATFORM:MT6595,MIPI 4LANE\n");
-	//LOG_INF("preview 1280*960@30fps,864Mbps/lane; video 1280*960@30fps,864Mbps/lane; capture 5M@30fps,864Mbps/lane\n");
 
 	//sensor have two i2c address 0x6c 0x6d & 0x21 0x20, we should detect the module used i2c address
 	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
@@ -1544,13 +1347,6 @@ sensor_id = imgsensor_info.sensor_id;
 	sensor_init();
 
 	mdelay(10);
-	//#ifdef OV8856OTP
-	#if 0
-		LOG_INF("Apply the sensor OTP\n");
-		read_otp(otp_ptr);
-		//apply_otp(otp_ptr);
-		kfree(otp_ptr);
-	#endif
 	spin_lock(&imgsensor_drv_lock);
 
 	imgsensor.autoflicker_en = KAL_FALSE;
@@ -2091,7 +1887,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
    struct SENSOR_WINSIZE_INFO_STRUCT *wininfo;
    MSDK_SENSOR_REG_INFO_STRUCT *sensor_reg_data = (MSDK_SENSOR_REG_INFO_STRUCT *) feature_para;
 
-	LOG_INF("feature_id = %d, len=%d\n", feature_id, *feature_para_len);
+	LOG_DBG("feature_id = %d, len=%d\n", feature_id, *feature_para_len);
 	switch (feature_id) {
 	case SENSOR_FEATURE_GET_PERIOD:
 	    *feature_return_para_16++ = imgsensor.line_length;

@@ -36,13 +36,14 @@
 #include "gc02m1_macro_sy_mipiraw_Sensor.h"
 
 /************************** Modify Following Strings for Debug **************************/
-#define PFX "gc02m1_camera_sensor"
+#define PFX "GC02M1_SUNNY"
 #define LOG_1 LOG_INF("GC02M1, MIPI 1LANE\n")
 /****************************   Modify end    *******************************************/
 
-//#define LOG_INF(format, args...)    pr_debug(PFX "[%s] " format, __func__, ##args)
-#define LOG_INF(format, args...)    pr_err(PFX "[%s] " format, __func__, ##args)
-//FIXME:XXX
+#define LOG_DBG(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_INF(format, args...)    pr_info(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_ERR(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
+
 #define MULTI_WRITE    1
 #define VENDOR_ID	0x01
 
@@ -240,7 +241,7 @@ static void set_dummy(void)
 
 static kal_uint32 return_sensor_id(void)
 {
-	return (1+(read_cmos_sensor(0xf0) << 8) | read_cmos_sensor(0xf1));  //FIXME
+	return (1+(read_cmos_sensor(0xf0) << 8) | read_cmos_sensor(0xf1));
 }
 
 static void set_max_framerate(UINT16 framerate, kal_bool min_framelength_en)
@@ -300,7 +301,7 @@ static void set_shutter(kal_uint16 shutter)
 	write_cmos_sensor(0xfe, 0x00);
 	write_cmos_sensor(0x03, (shutter >> 8) & 0x3f);
 	write_cmos_sensor(0x04, shutter  & 0xff);
-	LOG_INF("shutter = %d, framelength = %d\n", shutter, imgsensor.frame_length);
+	LOG_DBG("shutter = %d, framelength = %d\n", shutter, imgsensor.frame_length);
 }
 
 static kal_uint16 gain2reg(const kal_uint16 gain)
@@ -350,7 +351,7 @@ static kal_uint16 set_gain(kal_uint16 gain)
 	temp_gain = reg_gain * GC02M1_SENSOR_DGAIN_BASE / GC02M1_AGC_Param[gain_index][0];
 	write_cmos_sensor(0xb1, (temp_gain >> 8) & 0x1f);
 	write_cmos_sensor(0xb2, temp_gain & 0xff);
-	LOG_INF("GC02M1_AGC_Param[gain_index][1] = 0x%x, temp_gain = 0x%x, reg_gain = %d\n",
+	LOG_DBG("GC02M1_AGC_Param[gain_index][1] = 0x%x, temp_gain = 0x%x, reg_gain = %d\n",
 		GC02M1_AGC_Param[gain_index][1], temp_gain, reg_gain);
 
 	return reg_gain;
@@ -736,7 +737,6 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 				LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id, *sensor_id);
 				return ERROR_NONE;
 			}
-			LOG_INF("XXX1 Read sensor id fail, write id: 0x%x, id: 0x%x\n", imgsensor.i2c_write_id, *sensor_id);
 			retry--;
 		} while (retry > 0);
 		i++;
@@ -1208,7 +1208,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 	struct SENSOR_WINSIZE_INFO_STRUCT *wininfo;
 	MSDK_SENSOR_REG_INFO_STRUCT *sensor_reg_data = (MSDK_SENSOR_REG_INFO_STRUCT *)feature_para;
 
-	LOG_INF("feature_id = %d\n", feature_id);
+	LOG_DBG("feature_id = %d\n", feature_id);
 	switch (feature_id) {
 	case SENSOR_FEATURE_GET_PERIOD:
 		*feature_return_para_16++ = imgsensor.line_length;

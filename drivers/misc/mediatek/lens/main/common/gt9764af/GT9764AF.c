@@ -133,12 +133,11 @@ static inline int moveAF(unsigned long a_u4Position)
 {
 	int ret = 0;
 	int i4RetValue=0;
-	unsigned short CurrPos;
+	//unsigned short CurrPos;
 	if ((a_u4Position > g_u4AF_MACRO) || (a_u4Position < g_u4AF_INF)) {
 		LOG_INF("out of range\n");
 		return -EINVAL;
 	}
-	LOG_INF("[mode AAC3]  for_af_best_setting\n");
 	if (*g_pAF_Opened == 1) {
 		unsigned short InitPos;
 		char puSendCmd1[2] = { (char)(0x02), (char)(0x02)};
@@ -177,9 +176,9 @@ static inline int moveAF(unsigned long a_u4Position)
 	}
 
 	// add debug  pos log
-	LOG_INF("get Position =%d",a_u4Position);
-	s4AF_ReadReg(&CurrPos);
-	LOG_INF("set Position=%d",CurrPos);
+	// LOG_INF("get Position =%d",a_u4Position);
+	// s4AF_ReadReg(&CurrPos);
+	// LOG_INF("set Position=%d",CurrPos);
 
 
 	if (g_u4CurrPosition == a_u4Position)

@@ -24,8 +24,10 @@
 #include "ov02b1b_ofilm_mipi_raw.h"
 
 
-#define PFX "ov02b_camera_sensor"
-#define LOG_INF(format, args...)    pr_debug(PFX "[%s] " format, __func__, ##args)
+#define PFX "OV02B1B_OFILM"
+#define LOG_DBG(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_INF(format, args...)    pr_info(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_ERR(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
 
 #define USE_OTP 1
 #define VENDOR_ID 0x07
@@ -221,7 +223,7 @@ static void write_cmos_sensor(kal_uint32 addr, kal_uint32 para)
 static void set_dummy(void)
 {
 
-	LOG_INF("dummyline = %d, dummypixels = %d \n", imgsensor.dummy_line, imgsensor.dummy_pixel);
+	LOG_DBG("dummyline = %d, dummypixels = %d \n", imgsensor.dummy_line, imgsensor.dummy_pixel);
 	/* you can set dummy by imgsensor.dummy_line and imgsensor.dummy_pixel, or you can set dummy by imgsensor.frame_length and imgsensor.line_length */
 	write_cmos_sensor(0xfd, 0x01);
 	write_cmos_sensor(0x14, (imgsensor.frame_length - 0x4c4) >> 8);
@@ -240,7 +242,7 @@ static void set_max_framerate(UINT16 framerate,kal_bool min_framelength_en)
 {
 	kal_uint32 frame_length = imgsensor.frame_length;
 
-	LOG_INF("framerate = %d, min framelength should enable = %d\n", framerate,min_framelength_en);
+	LOG_DBG("framerate = %d, min framelength should enable = %d\n", framerate,min_framelength_en);
 
 	frame_length = imgsensor.pclk / framerate * 10 / imgsensor.line_length;
 
@@ -312,7 +314,7 @@ static void write_shutter(kal_uint32 shutter)
 	write_cmos_sensor(0x0f, shutter  & 0xFF);
 	write_cmos_sensor(0xfe, 0x02);	//fresh
 
-	LOG_INF("shutter =%d, framelength =%d\n", shutter,imgsensor.frame_length);
+	LOG_DBG("shutter =%d, framelength =%d\n", shutter,imgsensor.frame_length);
 }
 
 
@@ -490,21 +492,21 @@ static kal_uint16 set_gain(kal_uint16 gain)
 			write_cmos_sensor(0xfd, 0x01);
 			write_cmos_sensor(0x22, 0x10);//0x23
 			write_cmos_sensor(0xfe, 0x02);	//fresh
-			LOG_INF("OV02BMIPI_SetGain = 16");
+			LOG_DBG("OV02BMIPI_SetGain = 16");
 		}
 		else if(iReg>= 0xf8)//gpw
 		{
 			write_cmos_sensor(0xfd, 0x01);
 			write_cmos_sensor(0x22,0xf8);
 			write_cmos_sensor(0xfe, 0x02);	//fresh
-			LOG_INF("OV02BMIPI_SetGain = 160");
+			LOG_DBG("OV02BMIPI_SetGain = 160");
 		}
 		else
 		{
 			write_cmos_sensor(0xfd, 0x01);
 			write_cmos_sensor(0x22, (kal_uint8)iReg);
 			write_cmos_sensor(0xfe, 0x02);	//fresh
-			LOG_INF("OV02BMIPI_SetGain = %d",iReg);
+			LOG_DBG("OV02BMIPI_SetGain = %d",iReg);
 		}
 	}
 	else
@@ -2098,7 +2100,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 	MSDK_SENSOR_REG_INFO_STRUCT *sensor_reg_data =
 		(MSDK_SENSOR_REG_INFO_STRUCT *) feature_para;
 
-	LOG_INF("feature_id = %d\n", feature_id);
+	LOG_DBG("feature_id = %d\n", feature_id);
 	switch (feature_id) {
 	case SENSOR_FEATURE_GET_PERIOD_BY_SCENARIO:
 		switch (*feature_data) {

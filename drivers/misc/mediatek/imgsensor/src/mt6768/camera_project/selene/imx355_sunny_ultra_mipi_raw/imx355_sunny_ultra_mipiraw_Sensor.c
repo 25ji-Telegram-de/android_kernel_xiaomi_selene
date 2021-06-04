@@ -50,7 +50,7 @@
 #include "imx355_sunny_ultra_mipiraw_Sensor.h"
 
 /************************Modify Following Strings for Debug********************/
-#define PFX "IMX355SUNNY_camera_sensor"
+#define PFX "IMX355_SUNNY"
 #define LOG_1 LOG_INF("IMX355SUNNY,MIPI 4LANE\n")
 /************************   Modify end    *************************************/
 
@@ -59,7 +59,10 @@
 
 #define VENDOR_ID 0x68
 
-#define LOG_INF(format, args...) pr_debug(PFX "[%s] " format, __func__, ##args)
+#define LOG_DBG(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_INF(format, args...)    pr_info(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_ERR(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
+
 #define LONG_EXP 1
 #define H_FOV 63
 #define V_FOV 49
@@ -2016,7 +2019,7 @@ static void set_shutter_frame_length(
 	write_cmos_sensor(0x0203, shutter & 0xFF);
 	write_cmos_sensor(0x0104, 0x00);
 
-	LOG_INF(
+	LOG_DBG(
 		"Exit! shutter =%d, framelength =%d/%d, dummy_line=%d, auto_extend=%d\n",
 		shutter,
 		imgsensor.frame_length, frame_length,
@@ -2075,7 +2078,7 @@ static kal_uint16 set_gain(kal_uint16 gain)
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.gain = reg_gain;
 	spin_unlock(&imgsensor_drv_lock);
-	LOG_INF("gain = %d, reg_gain = 0x%x\n ", gain, reg_gain);
+	LOG_DBG("gain = %d, reg_gain = 0x%x\n ", gain, reg_gain);
 
 	write_cmos_sensor(0x0104, 0x01);
 	/* Global analog Gain for Long expo */
