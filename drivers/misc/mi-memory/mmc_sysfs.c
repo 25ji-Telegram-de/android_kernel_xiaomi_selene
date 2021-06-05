@@ -44,8 +44,9 @@ int get_hynix_hr(struct mmc_card *card, char *buf)
 out:
 	return err;
 }
-
-#undef MICRON_HR_CMD56
+/*Huaqin modify for HQ-123324 by luocheng at 2021/06/05 start*/
+/*#undef MICRON_HR_CMD56*/
+#define MICRON_HR_CMD56 1
 int get_micron_hr(struct mmc_card *card, char *buf)
 {
 	int err = 0;
@@ -58,7 +59,7 @@ int get_micron_hr(struct mmc_card *card, char *buf)
 		goto out;
 	}
 	/* 2. Get HR data using CMD56 */
-	err = mmc_send_micron_hr(card, card->host, MMC_GEN_CMD, hr, 512);
+	err = mmc_send_micron_hr(card, card->host, MMC_GEN_CMD, buf, 512);
 	if (err) {
 		pr_mem_err("MC: fail to get hr of micron.err:%d\n", err);
 		goto out;
@@ -75,28 +76,32 @@ out:
 
 int get_ss_hr(struct mmc_card *card, char *buf)
 {
-	int err;
-	err = mmc_set_blocklen(card, 512);
-	if (err) {
-		pr_mem_err("SS: set blocklen to 512 fail.err:%d\n", err);
-		goto out;
-	}
-
+		int err;
+		mmc_cmd_switch(card, false);
+		err = mmc_set_blocklen(card, 512);
+		if (err) {
+			pr_err("%s: set blocklen to 512 fail %d\n", __func__, err);
+			goto out;
+		}
 #ifdef OSV
-	err = mmc_get_osv_data(card, buf);
-	if (err) {
-		pr_mem_err("SS: get osv data fail.err:%d\n", err);
-		goto out;
-	}
+		pr_err("%s: %d \n", __func__, __LINE__);
+		err = mmc_get_osv_data(card, buf);
+		if (err) {
+			pr_err("%s: get osv data fail %d\n", __func__, err);
+			goto out_free;
+		}
 #else
-	err = mmc_get_nandinfo_data(card, buf);
-	if (err)
-		pr_err("SS: get nandinfo fail.err:%d\n", err);
+		err = mmc_get_nandinfo_data(card, buf);//hr
+		if (err) {
+			pr_err("%s: get nandinfo fail %d\n", __func__, err);
+			goto out;
+		}
 #endif
+		mmc_cmd_switch(card, true);
 out:
 	return err;
-
 }
+/*Huaqin modify for HQ-123324 by luocheng at 2021/06/05 end*/
 
 int get_wc_hr(struct mmc_card *card, char *buf)
 {

@@ -247,6 +247,9 @@ int mmc_get_nandinfo_data(struct mmc_card *card, void *buf)
 
 out:
 	kfree(ext_csd);
+/*Huaqin modify for HQ-123324 by luocheng at 2021/06/05 start*/
+	kfree(sni_buf);
+/*Huaqin modify for HQ-123324 by luocheng at 2021/06/05 end*/
 	return err;
 }
 
