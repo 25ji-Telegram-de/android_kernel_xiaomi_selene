@@ -111,8 +111,9 @@ static int _disp_get_cmdq_slots(cmdqBackupSlotHandle Slot,
 	unsigned int slot_index, unsigned int *value)
 {
 	int ret;
-	
-	pr_err("called from _disp_get_cmdq_slots\n");
+	/* Huaqin modify for K19A-271 by caogaojie at 2021/06/07 start */
+	pr_debug("called from _disp_get_cmdq_slots\n");
+	/* Huaqin modify for K19A-271 by caogaojie at 2021/06/07 end */
 	ret = cmdqBackupReadSlotext(Slot, slot_index, value);
 
 	/* cmdq get slot fail */
