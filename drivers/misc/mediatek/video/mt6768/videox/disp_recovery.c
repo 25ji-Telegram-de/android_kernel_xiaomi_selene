@@ -272,6 +272,9 @@ static irqreturn_t _esd_check_ext_te_irq_handler(int irq, void *data)
 		}
 	}
 	else
+        /* Huaqin modify for HQ-139071 by caogaojie at 2021/06/07 start */
+		atomic_set(&lcm_valid_irq, 1);
+	/* Huaqin modify for HQ-139071 by caogaojie at 2021/06/07 end */
 		DISPCHECK("[ESD] _esd_check_ext_te_irq_handler lcm not ready, skip");
 #else
 	mmprofile_log_ex(ddp_mmp_get_events()->esd_vdo_eint,
