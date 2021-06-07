@@ -388,6 +388,8 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	/* dfps_params[0].PLL_CLOCK = 574; */
 	/* dfps_params[0].data_rate = xx; */
 	dfps_params[0].vertical_frontporch = 1290;
+	/* Huaqin modify for HQ-124150 by caogaojie at 2021/06/07 start */
+	dfps_params[0].vertical_frontporch_for_low_power = 2524;
 
 	/* DPFS_LEVEL1 */
 	dfps_params[1].level = DFPS_LEVEL1;
@@ -397,6 +399,8 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	/* dfps_params[1].PLL_CLOCK = 380; */
 	/* dfps_params[1].data_rate = xx; */
 	dfps_params[1].vertical_frontporch = 54;
+	dfps_params[1].vertical_frontporch_for_low_power = 2524;
+	/* Huaqin modify for HQ-124150 by caogaojie at 2021/06/07 end */
 	dsi->dfps_num = 2;
 }
 /* Huaqin modify for HQHW-802 by caogaojie at 2021/05/12 end */
