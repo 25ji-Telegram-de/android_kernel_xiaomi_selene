@@ -60,7 +60,7 @@ static int tcpc_dual_role_get_prop(struct dual_role_phy_instance *dual_role,
 		break;
 	}
 	return ret;
-
+}
 static	int tcpc_dual_role_prop_is_writeable(
 	struct dual_role_phy_instance *dual_role, enum dual_role_property prop)
 {
@@ -292,3 +292,4 @@ int tcpc_dual_role_phy_init(
 }
 #endif /* CONFIG_DUAL_ROLE_USB_INTF */
 /*K19A HQ-135321 K19A for VtsHalUsbV1_0TargetTest fail by langjunjun at 2021/6/6 end*/
+
