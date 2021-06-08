@@ -246,7 +246,11 @@ struct tcpc_ops {
 	int (*is_low_power_mode)(struct tcpc_device *tcpc);
 	int (*set_low_power_mode)(struct tcpc_device *tcpc, bool en, int pull);
 #endif /* CONFIG_TCPC_LOW_POWER_MODE */
-
+/*K19A HQ-135321 K19A for VtsHalUsbV1_0TargetTest fail by langjunjun at 2021/6/6 start*/
+#ifdef CONFIG_TCPC_IDLE_MODE
+	int (*set_idle_mode)(struct tcpc_device *tcpc, bool en);
+#endif /* CONFIG_TCPC_IDLE_MODE */
+/*K19A HQ-135321 K19A for VtsHalUsbV1_0TargetTest fail by langjunjun at 2021/6/6 end*/
 	int (*set_watchdog)(struct tcpc_device *tcpc, bool en);
 
 #ifdef CONFIG_TCPC_INTRST_EN
@@ -426,10 +430,16 @@ struct tcpc_device {
 
 	struct typec_capability typec_caps;
 	struct typec_port *typec_port;
+/*K19A HQ-135321 K19A for VtsHalUsbV1_0TargetTest fail by langjunjun at 2021/6/6 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
+	struct dual_role_phy_instance *dr_usb;
+	uint8_t dual_role_supported_modes;
 	uint8_t dual_role_mode;
 	uint8_t dual_role_pr;
 	uint8_t dual_role_dr;
 	uint8_t dual_role_vconn;
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-135321 K19A for VtsHalUsbV1_0TargetTest fail by langjunjun at 2021/6/6 end*/
 	struct usb_pd_identity partner_ident;
 	struct typec_partner_desc partner_desc;
 	struct typec_partner *partner;
