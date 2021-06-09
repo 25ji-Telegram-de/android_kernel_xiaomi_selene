@@ -3580,6 +3580,7 @@ static void hs_video_setting(void)
 {
 
     LOG_INF("hs_video_setting RES_1280x720_120fps\n");
+	write_cmos_sensor(0x6028,0x2400);
 	write_cmos_sensor(0x602A,0x1A28);
 	write_cmos_sensor(0x6F12,0x4C00);
 	write_cmos_sensor(0x602A,0x065A);
