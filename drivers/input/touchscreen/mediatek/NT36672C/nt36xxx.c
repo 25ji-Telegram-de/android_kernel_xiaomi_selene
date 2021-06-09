@@ -183,7 +183,9 @@ static void nvt_resume_func(struct work_struct *work)
 
 void nvt_resume_queue_work(void)
 {
-	cancel_delayed_work(&nvt_resume_work);
+	/* Huaqin modify for HQ-139605 by feiwen at 2021/06/09 start */
+	flush_workqueue(nvt_resume_workqueue);
+	/* Huaqin modify for HQ-139605 by feiwen at 2021/06/09 end */
 	queue_delayed_work(nvt_resume_workqueue, &nvt_resume_work, msecs_to_jiffies(TP_RESUME_WAIT_TIME));
 }
 #endif
@@ -2834,6 +2836,9 @@ static int nvt_fb_notifier_callback(struct notifier_block *self, unsigned long e
 		blank = evdata->data;
 		if (*blank == FB_BLANK_POWERDOWN) {
 			NVT_LOG("event=%lu, *blank=%d\n", event, *blank);
+/* Huaqin modify for HQ-139605 by feiwen at 2021/06/09 start */
+			flush_workqueue(nvt_resume_workqueue);
+/* Huaqin modify for HQ-139605 by feiwen at 2021/06/09 end */
 			nvt_ts_suspend(&ts->client->dev);
 		}
 	} else if (evdata && evdata->data && event == FB_EVENT_BLANK) {
