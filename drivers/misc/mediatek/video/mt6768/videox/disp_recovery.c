@@ -792,7 +792,6 @@ next:		if(!atomic_read(&lcm_ready)){
 				"[ESD]esd check fail, will do esd recovery. try=%d\n",
 				i);
 			primary_display_esd_recovery();
-			atomic_set(&lcm_valid_irq, 1);
 			goto next;
 		} while (++i < esd_try_cnt);
 	}
@@ -986,6 +985,9 @@ done:
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
 	atomic_set(&lcm_ready, 1);
+/* Huaqin modify for HQ-139071 by caogaojie at 2021/06/10 start */
+	atomic_set(&lcm_valid_irq, 1);
+/* Huaqin modify for HQ-139071 by caogaojie at 2021/06/10 end */
 	DISPERR("[ESD] atomic_set(&lcm_ready, 1)\n");
 #endif
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
