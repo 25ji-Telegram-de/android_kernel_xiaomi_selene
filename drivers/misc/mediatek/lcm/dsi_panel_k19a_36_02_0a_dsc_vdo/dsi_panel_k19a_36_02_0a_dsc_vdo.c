@@ -232,20 +232,15 @@ static struct LCM_setting_table lcm_suspend_setting[] = {
 };
 /* Huaqin modify for HQ-124216 by caogaojie at 2021/05/8 end */
 static struct LCM_setting_table init_setting_vdo[] = {
+/* Huaqin modify for HQ-140017 by caogaojie at 2021/06/11 start */
 	{0xFF, 1, {0x10} },
         {0xFB, 1, {0x01} },
 	{0X36, 1, {0x00} },
 	{0X3B, 5, {0x03,0x14,0x36,0x04,0x04} },
 	{0XB0, 1, {0x00} },
 	{0XC0, 1, {0x03} },
-	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
         {0xC1, 16, {0x89,0x28,0x00,0x08,0x00,0xAA,0x02,0x0E,0x00,0x2B,0x00,0x07,0x0D,0xB7,0x0C,0xB7} },
-	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
         {0XC2, 2, {0X1B,0XA0} },
-//FR
-	/*{0xFF, 1, {0x27} },
-	{0xFB, 1, {0x01} },
-	{0x40, 1, {0x22} },*/
 
         {0xFF, 1, {0XE0} },
         {0XFB, 1, {0X01} },
@@ -262,12 +257,12 @@ static struct LCM_setting_table init_setting_vdo[] = {
         {0xFF, 1, {0XD0} },
         {0xFB, 1, {0x01} },
         {0X53, 1, {0X22} },
-  	{0X54, 1, {0X02} },
+	{0X54, 1, {0X02} },
 
         {0XFF, 1, {0XC0} },
         {0XFB, 1, {0X01} },
-  	{0X9C, 1, {0X11} },
-  	{0X9D, 1, {0X11} },
+	{0X9C, 1, {0X11} },
+	{0X9D, 1, {0X11} },
 
         {0xFF, 1, {0X27} },
         {0XFB, 1, {0X01} },
@@ -276,11 +271,24 @@ static struct LCM_setting_table init_setting_vdo[] = {
 	/* Huaqin modify for K19A-271 by caogaojie at 2021/05/13 end */
         {0X40, 1, {0X52} },
         {0X43, 1, {0X10} },
-
+        
+        {0xFF, 1, {0X25} },
+        {0XFB, 1, {0X01} },
+        {0XD6, 1, {0X80} },
+        {0XD7, 1, {0X03} },
+        {0XDA, 1, {0X03} },
+        {0XDD, 1, {0X03} },
+        {0XE0, 1, {0X03} },//EQ
+        
+        {0XFF, 1, {0X20} },
+        {0XFB, 1, {0X01} },
+        {0X1F, 1, {0X0F} },
+        {0X20, 1, {0X0F} },
+        {0X21, 1, {0X01} },//MUX_driving
 
         {0XFF, 1, {0X10} },
         {0XFB, 1, {0X01} },
-  	{0X35, 1, {0X00} },
+	{0X35, 1, {0X00} },
 
         {0x11, 0, {} },
 	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
@@ -288,8 +296,9 @@ static struct LCM_setting_table init_setting_vdo[] = {
 	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 start */
         {REGFLAG_DELAY, 70, {} },
-        {0x29, 0, {} },
+ 	{0x29, 0, {} },
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 start */
+/* Huaqin modify for HQ-140017 by caogaojie at 2021/06/11 end */
 };
 
 
@@ -401,6 +410,7 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	dfps_params[1].vertical_frontporch = 54;
 	dfps_params[1].vertical_frontporch_for_low_power = 2524;
 	/* Huaqin modify for HQ-124150 by caogaojie at 2021/06/07 end */
+
 	dsi->dfps_num = 2;
 }
 /* Huaqin modify for HQHW-802 by caogaojie at 2021/05/12 end */
