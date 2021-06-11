@@ -409,6 +409,11 @@ static uint8_t dpm_reaction_update_pe_ready(struct pd_port *pd_port)
 	if (!pd_port->pe_data.pe_ready) {
 		DPM_INFO("PE_READY\r\n");
 		pd_port->pe_data.pe_ready = true;
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
+		dual_role_instance_changed(pd_port->tcpc->dr_usb);
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 end*/
 	}
 
 	state = dpm_get_pd_connect_state(pd_port);

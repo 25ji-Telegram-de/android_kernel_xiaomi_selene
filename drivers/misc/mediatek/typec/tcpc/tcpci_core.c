@@ -463,9 +463,11 @@ struct tcpc_device *tcpc_device_register(struct device *parent,
 	pd_core_init(tcpc);
 #endif /* CONFIG_USB_POWER_DELIVERY */
 
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
 	ret = tcpc_dual_role_phy_init(tcpc);
 	if (ret < 0)
 		dev_err(&tcpc->dev, "dual role usb init fail\n");
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
 
 	return tcpc;
 }
@@ -831,7 +833,11 @@ void tcpc_device_unregister(struct device *dev, struct tcpc_device *tcpc)
 #endif /* CONFIG_USB_PD_REV30 */
 	wakeup_source_trash(&tcpc->dettach_temp_wake_lock);
 	wakeup_source_trash(&tcpc->attach_wake_lock);
-
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
+	devm_dual_role_instance_unregister(&tcpc->dev, tcpc->dr_usb);
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 end*/
 	device_unregister(&tcpc->dev);
 
 }

@@ -21,6 +21,11 @@
 #include "inc/tcpci_typec.h"
 #include "inc/tcpci_event.h"
 #include "inc/pd_policy_engine.h"
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
+#include <linux/usb/class-dual-role.h>
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 end*/
 
 /* From DTS */
 
@@ -841,20 +846,16 @@ static inline int pd_update_msg_header(struct pd_port *pd_port)
 int pd_set_data_role(struct pd_port *pd_port, uint8_t dr)
 {
 	pd_port->data_role = dr;
-
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
 	/* dual role usb--> 0:ufp, 1:dfp */
 	pd_port->tcpc->dual_role_mode = pd_port->data_role;
 	/* dual role usb --> 0: Device, 1: Host */
 	pd_port->tcpc->dual_role_dr = !(pd_port->data_role);
-	if (pd_port->tcpc->dual_role_dr == PD_ROLE_UFP)
-		pd_port->tcpc->typec_caps.type = TYPEC_PORT_UFP;
-	else
-		pd_port->tcpc->typec_caps.type = TYPEC_PORT_DFP;
-
+	dual_role_instance_changed(pd_port->tcpc->dr_usb);
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 end*/
 	tcpci_notify_role_swap(pd_port->tcpc, TCP_NOTIFY_DR_SWAP, dr);
-	typec_set_data_role(pd_port->tcpc->typec_port,
-			    pd_port->tcpc->dual_role_dr ==
-			    TCP_ROLE_PROP_DR_HOST ? TYPEC_HOST : TYPEC_DEVICE);
 	return pd_update_msg_header(pd_port);
 }
 
@@ -868,14 +869,13 @@ int pd_set_power_role(struct pd_port *pd_port, uint8_t pr)
 		return ret;
 
 	pd_notify_pe_pr_changed(pd_port);
-	if (pd_port->tcpc->dual_role_pr == TCP_ROLE_PROP_PR_SRC)
-		pd_port->tcpc->typec_caps.type = TYPEC_PORT_DFP;
-	else
-		pd_port->tcpc->typec_caps.type = TYPEC_PORT_UFP;
-
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
 	/* 0:sink, 1: source */
 	pd_port->tcpc->dual_role_pr = !(pd_port->power_role);
-
+	dual_role_instance_changed(pd_port->tcpc->dr_usb);
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 end*/
 	tcpci_notify_role_swap(pd_port->tcpc, TCP_NOTIFY_PR_SWAP, pr);
 	return ret;
 }
@@ -916,8 +916,12 @@ int pd_set_vconn(struct pd_port *pd_port, uint8_t role)
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
 	PE_DBG("%s:%d\r\n", __func__, role);
-
-	tcpc->dual_role_vconn = en_role;
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
+	pd_port->tcpc->dual_role_vconn = en_role;
+	dual_role_instance_changed(pd_port->tcpc->dr_usb);
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 end*/
 	pd_port->vconn_role = role;
 	tcpci_notify_role_swap(tcpc, TCP_NOTIFY_VCONN_SWAP, en_role);
 
