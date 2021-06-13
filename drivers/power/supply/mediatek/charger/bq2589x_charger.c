@@ -1122,6 +1122,11 @@ static int bq2589x_init_device(struct bq2589x *bq)
 		pr_err("enable hvdcp,ret = %d\n",ret);
 	}
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/27 end */
+/* Huaqin add for HQ-135953 by wangchao at 2021/6/11 start */
+	ret = bq2589x_enable_ico(bq, 0);//disable ico
+	if (ret)
+		pr_err("Failed to disable ico, ret = %d\n", ret);
+/* Huaqin add for HQ-135953 by wangchao at 2021/6/11 end */
 
 /* Huaqin add for K19A-312 by wangchao at 2021/6/3 start */
 	ret = bq2589x_exit_hiz_mode(bq);
