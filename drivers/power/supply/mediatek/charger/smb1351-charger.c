@@ -2317,8 +2317,11 @@ static int smb1351_set_usbchg_current(struct charger_device *chg_dev, u32 uA)
 			if (usb_chg_current[i] <= current_ma)
 				break;
 		}
-		if (i < 0)
+/* Huaqin add for K19AFAC-33 by wangqi at 2021/6/13 start */
+		pr_err("set i:%d\n", i);
+		if (i < 2)
 			i = 0;
+/* Huaqin add for K19AFAC-33 by wangqi at 2021/6/13 end */
 		rc = smb1351_masked_write(chip, CHG_CURRENT_CTRL_REG,
 						AC_INPUT_CURRENT_LIMIT_MASK, i);
 		if (rc) {

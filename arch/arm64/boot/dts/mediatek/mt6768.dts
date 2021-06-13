@@ -3458,7 +3458,9 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 
 		/* charging current */
 /*K19A HQHW-881 K19A charger of 2.5v by wangqi at 2021/5/20 start*/
-		usb_charger_current = <700000>;
+/* Huaqin add for K19AFAC-33 by wangqi at 2021/6/13 start */
+		usb_charger_current = <500000>;
+/* Huaqin add for K19AFAC-33 by wangqi at 2021/6/13 end */
 /*K19A HQHW-881 K19A charger of 2.5v by wangqi at 2021/5/20 end*/
 		ac_charger_current = <2050000>;
 		ac_charger_input_current = <3200000>;
