@@ -3153,6 +3153,7 @@ static int smb1351_charger_probe(struct i2c_client *client,
 
 	schedule_delayed_work(&chip->delay_init_work,
 			msecs_to_jiffies(100));
+	pr_err("smb1351_charger_probe:success!\n");
 	return 0;
 }
 
