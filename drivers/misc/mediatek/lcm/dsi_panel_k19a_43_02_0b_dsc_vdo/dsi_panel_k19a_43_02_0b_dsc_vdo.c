@@ -646,7 +646,9 @@ static void lcm_init(void)
       	SET_RESET_PIN(0);
       	MDELAY(5);
       	SET_RESET_PIN(1);
-      	MDELAY(5);
+	/* Huaqin modify for HQ-132702 by caogaojie at 2021/06/15 start */
+	MDELAY(10);
+	/* Huaqin modify for HQ-132702 by caogaojie at 2021/06/15 end */
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
 
 	LCM_LOGI("[DENNIS__v2][%s][%d]\n", __func__, __LINE__);
