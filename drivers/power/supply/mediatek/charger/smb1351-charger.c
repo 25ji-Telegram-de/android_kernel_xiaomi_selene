@@ -3075,8 +3075,10 @@ static void smb1351_delay_init_work(struct work_struct *work)
 #endif
 	return;
 retry:
+/* Huaqin add for K19A-216 by wangchao at 2021/6/15 start */
 	schedule_delayed_work(&chip->delay_init_work,
-			msecs_to_jiffies(100));
+			msecs_to_jiffies(10));
+/* Huaqin add for K19A-216 by wangchao at 2021/6/15 end */
 }
 
 static int smb1351_charger_probe(struct i2c_client *client,
