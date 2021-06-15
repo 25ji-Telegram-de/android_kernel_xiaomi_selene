@@ -571,7 +571,9 @@ static int battery_get_property(struct power_supply *psy,
 		else
 			val->intval = data->BAT_CAPACITY;
 		/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 start */
-		if (val->intval  == 0){
+		/* Huaqin add for HQ-140671 by miaozhichao at 2021/6/15 start */
+		if (val->intval  == 1){
+		/* Huaqin add for HQ-140671 by miaozhichao at 2021/6/15 end */
 			if ( data->BAT_batt_vol > SHUTDOWN_DELAY_VOL
 				&& data->BAT_STATUS != POWER_SUPPLY_STATUS_CHARGING) {
 				gm.shutdown_delay = true;
