@@ -568,15 +568,65 @@ done:
 	mutex_unlock(&swchgalg->ichg_aicr_access_mutex);
 }
 
+/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 start*/
+static u32 get_charge_cycle_count_level(struct charger_manager *info)
+{
+	struct power_supply *psy;
+	union power_supply_propval val;
+	int  ret;
+	u32 ffc_constant_voltage = 0;
+
+	psy = power_supply_get_by_name("battery");
+	if (!psy) {
+		pr_err("%s : power_supply_get_by_name error!\n", __func__);
+	}
+
+	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_CYCLE_COUNT, &val);
+	if (ret) {
+		pr_err("%s : power_supply_get_property error!\n", __func__);
+	}
+
+	pr_err("%s : charger cycle count  = %d\n", __func__, val.intval);
+
+	if ((val.intval >= info->chg_cycle_count_level1) && (val.intval <= (info->chg_cycle_count_level2 - 1)))
+		ffc_constant_voltage = info->ffc_cv_1;
+
+	if ((val.intval > info->chg_cycle_count_level2) && (val.intval <= (info->chg_cycle_count_level3 - 1)))
+		ffc_constant_voltage = info->ffc_cv_2;
+
+	if ((val.intval > info->chg_cycle_count_level3) && (val.intval <= (info->chg_cycle_count_level4 - 1)))
+		ffc_constant_voltage = info->ffc_cv_3;
+
+	if (val.intval >= info->chg_cycle_count_level4)
+		ffc_constant_voltage = info->ffc_cv_4;
+
+	return  ffc_constant_voltage;
+}
+/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 end*/
+
 static void swchg_select_cv(struct charger_manager *info)
 {
 	u32 constant_voltage;
 	bool chg2_chip_enabled = false;
 
+/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 start*/
+	u32 ffc_constant_voltage = 0;
+	ffc_constant_voltage = get_charge_cycle_count_level(info);
+
+	if (info->enable_sw_ffc) {
+		if (ffc_constant_voltage != 0) {
+			chr_err("%s, ffc_constant_voltage  = %d\n", __func__, ffc_constant_voltage);
+			charger_dev_set_constant_voltage(info->chg1_dev,ffc_constant_voltage);
+		}
+		return;
+	}
+	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 end*/
+
 	charger_dev_is_chip_enabled(info->chg2_dev, &chg2_chip_enabled);
 
 	if (info->enable_sw_jeita)
 		if (info->sw_jeita.cv != 0) {
+			chr_err("%s, info->sw_jeita.cv  = %d\n", __func__, info->sw_jeita.cv);
 			charger_dev_set_constant_voltage(info->chg1_dev,
 							info->sw_jeita.cv);
 			return;

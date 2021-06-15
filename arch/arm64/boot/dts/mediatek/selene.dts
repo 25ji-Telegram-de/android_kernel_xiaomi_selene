@@ -515,6 +515,17 @@
 
 	pd_vbus_upper_bound = <9000000>;
 
+	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 start*/
+	enable_sw_ffc;
+	ffc_cv_1 = <4450000>;
+	ffc_cv_2 = <4440000>;
+	ffc_cv_3 = <4430000>;
+	ffc_cv_4 = <4420000>;
+	chg_cycle_count_level1 = <1>;
+	chg_cycle_count_level2 = <100>;
+	chg_cycle_count_level3 = <200>;
+	chg_cycle_count_level4 = <300>;
+	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 end*/
 
 	/* sw jeita */
 	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/6/1 start*/

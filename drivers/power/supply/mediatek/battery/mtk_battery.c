@@ -700,6 +700,9 @@ static int battery_set_property(struct power_supply *psy,
 		otg_limit = val->intval;
 		otg_thermal_limit();
 		break;
+	case POWER_SUPPLY_PROP_CYCLE_COUNT:
+		 gm.bat_cycle  = val->intval;
+		break;
 	case POWER_SUPPLY_PROP_CHARGING_ENABLED:
 		g_chg_en_flag = val->intval;
 		switch (g_chg_en_flag) {

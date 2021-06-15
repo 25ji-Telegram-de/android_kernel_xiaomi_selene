@@ -2493,6 +2493,28 @@ static int mtk_charger_parse_dt(struct charger_manager *info,
 					TA_AC_CHARGING_CURRENT;
 	}
 
+	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 start*/
+	info->enable_sw_ffc =  of_property_read_bool(np, "enable_sw_ffc");
+
+	if (of_property_read_u32(np, "ffc_cv_1", &val) >= 0)
+		info->ffc_cv_1 = val;
+	if (of_property_read_u32(np, "ffc_cv_2", &val) >= 0)
+		info->ffc_cv_2 = val;
+	if (of_property_read_u32(np, "ffc_cv_3", &val) >= 0)
+		info->ffc_cv_3 = val;
+	if (of_property_read_u32(np, "ffc_cv_4", &val) >= 0)
+		info->ffc_cv_4 = val;
+
+	if (of_property_read_u32(np, "chg_cycle_count_level1", &val) >= 0)
+		info->chg_cycle_count_level1 = val;
+	if (of_property_read_u32(np, "chg_cycle_count_level2", &val) >= 0)
+		info->chg_cycle_count_level2 = val;
+	if (of_property_read_u32(np, "chg_cycle_count_level3", &val) >= 0)
+		info->chg_cycle_count_level3 = val;
+	if (of_property_read_u32(np, "chg_cycle_count_level4", &val) >= 0)
+		info->chg_cycle_count_level4 = val;
+	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 end*/
+
 	/* sw jeita */
 	if (of_property_read_u32(np, "jeita_temp_t3_to_t4_cc", &val) >= 0) {
 		info->data.jeita_temp_t3_to_t4_cc = val;

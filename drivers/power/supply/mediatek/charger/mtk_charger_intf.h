@@ -473,6 +473,18 @@ struct charger_manager {
 	struct sock *daemo_nl_sk;
 	u_int g_scd_pid;
 	struct scd_cmd_param_t_1 sc_data;
+
+	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 start*/
+	bool enable_sw_ffc;
+	int ffc_cv_1;
+	int ffc_cv_2;
+	int ffc_cv_3;
+	int ffc_cv_4;
+	int chg_cycle_count_level1;
+	int chg_cycle_count_level2;
+	int chg_cycle_count_level3;
+	int chg_cycle_count_level4;
+	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 end*/
 };
 
 
