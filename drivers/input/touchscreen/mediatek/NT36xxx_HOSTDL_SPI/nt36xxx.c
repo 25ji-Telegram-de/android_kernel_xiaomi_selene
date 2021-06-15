@@ -1632,7 +1632,9 @@ static int nvt_get_mode_cur_value(int mode)
 	int ret = 0;
 	uint8_t pf_switch = xiaomi_touch_interfaces.touch_mode[mode][GET_DEF_VALUE];
 
-	if (mode < Touch_Mode_NUM && mode >= 0) {
+	/* Huaqin modify for HQ-140364 by liunianliang at 2021/06/15 start */
+	if (mode >= 0 && mode < Touch_Mode_NUM) {
+	/* Huaqin modify for HQ-140364 by liunianliang at 2021/06/15 end */
 		printk("%s ,mode = %d\n", __func__, mode);
 		if (mode == 2) {
 			pf_switch = xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE];

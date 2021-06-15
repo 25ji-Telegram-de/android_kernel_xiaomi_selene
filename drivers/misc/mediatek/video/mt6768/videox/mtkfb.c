@@ -486,7 +486,9 @@ static ssize_t mtkfb_set_bpoint(struct device *dev, struct device_attribute *att
 
 static ssize_t mtkfb_get_panel_info(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	int ret;
+	/* Huaqin modify for HQ-140354 by liunianliang at 2021/06/15 start */
+	int ret = 0;
+	/* Huaqin modify for HQ-140354 by liunianliang at 2021/06/15 end */
 
 	if (strncmp(mtkfb_lcm_name, "nt36672A_fhdp_dsi_vdo_tianma_lcm_drv", 36) == 0) {
 		ret = sprintf(buf, "incell,vendor:tianma,IC:nt36672a(novatek)\n");

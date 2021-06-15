@@ -283,7 +283,9 @@ static bool read_pcba_config(void)
 	int i = 0, map_size = 0;
 	int auxadc_voltage;
 	int hw_id_gpio, board_id3_gpio;
-	int hw_id_gpio_value, board_id3_gpio_value;
+	/* Huaqin modify for HQ-140352/140366 by liunianliang at 2021/06/15 start */
+	int hw_id_gpio_value = 0, board_id3_gpio_value = 0;
+	/* Huaqin modify for HQ-140352/140366 by liunianliang at 2021/06/15 end */
 	struct iio_channel *channel;
 	struct device_node *board_id_node;
 	struct platform_device *board_id_dev;
