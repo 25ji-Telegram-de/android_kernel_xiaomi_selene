@@ -988,7 +988,7 @@ endif
 # =============FACTORY==================================
 
 # Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start
-ifeq ($(strip ENABLE_MIUI_DEBUGGING), true)
+ifeq ($(strip $(ENABLE_MIUI_DEBUGGING)), true)
 KBUILD_CFLAGS += -DENABLE_MIUI_DEBUGGING
 endif
 # Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end

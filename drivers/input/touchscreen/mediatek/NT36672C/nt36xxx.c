@@ -195,6 +195,28 @@ void nvt_resume_queue_work(void)
 #endif
 /* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 end */
 
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 start */
+#if TP_SUSPEND_EN
+static int32_t nvt_ts_suspend(struct device *dev);
+
+#define TP_SUSPEND_WAIT_TIME             10
+static struct delayed_work nvt_suspend_work;
+static struct workqueue_struct *nvt_suspend_workqueue;
+
+static void nvt_suspend_func(struct work_struct *work)
+{
+	NVT_LOG("Enter %s", __func__);
+	nvt_ts_suspend(&ts->client->dev);
+}
+
+void nvt_suspend_queue_work(void)
+{
+	flush_workqueue(nvt_suspend_workqueue);
+	queue_delayed_work(nvt_suspend_workqueue, &nvt_suspend_work, msecs_to_jiffies(TP_SUSPEND_WAIT_TIME));
+}
+#endif
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 end */
+
 /*******************************************************
 Description:
 	Novatek touchscreen irq enable/disable function.
@@ -2196,6 +2218,18 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 #endif
 /* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 end */
 
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 start */
+#if TP_SUSPEND_EN
+	INIT_DELAYED_WORK(&nvt_suspend_work, nvt_suspend_func);
+	nvt_suspend_workqueue = create_workqueue("nvt_suspend_wq");
+	if (nvt_suspend_workqueue == NULL) {
+		NVT_ERR("Failed to create nvt_suspend_workqueue!!!");
+		ret = -ENOMEM;
+		goto err_nvt_suspend_init_wq_failed;
+	}
+#endif
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 end */
+
 	//---set device node---
 #if NVT_TOUCH_PROC
 	ret = nvt_flash_proc_init();
@@ -2322,6 +2356,16 @@ if (nvt_resume_workqueue) {
 err_nvt_resume_init_wq_failed:
 #endif
 /* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 end */
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 start */
+#if TP_SUSPEND_EN
+	if (nvt_suspend_workqueue) {
+		cancel_delayed_work_sync(&nvt_suspend_work);
+		destroy_workqueue(nvt_suspend_workqueue);
+		nvt_suspend_workqueue = NULL;
+	}
+err_nvt_suspend_init_wq_failed:
+#endif
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 end */
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - end*/
 #if NVT_TOUCH_ESD_PROTECT
 	if (nvt_esd_check_wq) {
@@ -2852,14 +2896,27 @@ static int nvt_fb_notifier_callback(struct notifier_block *self, unsigned long e
 		if (*blank == FB_BLANK_POWERDOWN) {
 			NVT_LOG("event=%lu, *blank=%d\n", event, *blank);
 /* Huaqin modify for HQ-139605 by feiwen at 2021/06/09 start */
+#if TP_RESUME_EN
 			flush_workqueue(nvt_resume_workqueue);
+#endif
 /* Huaqin modify for HQ-139605 by feiwen at 2021/06/09 end */
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 start */
+#if TP_SUSPEND_EN
+			nvt_suspend_queue_work();
+#else
 			nvt_ts_suspend(&ts->client->dev);
+#endif
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 end */
 		}
 	} else if (evdata && evdata->data && event == FB_EVENT_BLANK) {
 		blank = evdata->data;
 		if (*blank == FB_BLANK_UNBLANK) {
 			NVT_LOG("event=%lu, *blank=%d\n", event, *blank);
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 start */
+#if TP_SUSPEND_EN
+			flush_workqueue(nvt_suspend_workqueue);
+#endif
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 end */
 /* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 start */
 #ifdef TP_RESUME_EN
 			nvt_resume_queue_work();

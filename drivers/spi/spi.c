@@ -1307,13 +1307,16 @@ static int spi_init_queue(struct spi_controller *ctlr)
 
 	kthread_init_worker(&ctlr->kworker);
 	/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/03 start */
-	/*ctlr->kworker_task = kthread_run(kthread_worker_fn, &ctlr->kworker,
-					 "%s", dev_name(&ctlr->dev));*/
-	ctlr->kworker_task = kthread_create_on_cpu(kthread_worker_fn, &ctlr->kworker,
-					6, dev_name(&ctlr->dev));
-	kthread_bind(ctlr->kworker_task, 6);
-	if (!IS_ERR(ctlr->kworker_task)) {
-		wake_up_process(ctlr->kworker_task);
+	if (strcmp(dev_name(&ctlr->dev), "spi5") != 0) {
+		ctlr->kworker_task = kthread_run(kthread_worker_fn, &ctlr->kworker,
+					 "%s", dev_name(&ctlr->dev));
+	} else {
+		#define CPU6 6
+		ctlr->kworker_task = kthread_create_on_cpu(kthread_worker_fn, &ctlr->kworker,
+					CPU6, dev_name(&ctlr->dev));
+		if (!IS_ERR(ctlr->kworker_task)) {
+			wake_up_process(ctlr->kworker_task);
+		}
 	}
 	/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/03 end */
 

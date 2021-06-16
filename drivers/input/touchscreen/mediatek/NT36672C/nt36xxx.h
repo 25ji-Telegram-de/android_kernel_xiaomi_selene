@@ -44,6 +44,10 @@
 #define TP_RESUME_EN 1
 /* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 end */
 
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 start */
+#define TP_SUSPEND_EN 1
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/16 end */
+
 #define NVT_DEBUG 1
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - start*/
 #define NVT_LOCKDOWN 1
