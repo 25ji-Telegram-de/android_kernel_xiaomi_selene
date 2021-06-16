@@ -23,6 +23,9 @@
 #endif
 
 #include "lcm_drv.h"
+/* Huaqin add for K19A-315 by feiwen at 2021/06/16 start */
+#include "../../../../input/touchscreen/mediatek/NT36672C/nt36xxx.h"
+/* Huaqin add for K19A-315 by feiwen at 2021/06/16 end */
 #include <linux/hqsysfs.h>
 #ifdef BUILD_LK
 #  include <platform/upmu_common.h>
@@ -33,6 +36,16 @@
 #elif defined(BUILD_UBOOT)
 #  include <asm/arch/mt_gpio.h>
 #endif
+
+/* Huaqin add for K19A-315 by feiwen at 2021/06/16 start */
+#ifdef mdelay
+#undef mdelay
+#endif
+
+#ifdef udelay
+#undef udelay
+#endif
+/* Huaqin add for K19A-315 by feiwen at 2021/06/16 end */
 
 #ifdef BUILD_LK
 #  define LCM_LOGI(string, args...)  dprintf(0, "[LK/"LOG_TAG"]"string, ##args)
@@ -131,6 +144,9 @@ extern bool nvt_gesture_flag;
 
 /* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 start */
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+/* Huaqin add for K19A-315 by feiwen at 2021/06/16 start */
+extern struct nvt_ts_data *ts;
+/* Huaqin add for K19A-315 by feiwen at 2021/06/16 end */
 extern int32_t nvt_update_firmware(char *firmware_name);
 #endif
 /* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end */
@@ -785,7 +801,11 @@ static unsigned int lcd_esd_recover(void)
 	lcm_init_power();
 	lcm_init();
 
+/* Huaqin add for K19A-315 by feiwen at 2021/06/16 start */
+	mutex_lock(&ts->lock);
 	nvt_update_firmware("nt36672c_tr_02_ts_fw.bin");
+	mutex_unlock(&ts->lock);
+	/* Huaqin add for K19A-315 by feiwen at 2021/06/16 end */
 	return 0;
 }
 #endif
