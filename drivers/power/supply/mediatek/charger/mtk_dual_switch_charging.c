@@ -1179,7 +1179,14 @@ int mtk_dual_switch_charging_init(struct charger_manager *info)
 		chr_info("Found primary charger [%s]\n",
 			info->chg1_dev->props.alias_name);
 	else
-		chr_err("*** Error: can't find primary charger ***\n");
+/* Huaqin add for K19A-216 by wangchao at 2021/6/16 start */
+	{
+		msleep(300);
+		info->chg1_dev = get_charger_by_name("primary_chg");
+		if (info->chg1_dev == NULL)
+			chr_err("*** Error: can't find primary charger, chg1_dev == NULL ***\n");
+	}
+/* Huaqin add for K19A-216 by wangchao at 2021/6/16 end */
 
 	info->chg2_dev = get_charger_by_name("secondary_chg");
 	if (info->chg2_dev)
