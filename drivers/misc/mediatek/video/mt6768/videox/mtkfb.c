@@ -178,7 +178,9 @@ unsigned long ext_fb_pa;
 unsigned int ext_lcd_fps = 6000;
 char ext_mtkfb_lcm_name[256] = { 0 };
 #endif
-
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
+extern real_refresh;
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 DEFINE_SEMAPHORE(sem_flipping);
 DEFINE_SEMAPHORE(sem_early_suspend);
 DEFINE_SEMAPHORE(sem_overlay_buffer);
@@ -361,6 +363,19 @@ static ssize_t mtkfb_set_wpoint_level(struct device *dev, struct device_attribut
 	return len;
 }
 /* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 end */
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
+static ssize_t mtkfb_get_refresh(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	int ret;
+	ret = scnprintf(buf, PAGE_SIZE, "%3d\n", real_refresh);
+	return ret;
+}
+static ssize_t mtkfb_set_refresh(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
+{
+		sscanf(buf, "%3d", &real_refresh);
+		return len;
+}
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 static int mtkfb_set_rgb_point_init(void)
 {
 	if (strncmp(mtkfb_lcm_name, "nt36672A_fhdp_dsi_vdo_tianma_lcm_drv", 36) == 0) {
@@ -517,6 +532,8 @@ static DEVICE_ATTR(mtkfb_dispbpoint, 0644, mtkfb_get_bpoint, mtkfb_set_bpoint);
 static DEVICE_ATTR(panel_info, 0644, mtkfb_get_panel_info, NULL);
 /* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 start */
 static DEVICE_ATTR(mtkfb_dispwpoint_level, 0644, mtkfb_get_wpoint_level, mtkfb_set_wpoint_level);
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
+static DEVICE_ATTR(mtkfb_fps, 0644, mtkfb_get_refresh, mtkfb_set_refresh);
 
 static struct attribute *mtk_fb_attrs[] = {
 	&dev_attr_mtk_fb_hbm.attr,
@@ -526,8 +543,10 @@ static struct attribute *mtk_fb_attrs[] = {
 	&dev_attr_mtkfb_dispbpoint.attr,
 	&dev_attr_panel_info.attr,
 	&dev_attr_mtkfb_dispwpoint_level.attr,
+	&dev_attr_mtkfb_fps.attr,
 	NULL,
 };
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 /* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 end */
 static struct attribute_group mtk_fb_attr_group = {
 	.attrs = mtk_fb_attrs,

@@ -154,8 +154,9 @@ do {	\
 	(x == DISP_MODULE_DSIDUAL ? 1 : DSI_MODULE_to_ID(x))
 #define DSI_MODULE_to_ID(x)	(x == DISP_MODULE_DSI0 ? 0 : 1)
 #define DIFF_CLK_LANE_LP (0x10)
-
-
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
+int real_refresh;
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 /*****************************************************************************/
 struct t_condition_wq {
 	wait_queue_head_t wq;
@@ -878,6 +879,15 @@ int ddp_dsi_porch_setting(enum DISP_MODULE_ENUM module, void *handle,
 			DSI_OUTREG32(handle, &DSI_REG[i]->DSI_VFP_NL, value);
 			if (bdg_is_bdg_connected() == 1)
 				ddp_dsi_set_bdg_porch_setting(module, handle, value);
+		/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
+			if(value == 54){
+				real_refresh = 90;
+			}else if(value == 1290){
+				real_refresh = 60;
+			}else{
+				real_refresh = 45;
+			}
+		/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 		}
 		if (type == DSI_VSA) {
 			DISPINFO("set dsi%d vsa to %d\n", i, value);
