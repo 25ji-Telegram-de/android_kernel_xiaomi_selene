@@ -90,16 +90,16 @@ static imgsensor_info_struct imgsensor_info = {
 		 .max_framerate = 150,
 		 },
 	.normal_video = {
-			 .pclk = 144000000,
-			 .linelength = 1932,
-			 .framelength = 2482,
-			 .startx = 0,
-			 .starty = 0,
-			 .grabwindow_width = 3264,
-			 .grabwindow_height = 2448,
-			 .mipi_data_lp2hs_settle_dc = 23,
-			 .mipi_pixel_rate = 289000000,
-			 .max_framerate = 300,
+		.pclk = 144000000,
+		.linelength  = 1932,
+		.framelength = 2482,
+		.startx = 0,
+		.starty = 0,
+		.grabwindow_width  = 3264,
+		.grabwindow_height = 1836,
+		.mipi_data_lp2hs_settle_dc = 85,
+		.mipi_pixel_rate = 254400000,
+		.max_framerate = 300,
 			 },
 	.hs_video = {
 		     .pclk = 144000000,	/* record different mode's pclk */
@@ -179,7 +179,7 @@ static struct SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[5] = {
 
 { 3296, 2480,    0,	12, 3296, 2456, 3296, 2456,   16,	4, 3264, 2448,	 0, 0, 3264, 2448}, // capture
 { 3296, 2480,    0,	12, 3296, 2456, 3296, 2456,   16,	4, 3264, 2448,	 0, 0, 3264, 2448}, // capture
-{ 3296, 2480,    0,	12, 3296, 2456, 3296, 2456,   16,	4, 3264, 2448,	 0, 0, 3264, 2448}, // video
+{ 3296, 2480,	0, 12, 3296, 2456, 3296,  2456, 4, 310, 3264, 1836, 0, 0, 3264, 1836},// video
 { 3296, 2480,	  336,	272, 2624, 1936,  656,  484,   8,	2,  640,  480,	 0, 0,  640,  480}, //hight speed video
 { 3296, 2480,	  0,	12, 3296, 2456, 1648, 1228,   8,	2, 1632, 1224,	 0, 0, 1632, 1224}   // slim video
 };
@@ -1219,13 +1219,52 @@ static void vga_setting_120fps(void)
 		//write_cmos_sensor(0x0100, 0x01);
 
 }
-#if 0
+
 static void normal_video_setting(kal_uint16 currefps)
 {
-	LOG_INF("E! currefps:%d\n", currefps);
-   capture_setting(currefps);
+	LOG_INF("normal_video_setting:%d\n", currefps);
+	write_cmos_sensor(0x0302, 0x35);
+	write_cmos_sensor(0x0303, 0x00);
+	write_cmos_sensor(0x3501, 0x9a);
+	write_cmos_sensor(0x3502, 0x20);
+	write_cmos_sensor(0x366e, 0x10);
+	write_cmos_sensor(0x3714, 0x23);
+	write_cmos_sensor(0x37c2, 0x04);
+	write_cmos_sensor(0x3800, 0x00);
+	write_cmos_sensor(0x3801, 0x00);
+	write_cmos_sensor(0x3802, 0x01);
+	write_cmos_sensor(0x3803, 0x3e);
+	write_cmos_sensor(0x3804, 0x0c);
+	write_cmos_sensor(0x3805, 0xdf);
+	write_cmos_sensor(0x3806, 0x08);
+	write_cmos_sensor(0x3807, 0x71);
+	write_cmos_sensor(0x3808, 0x0c);
+	write_cmos_sensor(0x3809, 0xc0);
+	write_cmos_sensor(0x380a, 0x07);
+	write_cmos_sensor(0x380b, 0x2c);
+	write_cmos_sensor(0x380e, 0x09);
+	write_cmos_sensor(0x380f, 0xb2);
+	write_cmos_sensor(0x3811, 0x10);
+	write_cmos_sensor(0x3813, 0x04);
+	write_cmos_sensor(0x3814, 0x01);
+	write_cmos_sensor(0x3820, 0x80);
+	write_cmos_sensor(0x3821, 0x46);
+	write_cmos_sensor(0x382a, 0x01);
+	write_cmos_sensor(0x4009, 0x0b);
+	write_cmos_sensor(0x4837, 0x0c);
+	write_cmos_sensor(0x5795, 0x02);
+	write_cmos_sensor(0x5796, 0x20);
+	write_cmos_sensor(0x5797, 0x20);
+	write_cmos_sensor(0x5798, 0xd5);
+	write_cmos_sensor(0x5799, 0xd5);
+	write_cmos_sensor(0x579b, 0x50);
+	write_cmos_sensor(0x579d, 0x00);
+	write_cmos_sensor(0x579e, 0x0c);
+	write_cmos_sensor(0x579f, 0x40);
+	write_cmos_sensor(0x57a0, 0x07);
+	write_cmos_sensor(0x57a1, 0x40);
 }
-#endif
+
 static void hs_video_setting(void)
 {
 	LOG_INF("E\n");
@@ -1494,7 +1533,7 @@ static kal_uint32 normal_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	//imgsensor.current_fps = 300;
 	imgsensor.autoflicker_en = KAL_FALSE;
 	spin_unlock(&imgsensor_drv_lock);
-	capture_setting(imgsensor.current_fps);
+	normal_video_setting(imgsensor.current_fps);
 	mdelay(10);
 
 	set_mirror_flip(IMAGE_NORMAL);
