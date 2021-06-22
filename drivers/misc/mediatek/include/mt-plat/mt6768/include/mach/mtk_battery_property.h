@@ -139,9 +139,10 @@
 #define SWOCV_OLDOCV_DIFF_CHR	800
 #define VBAT_OLDOCV_DIFF	1000
 #define SWOCV_OLDOCV_DIFF_EMB	1000	/* 100mV */
-
-#define VIR_OLDOCV_DIFF_EMB	10000	/* 1000mV */
-#define VIR_OLDOCV_DIFF_EMB_LT	10000	/* 1000mV */
+/*K19A HQHW-951 K19A for sync soc by langjunjun at 2021/6/22 start*/
+#define VIR_OLDOCV_DIFF_EMB	2000	/* 200mV */
+#define VIR_OLDOCV_DIFF_EMB_LT	2000	/* 200mV */
+/*K19A HQHW-951 K19A for sync soc by langjunjun at 2021/6/22 end*/
 #define VIR_OLDOCV_DIFF_EMB_TMP	5
 
 #define TNEW_TOLD_PON_DIFF	5
