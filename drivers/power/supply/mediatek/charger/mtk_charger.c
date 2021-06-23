@@ -1354,55 +1354,22 @@ void do_sw_jeita_state_machine(struct charger_manager *info)
 			sw_jeita->sm = TEMP_T3_TO_T4;
 		}
 	} else if (info->battery_temp >= info->data.temp_t2_thres) {
-		if (((sw_jeita->sm == TEMP_T3_TO_T4)
-		     && (info->battery_temp
-			 >= info->data.temp_t3_thres_minus_x_degree))
-		    || ((sw_jeita->sm == TEMP_T1_TO_T2)
-			&& (info->battery_temp
-			    <= info->data.temp_t2_thres_plus_x_degree))) {
-			chr_err("[SW_JEITA] Battery Temperature not recovery to normal temperature charging mode yet!!\n");
-		} else {
 			chr_err("[SW_JEITA] Battery Normal Temperature between %d and %d !!\n",
 				info->data.temp_t2_thres,
 				info->data.temp_t3_thres);
 			sw_jeita->sm = TEMP_T2_TO_T3;
-		}
 	} else if (info->battery_temp >= info->data.temp_t1_thres) {
-		if ((sw_jeita->sm == TEMP_T0_TO_T1
-		     || sw_jeita->sm == TEMP_BELOW_T0)
-		    && (info->battery_temp
-			<= info->data.temp_t1_thres_plus_x_degree)) {
-			if (sw_jeita->sm == TEMP_T0_TO_T1) {
-				chr_err("[SW_JEITA] Battery Temperature between %d and %d !!\n",
-					info->data.temp_t1_thres_plus_x_degree,
-					info->data.temp_t2_thres);
-			}
-			if (sw_jeita->sm == TEMP_BELOW_T0) {
-				chr_err("[SW_JEITA] Battery Temperature between %d and %d,not allow charging yet!!\n",
-					info->data.temp_t1_thres,
-					info->data.temp_t1_thres_plus_x_degree);
-			}
-		} else {
 			chr_err("[SW_JEITA] Battery Temperature between %d and %d !!\n",
 				info->data.temp_t1_thres,
 				info->data.temp_t2_thres);
 
 			sw_jeita->sm = TEMP_T1_TO_T2;
-		}
 	} else if (info->battery_temp >= info->data.temp_t0_thres) {
-		if ((sw_jeita->sm == TEMP_BELOW_T0)
-		    && (info->battery_temp
-			<= info->data.temp_t0_thres_plus_x_degree)) {
-			chr_err("[SW_JEITA] Battery Temperature between %d and %d,not allow charging yet!!\n",
-				info->data.temp_t0_thres,
-				info->data.temp_t0_thres_plus_x_degree);
-		} else {
 			chr_err("[SW_JEITA] Battery Temperature between %d and %d !!\n",
 				info->data.temp_t0_thres,
 				info->data.temp_t1_thres);
 
 			sw_jeita->sm = TEMP_T0_TO_T1;
-		}
 	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/	
 	} else if (info->battery_temp >= info->data.temp_neg_10_thres) {
 			chr_err("[SW_JEITA] Battery Temperature between %d and %d !!\n",
