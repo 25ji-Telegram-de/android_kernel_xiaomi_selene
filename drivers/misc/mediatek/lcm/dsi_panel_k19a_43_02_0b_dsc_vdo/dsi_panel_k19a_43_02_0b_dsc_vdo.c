@@ -26,6 +26,9 @@
 /* Huaqin add for K19A-315 by feiwen at 2021/06/16 start */
 #include "../../../../input/touchscreen/mediatek/NT36672C/nt36xxx.h"
 /* Huaqin add for K19A-315 by feiwen at 2021/06/16 end */
+/* Huaqin add for HQ-142518 by feiwen at 2021/06/24 start */
+#include "mtk_boot_common.h"
+/* Huaqin add for HQ-142518 by feiwen at 2021/06/24 end */
 #include <linux/hqsysfs.h>
 #ifdef BUILD_LK
 #  include <platform/upmu_common.h>
@@ -801,11 +804,21 @@ static unsigned int lcd_esd_recover(void)
 	lcm_init_power();
 	lcm_init();
 
+/* Huaqin add for HQ-142518 by feiwen at 2021/06/24 start */
+#ifdef CONFIG_MTK_KERNEL_POWER_OFF_CHARGING
+	if (get_boot_mode() == KERNEL_POWER_OFF_CHARGING_BOOT
+		||get_boot_mode() == LOW_POWER_OFF_CHARGING_BOOT)
+		{
+			LCM_LOGI("%s, enter power off charging mode.\n", __func__);
+		} else {
 /* Huaqin add for K19A-315 by feiwen at 2021/06/16 start */
-	mutex_lock(&ts->lock);
-	nvt_update_firmware("nt36672c_tr_02_ts_fw.bin");
-	mutex_unlock(&ts->lock);
-	/* Huaqin add for K19A-315 by feiwen at 2021/06/16 end */
+			mutex_lock(&ts->lock);
+			nvt_update_firmware("nt36672c_tr_02_ts_fw.bin");
+			mutex_unlock(&ts->lock);
+/* Huaqin add for K19A-315 by feiwen at 2021/06/16 end */
+		}
+#endif
+/* Huaqin add for HQ-142518 by feiwen at 2021/06/24 end */
 	return 0;
 }
 #endif
