@@ -106,7 +106,7 @@ do {\
 	}						\
 } while (0)
 
-#define BM_DAEMON_DEFAULT_LOG_LEVEL 3
+#define BM_DAEMON_DEFAULT_LOG_LEVEL 8
 
 enum gauge_hw_version {
 	GAUGE_HW_V1000 = 1000,
