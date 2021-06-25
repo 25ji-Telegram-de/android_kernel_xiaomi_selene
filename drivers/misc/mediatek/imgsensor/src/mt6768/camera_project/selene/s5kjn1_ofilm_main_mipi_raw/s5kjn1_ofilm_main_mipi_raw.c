@@ -400,11 +400,11 @@ static void write_shutter(kal_uint16 shutter)
 //cxc long exposure >
 static bool bNeedSetNormalMode = KAL_FALSE;
 #define SHUTTER_1		94750//30396
-#define SHUTTER_2		189501//60792
-#define SHUTTER_4		379003//56049
-#define SHUTTER_8		758006//46563
-#define SHUTTER_16		1516012//27591
-#define SHUTTER_32		2842524
+//#define SHUTTER_2		189501//60792
+//#define SHUTTER_4		379003//56049
+//#define SHUTTER_8		758006//46563
+//#define SHUTTER_16		1516012//27591
+//#define SHUTTER_32		2842524
 
 static void check_output_stream_off(void)
 {
@@ -445,7 +445,7 @@ static void set_shutter(kal_uint64 shutter)
 	unsigned long flags;
 	kal_uint16 realtime_fps = 0;
 	kal_uint64 pre_shutter = 2877;
-
+	kal_uint16 shutter_length = 0;
 	LOG_DBG("enter  shutter = %d\n", shutter);
 
 	spin_lock_irqsave(&imgsensor_drv_lock, flags);
@@ -512,7 +512,7 @@ static void set_shutter(kal_uint64 shutter)
 		write_cmos_sensor(0X0202, shutter & 0xFFFF);
 
 	} else {
-		LOG_INF("enter long shutter\n");
+		LOG_INF("enter long shutter = %d\n",shutter);
 		bNeedSetNormalMode = KAL_TRUE;
 		imgsensor.ae_frm_mode.frame_mode_1 = IMGSENSOR_AE_MODE_SE;
 		imgsensor.ae_frm_mode.frame_mode_2 = IMGSENSOR_AE_MODE_SE;
@@ -526,50 +526,52 @@ static void set_shutter(kal_uint64 shutter)
 		write_cmos_sensor(0x0E04, 0x0003);
 		write_cmos_sensor(0x0E10, pre_shutter); //1st frame
 		write_cmos_sensor(0x0E12, imgsensor.gain); //aGain 1st frame
-		switch (shutter) {
-		case SHUTTER_1:
-			LOG_INF("enter SHUTTER_1\n");
+
+		shutter_length = shutter / SHUTTER_1;
+		LOG_DBG("enter long shutter Actual duration = %ds !\n",shutter_length);
+
+		if(shutter_length == 1)
+		{
+			LOG_INF("enter 1s !\n");
 			write_cmos_sensor(0x0E14, 0xB911); //2nd frame
 			write_cmos_sensor(0x0E16, 0x0020); //aGain 2nd frame
 			write_cmos_sensor(0x0704, 0x0100); //shifter for shutter
-			break;
-		case SHUTTER_2:
-			LOG_INF("enter SHUTTER_2\n");
+		}else if(shutter_length == 2)
+		{
+			LOG_INF("enter 2s !\n");
 			write_cmos_sensor(0x0E14, 0xB911); //2nd frame
 			write_cmos_sensor(0x0E16, 0x0020); //aGain 2nd frame
 			write_cmos_sensor(0x0704, 0x0200); //shifter for shutter
-			break;
-		case SHUTTER_4:
-			LOG_INF("enter SHUTTER_4\n");
-			write_cmos_sensor(0x0E14, 0xB911); //2nd frame
+		}else if(shutter_length >2 && shutter_length <= 4)
+		{
+			LOG_INF("enter 3~4s !\n");
+			write_cmos_sensor(0x0E14, ((shutter_length * 0xB911) / 4)); //2nd frame
 			write_cmos_sensor(0x0E16, 0x0020); //aGain 2nd frame
 			write_cmos_sensor(0x0704, 0x0300); //shifter for shutter
-			break;
-		case SHUTTER_8:
-			LOG_INF("enter SHUTTER_8\n");
-			write_cmos_sensor(0x0E14, 0xB911); //2nd frame
+		}else if(shutter_length >4 && shutter_length <= 8)
+		{
+			LOG_INF("enter 5~8s !\n");
+			write_cmos_sensor(0x0E14, ((shutter_length * 0xB911) / 8)); //2nd frame
 			write_cmos_sensor(0x0E16, 0x0020); //aGain 2nd frame
 			write_cmos_sensor(0x0704, 0x0400); //shifter for shutter
-			break;
-		case SHUTTER_16:
-			LOG_INF("enter SHUTTER_16\n");
-			write_cmos_sensor(0x0E14, 0xB911); //2nd frame
+		}else if(shutter_length >8 && shutter_length <= 16)
+		{
+			LOG_INF("enter 9~16s !\n");
+			write_cmos_sensor(0x0E14, ((shutter_length * 0xB911) / 16)); //2nd frame
 			write_cmos_sensor(0x0E16, 0x0020); //aGain 2nd frame
 			write_cmos_sensor(0x0704, 0x0500); //shifter for shutter
-			break;
-		case SHUTTER_32:
-			LOG_INF("enter SHUTTER_32\n");
-			write_cmos_sensor(0x0E14, 0xB911); //2nd frame
+		}else if(shutter_length >16 && shutter_length <= 32)
+		{
+			LOG_INF("enter 17~32s !\n");
+			write_cmos_sensor(0x0E14, ((shutter_length * 0xB911) / 32)); //2nd frame
 			write_cmos_sensor(0x0E16, 0x0020); //aGain 2nd frame
 			write_cmos_sensor(0x0704, 0x0600); //shifter for shutter
-			break;
-		default:
+		}else
+		{
 			LOG_INF("enter default\n");
-			write_cmos_sensor(0x0E14, ((shutter * 0xB911) /
-				SHUTTER_1)); //2nd frame
+			write_cmos_sensor(0x0E14, ((shutter * 0xB911) / SHUTTER_1)); //2nd frame
 			write_cmos_sensor(0x0E16, 0x0020); //aGain 2nd frame
 			write_cmos_sensor(0x0704, 0x0100); //shifter for shutter
-			break;
 		}
 
 		write_cmos_sensor_byte(0x0100, 0x01); //stream on
