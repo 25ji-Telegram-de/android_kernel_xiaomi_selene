@@ -432,7 +432,12 @@ static int bms_get_property(struct power_supply *psy,
 		break;
 /*K19A HQ-138551 K19A charger of charge_full by miaozhichao at 2021/6/2 end*/
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-		val->intval = 5020000;
+		/*K19A HQ-143121 K19A charger of charge_full_design by miaozhichao at 2021/6/25 start*/
+		if(gm.battery_id == 0 || gm.battery_id == 1)
+			val->intval = 5000000;
+		else
+			val->intval = 6000000;
+		/*K19A HQ-143121 K19A charger of charge_full_design by miaozhichao at 2021/6/25 end*/
 		break;
 	case POWER_SUPPLY_PROP_RESISTANCE:
 		val->intval = 140000;
