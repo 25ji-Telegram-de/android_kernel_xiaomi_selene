@@ -66,6 +66,10 @@ static DEFINE_MUTEX(cmdq_inst_check_mutex);
 static DEFINE_SPINLOCK(cmdq_write_addr_lock);
 static DEFINE_SPINLOCK(cmdq_record_lock);
 
+/* wake lock to prevnet system off */
+static struct wakeup_source mdp_wake_lock;
+static bool mdp_wake_locked;
+
 static struct dma_pool *mdp_rb_pool;
 static atomic_t mdp_rb_pool_cnt;
 static u32 mdp_rb_pool_limit = 256;
@@ -3354,6 +3358,33 @@ bool cmdq_thread_in_use(void)
 	return (bool)(atomic_read(&cmdq_thread_usage) > 0);
 }
 
+static void mdp_lock_wake_lock(bool lock)
+{
+	CMDQ_SYSTRACE_BEGIN("%s_%s\n", __func__, lock ? "lock" : "unlock");
+
+	if (lock) {
+		if (!mdp_wake_locked) {
+			__pm_stay_awake(&mdp_wake_lock);
+			mdp_wake_locked = true;
+		} else  {
+			/* should not reach here */
+			CMDQ_ERR("try lock twice\n");
+			dump_stack();
+		}
+	} else {
+		if (mdp_wake_locked) {
+			__pm_relax(&mdp_wake_lock);
+			mdp_wake_locked = false;
+		} else {
+			/* should not reach here */
+			CMDQ_ERR("try unlock twice\n");
+			dump_stack();
+		}
+	}
+
+	CMDQ_SYSTRACE_END();
+}
+
 static void cmdq_core_clk_enable(struct cmdqRecStruct *handle)
 {
 	s32 clock_count;
@@ -3363,12 +3394,8 @@ static void cmdq_core_clk_enable(struct cmdqRecStruct *handle)
 	CMDQ_MSG("[CLOCK]enable usage:%d scenario:%d\n",
 		clock_count, handle->scenario);
 
-	if (clock_count == 1) {
-		cmdq_core_reset_gce();
-		if (!handle->secData.is_secure)
-			cmdq_mbox_enable(((struct cmdq_client *)
-				handle->pkt->cl)->chan);
-	}
+	if (clock_count == 1)
+		mdp_lock_wake_lock(true);
 
 	cmdq_core_group_clk_cb(true, handle->engineFlag, handle->engine_clk);
 }
@@ -3383,20 +3410,13 @@ static void cmdq_core_clk_disable(struct cmdqRecStruct *handle)
 
 	CMDQ_MSG("[CLOCK]disable usage:%d\n", clock_count);
 
-	if (clock_count == 0) {
-		if (!handle->secData.is_secure)
-			cmdq_mbox_disable(((struct cmdq_client *)
-				handle->pkt->cl)->chan);
-		/* Backup event */
-		cmdq_get_func()->eventBackup();
-		/* clock-off */
-		cmdq_get_func()->enableGCEClockLocked(false);
-	} else if (clock_count < 0) {
+	if (clock_count == 0)
+		mdp_lock_wake_lock(false);
+	else if (clock_count < 0)
 		CMDQ_ERR(
 			"enable clock %s error usage:%d smi use:%d\n",
 			__func__, clock_count,
 			(s32)atomic_read(&cmdq_thread_usage));
-	}
 }
 
 s32 cmdq_core_suspend_hw_thread(s32 thread)
@@ -4480,6 +4500,16 @@ s32 cmdq_pkt_wait_flush_ex_result(struct cmdqRecStruct *handle)
 				CMDQ_ERR(
 					"task may not execute handle:%p pkt:%p exec:%#x %#x",
 					handle, handle->pkt, va[0], va[1]);
+		if (va && (va[0] == 0xdeaddead || va[1] == 0xdeaddead))
+			CMDQ_ERR(
+				"task may not execute handle:%p pkt:%p exec:%#x %#x",
+				handle, handle->pkt, va[0], va[1]);
+		if (va) {
+			if (va[0] == 0xdeaddead || va[1] == 0xdeaddead) {
+				CMDQ_ERR(
+					"task may not execute handle:%p pkt:%p exec:%#x %#x",
+					handle, handle->pkt, va[0], va[1]);
+				cmdq_dump_pkt(handle->pkt, 0, true);
 			} else {
 				u32 cost = va[1] < va[0] ?
 					~va[0] + va[1] : va[1] - va[0];
@@ -4668,8 +4698,8 @@ static s32 cmdq_pkt_flush_async_ex_impl(struct cmdqRecStruct *handle,
 	mutex_unlock(&ctx->thread[(u32)thread].thread_mutex);
 
 	if (err < 0) {
-		CMDQ_ERR("pkt flush failed err:%d pkt:0x%p thread:%d\n",
-			err, handle->pkt, thread);
+		CMDQ_ERR("pkt flush failed err:%d handle:%p thread:%d\n",
+			err, handle, thread);
 		return err;
 	}
 
@@ -4827,9 +4857,16 @@ s32 cmdq_helper_mbox_register(struct device *dev)
 	u32 i;
 	s32 chan_id;
 	struct cmdq_client *clt;
+	int thread_cnt;
+
+	thread_cnt = of_count_phandle_with_args(
+		dev->of_node, "mboxes", "#mbox-cells");
+	CMDQ_LOG("thread count:%d\n", thread_cnt);
+	if (thread_cnt <= 0)
+		thread_cnt = CMDQ_MAX_THREAD_COUNT;
 
 	/* for display we start from thread 0 */
-	for (i = 0; i < CMDQ_MAX_THREAD_COUNT; i++) {
+	for (i = 0; i < thread_cnt; i++) {
 		clt = cmdq_mbox_create(dev, i);
 		if (!clt || IS_ERR(clt)) {
 			CMDQ_MSG("register mbox stop:0x%p idx:%u\n", clt, i);
@@ -4973,6 +5010,8 @@ void cmdq_core_initialize(void)
 	mdp_rb_pool = dma_pool_create("mdp_rb", cmdq_dev_get(),
 		CMDQ_BUF_ALLOC_SIZE, 0, 0);
 	atomic_set(&mdp_rb_pool_cnt, 0);
+
+	wakeup_source_add(&mdp_wake_lock);
 }
 
 #ifdef CMDQ_DAPC_DEBUG
