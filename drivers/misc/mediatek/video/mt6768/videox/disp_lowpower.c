@@ -335,11 +335,9 @@ int primary_display_dsi_vfp_change(int state)
 	struct LCM_PARAMS *params;
 	unsigned int apply_vfp = 0;
 
-	if (bdg_is_bdg_connected() == 1)
-		cmdqRecCreate(CMDQ_SCENARIO_PRIMARY_DISP, &handle);
-	else
-		cmdqRecCreate(CMDQ_SCENARIO_DISP_ESD_CHECK, &handle);
-
+	/* Huaqin modify for HQ-136147 by caogaojie at 2021/06/30 start */
+	cmdqRecCreate(CMDQ_SCENARIO_PRIMARY_DISP, &handle);
+	/* Huaqin modify for HQ-136147 by caogaojie at 2021/06/30 end */
 	cmdqRecReset(handle);
 
 	/* for chips later than M17,VFP can be set at anytime
@@ -382,8 +380,6 @@ int primary_display_dsi_vfp_change(int state)
 			dpmgr_path_build_cmdq(primary_get_dpmgr_handle(), handle,
 						CMDQ_STOP_VDO_MODE, 0);
 
-			cmdqRecClearEventToken(handle, CMDQ_EVENT_MUTEX0_STREAM_EOF);
-
 			dpmgr_path_ioctl(primary_get_dpmgr_handle(), handle,
 						DDP_DSI_PORCH_CHANGE, &apply_vfp);
 
@@ -394,16 +390,12 @@ int primary_display_dsi_vfp_change(int state)
 			ddp_mutex_set_sof_wait(dpmgr_path_get_mutex(primary_get_dpmgr_handle()),
 						handle, 0);
 
-			_blocking_flush();
-
-			cmdqRecFlush(handle);
 		} else {
 			dpmgr_path_ioctl(primary_get_dpmgr_handle(), handle,
 						DDP_DSI_PORCH_CHANGE, &apply_vfp);
 		}
 	}
 
-	if (bdg_is_bdg_connected() != 1)
 		cmdqRecFlushAsync(handle);
 
 	cmdqRecDestroy(handle);
