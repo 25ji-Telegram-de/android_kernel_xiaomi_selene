@@ -668,23 +668,23 @@ int charger_manager_set_input_current_limit(struct charger_consumer *consumer,
 }
 #endif
 
+/*K19A HQ-129052 K19A charger of thermal by wangqi at 2021/7/1 start*/
+ int charger_manager_set_charging_current_thermal_limit(
+ 	struct charger_manager *info, int idx, int charging_current)
+ {
 
-// int charger_manager_set_charging_current_thermal_limit(
-// 	struct charger_manager *info, int idx, int charging_current)
-// {
-
-// 	if (info != NULL) {
-// 		struct charger_data *pdata;
-// 		pdata = &info->chg1_data;
-// 		pdata->thermal_charging_current_limit = charging_current;
-// 		chr_err("%s: charging_current_limit:%d\n", __func__, charging_current);
-// 		_mtk_charger_change_current_setting(info);
-// 		_wake_up_charger(info);
-// 		return 0;
-// 	}
-// 	return -EBUSY;
-// }
-
+ 	if (info != NULL) {
+ 		struct charger_data *pdata;
+ 		pdata = &info->chg1_data;
+ 		pdata->thermal_charging_current_limit = charging_current;
+		chr_err("%s: charging_current_limit:%d\n", __func__, charging_current);
+ 		_mtk_charger_change_current_setting(info);
+		_wake_up_charger(info);
+		return 0;
+ 	}
+ 	return -EBUSY;
+}
+/*K19A HQ-129052 K19A charger of thermal by wangqi at 2021/7/1 end*/
 
 int charger_manager_set_charging_current_limit(
 	struct charger_consumer *consumer, int idx, int charging_current)
@@ -1007,11 +1007,15 @@ void charger_manager_set_prop_system_temp_level(int temp_level)
 	/*K19A HQ-124114 K19A charger enable jeita by wangqi at 2021/4/27 end*/
 	// pr_err("%s, system_temp_level:%d thermal_icl_ua:%d \n", __func__,
 	// 		pinfo->system_temp_level, thermal_icl_ua);
-
-	// charger_manager_set_charging_current_thermal_limit(pinfo,
-	// 		MAIN_CHARGER, thermal_icl_ua);
-	_charger_manager_set_input_current_limit(pinfo,
-			MAIN_CHARGER, thermal_icl_ua);
+  	/*K19A HQ-129052 K19A charger of thermal by wangqi at 2021/7/1 start*/
+	if(pinfo->usb_psy->desc->type == POWER_SUPPLY_TYPE_USB_HVDCP_3){
+		 charger_manager_set_charging_current_thermal_limit(pinfo,
+	 			MAIN_CHARGER, thermal_icl_ua);
+	}else{
+		_charger_manager_set_input_current_limit(pinfo,
+				MAIN_CHARGER, thermal_icl_ua);
+	}
+  	/*K19A HQ-129052 K19A charger of thermal by wangqi at 2021/7/1 end*/
 }
 
 int charger_manager_check_ra_detected(void)
