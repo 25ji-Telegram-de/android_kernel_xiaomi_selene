@@ -4329,7 +4329,7 @@ static void otg_boost_limit_work(struct work_struct *work)
 	}
 	if (otg_limit == 1) {
 		pr_err("phone is to high skip batterty otg boost check\n");
-		schedule_delayed_work(&otg_boost_current_work, msecs_to_jiffies(10000));
+		schedule_delayed_work(&otg_boost_current_work, msecs_to_jiffies(5000));
 		return;
 	}
 
@@ -4338,7 +4338,7 @@ static void otg_boost_limit_work(struct work_struct *work)
 	if (count_high > 888888)
 		count_high = 0;
 
-	if (current_now > 3600000) {
+	if (current_now > 3400000) {
 		count_high++;
 		count_low = 0;
 	} else if (current_now < 2400000) {
@@ -4346,16 +4346,16 @@ static void otg_boost_limit_work(struct work_struct *work)
 		count_high = 0;
 	}
 
-	if (count_low >= 6)	{
+	if (count_low >= 3)	{
 		charger_dev_set_otg_current(primary_charger, 1800000);
 		otg_ibat_limit = 0;
 		pr_err("dhx---set otg current 1.8A\n");
-	} else if (count_high == 6)	{
+	} else if (count_high == 3)	{
 		charger_dev_set_otg_current(primary_charger, 1000000);
 		otg_ibat_limit = 1;
 		pr_err("dhx---set otg current 1A\n");
 	}
-	schedule_delayed_work(&otg_boost_current_work, msecs_to_jiffies(10000));
+	schedule_delayed_work(&otg_boost_current_work, msecs_to_jiffies(5000));
 }
 
 
