@@ -219,15 +219,18 @@ static bool read_pcba_config_j19(void)
 }
 
 #elif defined(TARGET_PRODUCT_SELENE)
+/* Huaqin modify for HQ-147481 by liunianliang at 2021/07/27 start */
 static int __init get_selene_pcba_config(char *p)
 {
 	char pcba[10];
 
 	strlcpy(pcba, p, sizeof(pcba));
 
-	printk("[%s]: pcba config = %s\n", __func__, pcba);
+	if (kstrtoint(pcba, 10, &selene_pcba_config))
+		return -1;
 
-	selene_pcba_config = pcba[0] - '0';
+	printk("[%s]: pcba config = %d\n", __func__, selene_pcba_config);
+
 	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
 	hq_selene_pcba_config = selene_pcba_config;
 	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
@@ -242,9 +245,10 @@ static int __init get_selene_pcba_stage(char *p)
 
 	strlcpy(stage, p, sizeof(stage));
 
-	printk("[%s]: pcba stage = %s\n", __func__, stage);
+	if (kstrtoint(stage, 10, &selene_pcba_stage))
+		return -1;
 
-	selene_pcba_stage = stage[0] - '0';
+	printk("[%s]: pcba stage = %d\n", __func__, selene_pcba_stage);
 
 	return 0;
 }
@@ -256,13 +260,15 @@ static int __init get_selene_pcba_count(char *p)
 
 	strlcpy(count, p, sizeof(count));
 
-	printk("[%s]: pcba count = %s\n", __func__, count);
+	if (kstrtoint(count, 10, &selene_pcba_count))
+		return -1;
 
-	selene_pcba_count = count[0] - '0';
+	printk("[%s]: pcba count = %d\n", __func__, selene_pcba_count);
 
 	return 0;
 }
 early_param("pcba_count", get_selene_pcba_count);
+/* Huaqin modify for HQ-147481 by liunianliang at 2021/07/27 end */
 
 static bool read_pcba_config_k19a(void)
 {

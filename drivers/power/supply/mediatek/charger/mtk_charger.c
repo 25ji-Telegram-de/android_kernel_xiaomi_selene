@@ -117,7 +117,7 @@ typedef enum {
 	PCBA_END,
 } PCBA_CONFIG;
 #elif defined(TARGET_PRODUCT_SELENE)
-/* Huaqin modify for K19A-131 by liunianliang at 2021/04/13 start */
+/* Huaqin modify for HQ-147481 by liunianliang at 2021/07/27 start */
 typedef enum
 {
 	PCBA_UNKNOW = 0,
@@ -130,8 +130,13 @@ typedef enum
 	PCBA_K19C_P0_GLOBAL,
 	PCBA_K19C_P0_IN,
 	PCBA_K19L_P0_LA,
+	PCBA_K19S_P0_CN,
+	PCBA_K19S_P0_GLOBAL,
+	PCBA_K19T_P0_IN,
+	PCBA_K19U_P0_GLOBAL,
+	PCBA_K19V_P0_LA,
 
-	PCBA_K19A_P0_1_GLOBAL = 9,
+	PCBA_K19A_P0_1_GLOBAL = 14,
 	PCBA_K19A_P0_1_LA,
 	PCBA_K19B_P0_1_IN,
 	PCBA_K19B_P0_1_CN,
@@ -139,8 +144,13 @@ typedef enum
 	PCBA_K19C_P0_1_GLOBAL,
 	PCBA_K19C_P0_1_IN,
 	PCBA_K19L_P0_1_LA,
+	PCBA_K19S_P0_1_CN,
+	PCBA_K19S_P0_1_GLOBAL,
+	PCBA_K19T_P0_1_IN,
+	PCBA_K19U_P0_1_GLOBAL,
+	PCBA_K19V_P0_1_LA,
 
-	PCBA_K19A_P1_GLOBAL = 17,
+	PCBA_K19A_P1_GLOBAL = 27,
 	PCBA_K19A_P1_LA,
 	PCBA_K19B_P1_IN,
 	PCBA_K19B_P1_CN,
@@ -148,8 +158,13 @@ typedef enum
 	PCBA_K19C_P1_GLOBAL,
 	PCBA_K19C_P1_IN,
 	PCBA_K19L_P1_LA,
+	PCBA_K19S_P1_CN,
+	PCBA_K19S_P1_GLOBAL,
+	PCBA_K19T_P1_IN,
+	PCBA_K19U_P1_GLOBAL,
+	PCBA_K19V_P1_LA,
 
-	PCBA_K19A_P1_1_GLOBAL = 25,
+	PCBA_K19A_P1_1_GLOBAL = 40,
 	PCBA_K19A_P1_1_LA,
 	PCBA_K19B_P1_1_IN,
 	PCBA_K19B_P1_1_CN,
@@ -157,8 +172,13 @@ typedef enum
 	PCBA_K19C_P1_1_GLOBAL,
 	PCBA_K19C_P1_1_IN,
 	PCBA_K19L_P1_1_LA,
+	PCBA_K19S_P1_1_CN,
+	PCBA_K19S_P1_1_GLOBAL,
+	PCBA_K19T_P1_1_IN,
+	PCBA_K19U_P1_1_GLOBAL,
+	PCBA_K19V_P1_1_LA,
 
-	PCBA_K19A_P2_GLOBAL = 33,
+	PCBA_K19A_P2_GLOBAL = 53,
 	PCBA_K19A_P2_LA,
 	PCBA_K19B_P2_IN,
 	PCBA_K19B_P2_CN,
@@ -166,8 +186,13 @@ typedef enum
 	PCBA_K19C_P2_GLOBAL,
 	PCBA_K19C_P2_IN,
 	PCBA_K19L_P2_LA,
+	PCBA_K19S_P2_CN,
+	PCBA_K19S_P2_GLOBAL,
+	PCBA_K19T_P2_IN,
+	PCBA_K19U_P2_GLOBAL,
+	PCBA_K19V_P2_LA,
 
-	PCBA_K19A_MP_GLOBAL = 41,
+	PCBA_K19A_MP_GLOBAL = 66,
 	PCBA_K19A_MP_LA,
 	PCBA_K19B_MP_IN,
 	PCBA_K19B_MP_CN,
@@ -175,10 +200,15 @@ typedef enum
 	PCBA_K19C_MP_GLOBAL,
 	PCBA_K19C_MP_IN,
 	PCBA_K19L_MP_LA,
+	PCBA_K19S_MP_CN,
+	PCBA_K19S_MP_GLOBAL,
+	PCBA_K19T_MP_IN,
+	PCBA_K19U_MP_GLOBAL,
+	PCBA_K19V_MP_LA,
 
 	PCBA_END,
 } PCBA_CONFIG;
-/* Huaqin modify for K19A-131 by liunianliang at 2021/04/13 end */
+/* Huaqin modify for HQ-147481 by liunianliang at 2021/07/27 end */
 #else
 typedef enum {
 	PCBA_UNKNOW = 0,
@@ -954,7 +984,9 @@ void charger_manager_set_prop_system_temp_level(int temp_level)
 	if (pcba_to_thermal == PCBA_J19_MP_CN)
 		is_cn = true;
 #elif defined(TARGET_PRODUCT_SELENE)
-	if (pcba_to_thermal == PCBA_K19B_MP_CN)
+	/* Huaqin modify for HQ-147481 by liunianliang at 2021/07/27 start */
+	if (pcba_to_thermal == PCBA_K19B_MP_CN || pcba_to_thermal == PCBA_K19S_MP_CN)
+	/* Huaqin modify for HQ-147481 by liunianliang at 2021/07/27 end */
 		is_cn = true;
 #else
 	if (pcba_to_thermal == PCBA_J15S_MP_CN)
