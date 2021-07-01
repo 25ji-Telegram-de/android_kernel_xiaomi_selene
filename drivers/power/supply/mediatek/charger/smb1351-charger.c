@@ -2705,6 +2705,29 @@ static int smb1351_enable_otg(struct charger_device *chg_dev, bool en)
 	return rc;
 }
 
+/*K19A HQHW-969 K19A charger of charge full by langjunjun at 2021/7/1 start*/
+static int smb1351_do_event(struct charger_device *chg_dev, u32 event,
+			    u32 args)
+{
+	if (chg_dev == NULL)
+		return -EINVAL;
+
+	pr_info("%s: event = %d\n", __func__, event);
+	switch (event) {
+	case EVENT_EOC:
+		charger_dev_notify(chg_dev, CHARGER_DEV_NOTIFY_EOC);
+		break;
+	case EVENT_RECHARGE:
+		charger_dev_notify(chg_dev, CHARGER_DEV_NOTIFY_RECHG);
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+/*K19A HQHW-969 K19A charger of charge full by langjunjun at 2021/7/1 end*/
+
 static int smb1351_set_otg_current(struct charger_device *chg_dev, u32 uA)
 {
 	u8 reg;
@@ -2900,6 +2923,9 @@ static struct charger_ops smb1351_chg_ops = {
 	.enable_hvdcp_det = smb1351_enable_hvdcp_det,
 	.plug_in = smb1351_plug_in,
 	.enable_otg = smb1351_enable_otg,
+/*K19A HQHW-969 K19A charger of charge full by langjunjun at 2021/7/1 start*/
+	.event = smb1351_do_event,
+/*K19A HQHW-969 K19A charger of charge full by langjunjun at 2021/7/1 end*/
 	.set_otg_current = smb1351_set_otg_current,
 	.check_hv_charging = smb1351_check_hv_charging,
 };

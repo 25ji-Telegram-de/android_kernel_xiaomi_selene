@@ -3893,11 +3893,13 @@ static int battery_callback(
 	case CHARGER_NOTIFY_EOC:
 		{
 /* CHARGING FULL */
-			if (force_get_tbat(true) < 45)
+/*K19A HQHW-969 K19A charger of charge full by langjunjun at 2021/7/1 start*/
+			if (force_get_tbat(true) < 48)
 				notify_fg_chr_full();
 			battery_update(&battery_main);
 			pr_err("battery is full\n");
 		}
+/*K19A HQHW-969 K19A charger of charge full by langjunjun at 2021/7/1 end*/
 		break;
 	case CHARGER_NOTIFY_START_CHARGING:
 		{
