@@ -336,7 +336,7 @@ int primary_display_dsi_vfp_change(int state)
 	unsigned int apply_vfp = 0;
 
 	/* Huaqin modify for HQ-136147 by caogaojie at 2021/06/30 start */
-	cmdqRecCreate(CMDQ_SCENARIO_PRIMARY_DISP, &handle);
+	cmdqRecCreate(CMDQ_SCENARIO_DISP_ESD_CHECK, &handle);
 	/* Huaqin modify for HQ-136147 by caogaojie at 2021/06/30 end */
 	cmdqRecReset(handle);
 
@@ -389,15 +389,18 @@ int primary_display_dsi_vfp_change(int state)
 
 			ddp_mutex_set_sof_wait(dpmgr_path_get_mutex(primary_get_dpmgr_handle()),
 						handle, 0);
-
+	/* Huaqin modify for HQ-141739 by caogaojie at 2021/07/05 start */
+			cmdqRecFlush(handle);
+	/* Huaqin modify for HQ-141739 by caogaojie at 2021/07/05 end */
 		} else {
 			dpmgr_path_ioctl(primary_get_dpmgr_handle(), handle,
 						DDP_DSI_PORCH_CHANGE, &apply_vfp);
 		}
 	}
-
+/* Huaqin modify for HQ-141739 by caogaojie at 2021/07/05 start */
+	if (bdg_is_bdg_connected() != 1)
 		cmdqRecFlushAsync(handle);
-
+/* Huaqin modify for HQ-141739 by caogaojie at 2021/07/05 end*/
 	cmdqRecDestroy(handle);
 	return ret;
 }
