@@ -34,7 +34,7 @@ bat_gm30: battery{
 
 	POWERON_SYSTEM_IBOOT = <(500)>;				/*	power on system iboot*/
 
-	SHUTDOWN_GAUGE0_VOLTAGE = <(34000)>;		/*	shutdown gauge 0% voltage*/
+	SHUTDOWN_GAUGE0_VOLTAGE = <(33500)>;		/*	shutdown gauge 0% voltage*/
 
 	TEMPERATURE_T0 = <(50)>;					/*	Battery temperature T0*/
 
