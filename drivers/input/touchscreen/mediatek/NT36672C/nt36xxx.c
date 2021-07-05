@@ -169,6 +169,60 @@ const struct mtk_chip_config spi_ctrdata = {
 #endif
 
 uint8_t bTouchIsAwake;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+#if NVT_TOUCH_VDD_TP_RECOVERY
+void nvt_bootloader_reset_locked(void)
+{
+	mutex_lock(&ts->lock);
+
+	NVT_LOG("start\n");
+	//---reset cmds to SWRST_N8_ADDR---
+
+	nvt_write_addr(SWRST_N8_ADDR, 0x69);
+	mutex_unlock(&ts->lock);
+	mdelay(5);  //wait tBRST2FR after Bootload RST
+	NVT_LOG("end\n");
+}
+
+EXPORT_SYMBOL(nvt_bootloader_reset_locked);
+
+int32_t nvt_esd_vdd_tp_recovery(void)
+{
+	int32_t ret = 0;
+	uint8_t buf[8] = {0};
+
+	mutex_lock(&ts->lock);
+
+	NVT_LOG("%s: run VDD_TP recovery\n", __func__);
+
+	// 5 SPI cmds
+	nvt_write_addr(0x3F302, 0x1F);
+	nvt_write_addr(0x3F344, 0x02);
+	nvt_write_addr(0x3F50E, 0x0A);
+	nvt_write_addr(0x3F384, 0x00);
+	nvt_write_addr(0x3F380, 0x01);
+	nvt_write_addr(0x3F020, 0xAA);
+	nvt_set_page(0x3F020);
+	buf[0] = 0x20;
+	buf[1] = 0x00;
+	ret = CTP_SPI_READ(ts->client, buf, 2);
+	NVT_ERR("%s: read 0x3F020 before bootloader reset = 0x%02X\n", __func__, buf[1]);
+	nvt_bootloader_reset();
+	nvt_set_page(0x3F020);
+	buf[0] = 0x20;
+	buf[1] = 0x00;
+	ret = CTP_SPI_READ(ts->client, buf, 2);
+	NVT_ERR("%s: read 0x3F020 after bootloader reset = 0x%02X\n", __func__, buf[1]);
+	nvt_set_page(ts->mmap->EVENT_BUF_ADDR);
+	mutex_unlock(&ts->lock);
+	return ret;
+
+}
+
+EXPORT_SYMBOL(nvt_esd_vdd_tp_recovery);
+
+#endif /* NVT_TOUCH_VDD_TP_RECOVERY */
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 
 /* Huaqin modify for HQ-131657 by feiwen at 2021/06/03 start */
 static int32_t nvt_ts_resume(struct device *dev);
@@ -1233,25 +1287,34 @@ void nvt_esd_check_enable(uint8_t enable)
 	/* enable/disable esd check flag */
 	esd_check = enable;
 }
-
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+extern bool g_trigger_disp_esd_recovery;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 static void nvt_esd_check_func(struct work_struct *work)
 {
 	unsigned int timer = jiffies_to_msecs(jiffies - irq_timer);
 
 	//NVT_LOG("esd_check = %d (retry %d)\n", esd_check, esd_retry);	//DEBUG
-
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
 	if ((timer > NVT_TOUCH_ESD_CHECK_PERIOD) && esd_check) {
-		mutex_lock(&ts->lock);
-		NVT_ERR("do ESD recovery, timer = %d, retry = %d\n", timer, esd_retry);
-		/* do esd recovery, reload fw */
-		nvt_update_firmware(BOOT_UPDATE_FIRMWARE_NAME);
-		mutex_unlock(&ts->lock);
-		/* update interrupt timer */
-		irq_timer = jiffies;
-		/* update esd_retry counter */
-		esd_retry++;
+		if (esd_retry < 2) {
+			mutex_lock(&ts->lock);
+			NVT_ERR("do ESD recovery, timer = %d, retry = %d\n", timer, esd_retry);
+			/* do esd recovery, reload fw */
+			nvt_update_firmware(BOOT_UPDATE_FIRMWARE_NAME);
+			mutex_unlock(&ts->lock);
+			/* update interrupt timer */
+			irq_timer = jiffies;
+			/* update esd_retry counter */
+			esd_retry++;
+		} else { // esd_retry >= 2
+			NVT_ERR("esd_retry=%d, set g_trigger_disp_esd_recovery true!\n", esd_retry);
+			nvt_esd_check_enable(false);
+			esd_retry = 0;
+			g_trigger_disp_esd_recovery = true;
+		}
 	}
-
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 	queue_delayed_work(nvt_esd_check_wq, &nvt_esd_check_work,
 			msecs_to_jiffies(NVT_TOUCH_ESD_CHECK_PERIOD));
 }
@@ -2588,10 +2651,14 @@ static int32_t nvt_ts_suspend(struct device *dev)
 		ts->palm_sensor_switch = false;
 		}
 	#endif
-#if !WAKEUP_GESTURE
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+#if WAKEUP_GESTURE
+	if (nvt_gesture_flag == false)
+		nvt_irq_enable(false);
+#else
 	nvt_irq_enable(false);
 #endif
-
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 #if NVT_TOUCH_ESD_PROTECT
 	NVT_LOG("cancel delayed work sync\n");
 	cancel_delayed_work_sync(&nvt_esd_check_work);
@@ -2668,7 +2735,10 @@ int32_t nvt_ts_tp_suspend(void)
 		ts->palm_sensor_switch = false;
 		}
 	#endif
-#if !WAKEUP_GESTURE
+#if WAKEUP_GESTURE
+	if (nvt_gesture_flag == false)
+		nvt_irq_enable(false);
+#else
 	nvt_irq_enable(false);
 #endif
 
@@ -2742,9 +2812,15 @@ static int32_t nvt_ts_resume(struct device *dev)
 {
 	if (bTouchIsAwake) {
 		NVT_LOG("Touch is already resume\n");
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+#if NVT_TOUCH_WDT_RECOVERY
+		mutex_lock(&ts->lock);
+		nvt_update_firmware(BOOT_UPDATE_FIRMWARE_NAME);
+		mutex_unlock(&ts->lock);
+#endif /* #if NVT_TOUCH_WDT_RECOVERY */
 		return 0;
 	}
-
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 	mutex_lock(&ts->lock);
 
 	NVT_LOG("start\n");
@@ -2759,9 +2835,7 @@ static int32_t nvt_ts_resume(struct device *dev)
 		nvt_check_fw_reset_state(RESET_STATE_REK);
 	}
 
-#if !WAKEUP_GESTURE
 	nvt_irq_enable(true);
-#endif
 
 #if NVT_TOUCH_ESD_PROTECT
 	nvt_esd_check_enable(false);
@@ -2799,6 +2873,11 @@ int32_t nvt_ts_tp_resume(void)
 {
 	if (bTouchIsAwake) {
 		NVT_LOG("Touch is already resume\n");
+#if NVT_TOUCH_WDT_RECOVERY
+		mutex_lock(&ts->lock);
+		nvt_update_firmware(BOOT_UPDATE_FIRMWARE_NAME);
+		mutex_unlock(&ts->lock);
+#endif /* #if NVT_TOUCH_WDT_RECOVERY */
 		return 0;
 	}
 
@@ -2817,9 +2896,7 @@ int32_t nvt_ts_tp_resume(void)
 		nvt_check_fw_reset_state(RESET_STATE_REK);
 	}
 
-#if !WAKEUP_GESTURE
 	nvt_irq_enable(true);
-#endif
 
 #if NVT_TOUCH_ESD_PROTECT
 	nvt_esd_check_enable(false);

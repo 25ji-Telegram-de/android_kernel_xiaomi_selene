@@ -122,10 +122,13 @@ extern char *MP_UPDATE_FIRMWARE_NAME;
 #define POINT_DATA_CHECKSUM_LEN 65
 
 //---ESD Protect.---
-#define NVT_TOUCH_ESD_PROTECT 0
+/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/05 start */
+#define NVT_TOUCH_ESD_PROTECT 1
 #define NVT_TOUCH_ESD_CHECK_PERIOD 1500	/* ms */
 #define NVT_TOUCH_WDT_RECOVERY 1
-
+#define NVT_TOUCH_ESD_DISP_RECOVERY 1
+#define NVT_TOUCH_VDD_TP_RECOVERY 1
+/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/05 end */
 struct nvt_ts_data {
 	struct spi_device *client;
 	struct input_dev *input_dev;
@@ -213,7 +216,26 @@ typedef enum {
 	NVTWRITE = 0,
 	NVTREAD  = 1
 } NVT_SPI_RW;
-
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+#if NVT_TOUCH_ESD_DISP_RECOVERY
+#define ILM_CRC_FLAG        0x01
+#define DLM_CRC_FLAG        0x02
+#define CRC_DONE            0x04
+#define F2C_RW_READ         0x00
+#define F2C_RW_WRITE        0x01
+#define BIT_F2C_EN          0
+#define BIT_F2C_RW          1
+#define BIT_CPU_IF_ADDR_INC 2
+#define BIT_CPU_POLLING_EN  5
+#define FFM2CPU_CTL         0x3F280
+#define F2C_LENGTH          0x3F283
+#define CPU_IF_ADDR         0x3F284
+#define FFM_ADDR            0x3F286
+#define CP_TP_CPU_REQ       0x3F291
+#define TOUCH_DATA_ADDR     0x20000
+#define DISP_OFF_ADDR       0x2800
+#endif /* NVT_TOUCH_ESD_DISP_RECOVERY */
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 //---extern structures---
 extern struct nvt_ts_data *ts;
 
@@ -237,5 +259,10 @@ int32_t nvt_write_addr(uint32_t addr, uint8_t data);
 #if NVT_TOUCH_ESD_PROTECT
 extern void nvt_esd_check_enable(uint8_t enable);
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
-
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+#if NVT_TOUCH_VDD_TP_RECOVERY
+void nvt_bootloader_reset_locked(void);
+int32_t nvt_esd_vdd_tp_recovery(void);
+#endif
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 #endif /* _LINUX_NVT_TOUCH_H */

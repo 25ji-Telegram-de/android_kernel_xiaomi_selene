@@ -151,6 +151,10 @@ extern bool nvt_gesture_flag;
 extern struct nvt_ts_data *ts;
 /* Huaqin add for K19A-315 by feiwen at 2021/06/16 end */
 extern int32_t nvt_update_firmware(char *firmware_name);
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+static bool esd_flag = false;
+extern bool g_trigger_disp_esd_recovery;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 #endif
 /* Huaqin add for HQ-124138 by liunianliang at 2021/04/29 end */
 /*****************************************************************************
@@ -267,6 +271,18 @@ static struct LCM_setting_table lcm_suspend_setting[] = {
 	{REGFLAG_DELAY, 120, {} }
 };
 /* Huaqin modify for HQ-124216 by caogaojie at 2021/05/08 end */
+
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+static struct LCM_setting_table tp_reset_cmd1[] = {
+	{0xFF, 1, {0xC0} },
+	{0x4B, 1, {0x00} },
+};
+
+static struct LCM_setting_table tp_reset_cmd2[] = {
+	{0xFF, 1, {0xC0} },
+	{0x4B, 1, {0x0E} },
+};
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 static struct LCM_setting_table init_setting_vdo[] = {
 	{0xFF, 1, {0x10} },
         {0xFB, 1, {0x01} },
@@ -669,7 +685,19 @@ static void lcm_init(void)
 	MDELAY(10);
 	/* Huaqin modify for HQ-132702 by caogaojie at 2021/06/15 end */
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
-
+	/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+	if(esd_flag){
+		nvt_bootloader_reset_locked();
+		push_table(NULL, tp_reset_cmd1, ARRAY_SIZE(tp_reset_cmd1), 1);
+		MDELAY(100);
+		nvt_esd_vdd_tp_recovery();
+		MDELAY(100);
+		push_table(NULL, tp_reset_cmd2, ARRAY_SIZE(tp_reset_cmd2), 1);
+		MDELAY(50);
+		esd_flag = false;
+		g_trigger_disp_esd_recovery = false;
+	}
+	/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 	LCM_LOGI("[DENNIS__v2][%s][%d]\n", __func__, __LINE__);
 	push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
 	LCM_LOGI("nt36672c_fhdp----tps6132----lcm mode = vdo mode :%d----\n",
@@ -801,6 +829,9 @@ static unsigned int lcm_compare_id(void)
 static unsigned int lcd_esd_recover(void)
 {
 	LCM_LOGI("%s, int and update tp fw..\n", __func__);
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+	esd_flag = true;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 	lcm_init_power();
 	lcm_init();
 

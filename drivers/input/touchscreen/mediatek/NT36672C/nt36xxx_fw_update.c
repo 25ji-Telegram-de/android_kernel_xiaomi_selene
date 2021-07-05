@@ -794,7 +794,32 @@ static void nvt_read_bld_hw_crc(void)
 
 	return;
 }
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+#if NVT_TOUCH_ESD_DISP_RECOVERY
+static int32_t nvt_check_crc_done_ilm_err(void)
+{
+	uint8_t buf[8] = {0};
 
+	nvt_set_page(ts->mmap->BLD_ILM_DLM_CRC_ADDR);
+	buf[0] = ts->mmap->BLD_ILM_DLM_CRC_ADDR & 0x7F;
+	buf[1] = 0x00;
+	CTP_SPI_READ(ts->client, buf, 2);
+
+	NVT_ERR("CRC DONE, ILM DLM FLAG = 0x%02X\n", buf[1]);
+	if (((buf[1] & ILM_CRC_FLAG) && (buf[1] & CRC_DONE)) ||
+		((buf[1] & DLM_CRC_FLAG) && (buf[1] & CRC_DONE)) ||
+			(buf[1] == 0xFE) ||
+			((buf[1] & CRC_DONE) == 0x00)) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+#endif /* NVT_TOUCH_ESD_DISP_RECOVERY */
+
+extern bool g_trigger_disp_esd_recovery;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 /*******************************************************
 Description:
 	Novatek touchscreen Download_Firmware with HW CRC
@@ -853,6 +878,13 @@ fail:
 		if (unlikely(retry > 2)) {
 			NVT_ERR("error, retry=%d\n", retry);
 			nvt_read_bld_hw_crc();
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+#if NVT_TOUCH_ESD_DISP_RECOVERY
+			if (nvt_check_crc_done_ilm_err()) {
+				NVT_ERR("set g_trigger_disp_esd_recovery true!\n");
+				g_trigger_disp_esd_recovery = true;
+			}
+#endif /* #if NVT_TOUCH_ESD_DISP_RECOVERY */
 			break;
 		}
 	}
@@ -861,7 +893,7 @@ fail:
 
 	return ret;
 }
-
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 /*******************************************************
 Description:
 	Novatek touchscreen Download_Firmware function. It's

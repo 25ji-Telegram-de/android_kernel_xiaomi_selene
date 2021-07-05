@@ -86,6 +86,9 @@ static atomic_t esd_ext_te_event = ATOMIC_INIT(0);
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
 atomic_t lcm_ready = ATOMIC_INIT(0);
 atomic_t lcm_valid_irq = ATOMIC_INIT(0);
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+bool g_trigger_disp_esd_recovery;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 #endif
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
 
@@ -304,9 +307,10 @@ int do_esd_check_eint(void)
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
 	int ret = 0;
-
-	DISPCHECK("[ESD]ESD check eint\n");
-
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+	DISPCHECK("[ESD]ESD check eint, g_trigger_disp_esd_recovery is %d\n",
+		g_trigger_disp_esd_recovery);
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 	enable_irq(te_irq);
 
 	if (wait_event_interruptible_timeout(esd_ext_te_wq,
@@ -338,7 +342,9 @@ int do_esd_check_eint(void)
 	primary_display_switch_esd_mode(GPIO_DSI_MODE);
 #endif
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
-	return ret;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+	return ret || g_trigger_disp_esd_recovery;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 }
 
 int do_esd_check_dsi_te(void)
