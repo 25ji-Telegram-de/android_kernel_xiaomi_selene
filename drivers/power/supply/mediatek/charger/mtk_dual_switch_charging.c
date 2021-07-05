@@ -617,8 +617,8 @@ static void swchg_select_cv(struct charger_manager *info)
 		if (ffc_constant_voltage != 0) {
 			chr_err("%s, ffc_constant_voltage  = %d\n", __func__, ffc_constant_voltage);
 			charger_dev_set_constant_voltage(info->chg1_dev,ffc_constant_voltage);
+			return;
 		}
-		return;
 	}
 	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 end*/
 
@@ -635,7 +635,9 @@ static void swchg_select_cv(struct charger_manager *info)
 	/* dynamic cv*/
 	constant_voltage = info->data.battery_cv;
 	mtk_get_dynamic_cv(info, &constant_voltage);
-
+/*K19A HQ-144349 K19A for CV by langjunjun at 2021/7/5 start*/
+	chr_err("%s, constant_voltage  = %d\n", __func__,constant_voltage);
+/*K19A HQ-144349 K19A for CV by langjunjun at 2021/7/5 end*/
 	charger_dev_set_constant_voltage(info->chg1_dev, constant_voltage);
 	/* Set slave charger's CV to 200mV higher than master's */
 	if (chg2_chip_enabled)
@@ -693,9 +695,10 @@ static void dual_swchg_turn_on_charging(struct charger_manager *info)
 				pr_err("chg2's aicr is 0mA, turn off\n");
 			}
 		}
-		if (chg1_enable)
-            pr_err("swchg_select_cv\n");
+		if (chg1_enable) {
+			pr_err("dual_swchg_turn_on_charging swchg_select_cv\n");
 			swchg_select_cv(info);
+		}
 	}
 
 	charger_dev_enable(info->chg1_dev, chg1_enable);
