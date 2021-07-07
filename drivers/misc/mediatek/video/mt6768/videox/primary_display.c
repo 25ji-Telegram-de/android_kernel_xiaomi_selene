@@ -10174,10 +10174,10 @@ unsigned int primary_display_get_idle_interval(unsigned int fps)
 
 	unsigned int idle_interval = idle_check_interval;
 	/*calculate the timeout to enter idle in ms*/
-
+	/* Huaqin modify for HQ-145257 by caogaojie at 2021/07/07 start */
 	if (fps > 0)
-		idle_interval = (3 * 1000) / fps + 1;
-
+		idle_interval = (90 * 1000) / fps + 1;
+	/* Huaqin modify for HQ-145257 by caogaojie at 2021/07/07 end */
 	DISPMSG("[fps]:%s,[fps->idle interval][%d fps->%d ms]\n",
 		__func__, fps, idle_interval);
 
@@ -10378,7 +10378,9 @@ void primary_display_dynfps_chg_fps(int cfg_id)
 	enum LCM_Send_Cmd_Mode sendmode;
 	struct cmdqRecStruct *qhandle = NULL;
 	int ret = 0;
-	unsigned int _idle_timeout = 50;/*ms*/
+	/* Huaqin modify for HQ-145257 by caogaojie at 2021/07/07 start */
+	unsigned int _idle_timeout = 1500;/*ms*/
+	/* Huaqin modify for HQ-145257 by caogaojie at 2021/07/07 end */
 	struct LCM_PARAMS *params;
 
 	/*1,check whether fps changed*/
@@ -10525,7 +10527,9 @@ void primary_display_dynfps_chg_fps(int cfg_id)
 	/*4, update idle timeout*/
 	_idle_timeout =	primary_display_get_idle_interval(new_dynfps / 100);
 	disp_lp_set_idle_check_interval(_idle_timeout);
-
+	/* Huaqin modify for HQ-145257 by caogaojie at 2021/07/07 start */
+	DISPMSG("%s,idle_timeout:%d\n", __func__,_idle_timeout);
+	/* Huaqin modify for HQ-145257 by caogaojie at 2021/07/07 end */
 	/*5, update active_cfg*/
 	primary_display_update_cfg_id(cfg_id);
 	pgc->lcm_refresh_rate = new_dynfps / 100;

@@ -811,8 +811,9 @@ void _vdo_mode_enter_idle(void)
 	unsigned int _vsyncFPS = 6000;/*real fps * 100*/
 	unsigned int _vfp_for_lp = 0;
 #endif
-
-	DISPINFO("[disp_lowpower]%s\n", __func__);
+/* Huaqin modify for HQ-145257 by caogaojie at 2021/07/07 start */
+	DISPMSG("[disp_lowpower]%s\n", __func__);
+/* Huaqin modify for HQ-145257 by caogaojie at 2021/07/07 end */
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
 	/*DynFPS SRT use fps not active timing fps*/
 	cur_cfg_id = primary_display_get_current_cfg_id();
@@ -976,7 +977,6 @@ void _vdo_mode_leave_idle(void)
 			MMPROFILE_FLAG_END,
 			!primary_display_is_decouple_mode(), bandwidth);
 #endif
-
 }
 
 void _cmd_mode_enter_idle(void)
@@ -1012,7 +1012,6 @@ void _cmd_mode_enter_idle(void)
 			MMPROFILE_FLAG_END,
 			!primary_display_is_decouple_mode(), 0);
 #endif
-
 }
 
 void _cmd_mode_leave_idle(void)
