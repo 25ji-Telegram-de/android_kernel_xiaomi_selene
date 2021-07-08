@@ -213,7 +213,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,	/* mipi lane num */
 	.i2c_addr_table = {0x34, 0xff},  //0x20,
 /* record sensor support all write id addr, only supprt 4must end with 0xff */
-	.i2c_speed = 400,	/* i2c read/write speed */
+	.i2c_speed = 1000,	/* i2c read/write speed */
 };
 
 static struct imgsensor_struct imgsensor = {

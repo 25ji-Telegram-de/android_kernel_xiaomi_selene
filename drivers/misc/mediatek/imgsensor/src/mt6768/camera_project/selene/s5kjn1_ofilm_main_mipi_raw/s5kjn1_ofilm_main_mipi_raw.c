@@ -151,7 +151,7 @@ static struct imgsensor_info_struct imgsensor_info = {
 	.mclk = 24,
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,
 	.i2c_addr_table = {0x20, 0x5A, 0xff},
-	.i2c_speed = 400,
+	.i2c_speed = 1000,
 };
 
 static struct imgsensor_struct imgsensor = {
@@ -3655,8 +3655,8 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		spin_unlock(&imgsensor_drv_lock);
 		do {
 				*sensor_id = return_sensor_id();
-if(*sensor_id == 0x38e1)
-*sensor_id = imgsensor_info.sensor_id;
+// if(*sensor_id == 0x38e1)
+// *sensor_id = imgsensor_info.sensor_id;
 				if (*sensor_id == imgsensor_info.sensor_id) {
 					pr_info
 			("s5kjn1sp_ofilm i2c 0x%x, sid 0x%x\n",
