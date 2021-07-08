@@ -109,7 +109,7 @@
 
 #define FRM_UPDATE_SEQ_CACHE_NUM (DISP_INTERNAL_BUFFER_COUNT+1)
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 start */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/08 start */
 #define _SUPPORT_LCM_BOOST_
 #define SWITCH_FPS_IN_WORKQUEUE
 
@@ -136,6 +136,10 @@ static wait_queue_head_t _bdg_check_task_wq;
 static atomic_t _bdg_check_task_wakeup = ATOMIC_INIT(0);
 static bool bdg_should_init = 1;
 
+#ifdef CONFIG_PM_SLEEP
+static struct wakeup_source *bdg_ws;
+#endif
+
 void bdg_check_enable(int enable);
 
 #endif
@@ -144,7 +148,7 @@ void bdg_check_enable(int enable);
 static struct work_struct sWork;
 static struct workqueue_struct *fb_resume_workqueue;
 #endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 end */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/08 end */
 
 static struct disp_internal_buffer_info
 	*decouple_buffer_info[DISP_INTERNAL_BUFFER_COUNT];
@@ -293,7 +297,7 @@ void lock_primary_wake_lock(bool lock)
 
 }
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 start */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/08 start */
 #ifdef _SUPPORT_LCM_BOOST_
 static int fb_boost_start(void)
 {
@@ -359,6 +363,13 @@ static int bdg_check_worker_kthread(void *data)
 			continue;
 		}
 
+		set_current_state(TASK_RUNNING);
+
+#ifdef CONFIG_PM_SLEEP
+		if (bdg_ws)
+			__pm_stay_awake(bdg_ws);
+#endif
+
 		do_gettimeofday(&end);
 		val = end.tv_sec - begin.tv_sec;
 
@@ -369,6 +380,10 @@ static int bdg_check_worker_kthread(void *data)
 			bdg_common_deinit(DISP_BDG_DSI0, NULL);
 			bdg_should_init = 1;
 			bdg_check_enable(0);
+#ifdef CONFIG_PM_SLEEP
+			if (bdg_ws)
+				__pm_relax(bdg_ws);
+#endif
 		}
 
 		if (kthread_should_stop())
@@ -398,6 +413,10 @@ void bdg_status_check_init(void)
 	init_waitqueue_head(&_bdg_check_task_wq);
 
 	wake_up_process(bdg_status_check_task);
+
+	bdg_ws = wakeup_source_register(NULL, "bdg_ws");
+	if (!bdg_ws)
+		DISPMSG("bdg wakelock register fail!\n");
 }
 #endif
 
@@ -428,7 +447,7 @@ void fb_resume_queue_work(void)
 	queue_work(fb_resume_workqueue, &sWork);
 }
 #endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 end */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/08 end */
 
 static int smart_ovl_try_switch_mode_nolock(void);
 
