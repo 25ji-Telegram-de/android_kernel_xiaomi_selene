@@ -1187,16 +1187,16 @@ static int bq2589x_init_device(struct bq2589x *bq)
 	id_dis >>= BQ2589X_PN_SHIFT;
 	if(id_dis == 3){
 		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 start */
-		ret = bq2589x_set_term_current(bq, 128);
-		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 end */
-		ret = bq2589x_disable_hvdcp(bq);
-		pr_err("disable hvdcp,ret = %d\n",ret);
-	}else{
-		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 start */
 		ret = bq2589x_set_term_current(bq, 200);
 		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 end */
+		ret = bq2589x_disable_hvdcp(bq);
+		pr_err("ti_disable hvdcp,ret = %d\n",ret);
+	}else{
+		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 start */
+		ret = bq2589x_set_term_current(bq, 128);
+		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 end */
 		ret = bq2589x_enable_hvdcp(bq);
-		pr_err("enable hvdcp,ret = %d\n",ret);
+		pr_err("si_enable hvdcp,ret = %d\n",ret);
 	}
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/27 end */
 /* Huaqin add for HQ-135953 by wangchao at 2021/6/11 start */
