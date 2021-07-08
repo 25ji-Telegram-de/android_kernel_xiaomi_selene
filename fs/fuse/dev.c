@@ -772,7 +772,9 @@ static int fuse_copy_fill(struct fuse_copy_state *cs)
 			if (cs->nr_segs == cs->pipe->buffers)
 				return -EIO;
 
-			page = alloc_page(GFP_HIGHUSER);
+// Rainbow code for HQ-144577 by zhangtisheng at 2021.07.12 09:05 start
+			page = alloc_page(GFP_NOFS | __GFP_HIGHMEM);
+// Rainbow code for HQ-144577 by zhangtisheng at 2021.07.12 09:05 end
 			if (!page)
 				return -ENOMEM;
 
