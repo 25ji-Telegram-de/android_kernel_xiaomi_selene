@@ -646,7 +646,9 @@ int ktd_hbm_set(enum backlight_hbm_mode hbm_mode)
 
 int ktd3137_brightness_set(int brightness)
 {
-	LOG_DBG("%s brightness = %d\n", __func__, brightness);
+	/* Huaqin modify for K19A-271 by caogaojie at 2021/07/08 start */
+	//LOG_DBG("%s brightness = %d\n", __func__, brightness);
+	/* Huaqin modify for K19A-271 by caogaojie at 2021/07/08 end */
 
 #ifdef CONFIG_TARGET_PRODUCT_MERLINCOMMON
 	if ((brightness < 5) && (brightness > 2)) {//HQ-61731
