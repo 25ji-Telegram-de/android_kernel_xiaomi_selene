@@ -50,6 +50,11 @@
 #include "inc/tcpci.h"
 #include "inc/tcpci_timer.h"
 #include "inc/tcpci_typec.h"
+#define __BQ25890H__	1
+#include "../../../../power/supply/mediatek/charger/bq2589x_reg.h"
+
+
+
 
 #if 1 /*  #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))*/
 #include <linux/sched/rt.h>
@@ -240,6 +245,7 @@ static int test_cc_patch(struct wusb3801_chip *chip)
 #endif /* __TEST_CC_PATCH__ */
 
 static int first_check_flag;
+//extern bool bq2589x_get_cdp_status();
 static void wusb3801_irq_work_handler(struct kthread_work *work)
 {
 	struct wusb3801_chip *chip =
@@ -251,6 +257,9 @@ static void wusb3801_irq_work_handler(struct kthread_work *work)
 
 	if (0 == first_check_flag)
 		return;
+	if (bq2589x_get_cdp_status() == true) {
+		return;
+	}
 
 	tcpc = chip->tcpc;
 		tcpci_lock_typec(tcpc);
