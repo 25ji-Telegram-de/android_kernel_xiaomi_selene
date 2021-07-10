@@ -1722,7 +1722,9 @@ static int nvt_set_cur_value(int mode, int value)
 			if (value == 0) {
 				nvt_set_sensitivity_switch(3);
 				nvt_set_pf_switch(0);
-				nvt_set_er_range_switch(2);
+				/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 start */
+				nvt_set_er_range_switch(0);
+				/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 end */
 			} else {
 				nvt_set_sensitivity_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
 				nvt_set_pf_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
@@ -1798,14 +1800,18 @@ static void nvt_init_touchmode_data(void)
 	/*Touch_Sensitivity mode*/
 	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][GET_MAX_VALUE] = 4;
 	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][GET_MIN_VALUE] = 0;
-	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][GET_DEF_VALUE] = 0;
+	/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 start */
+	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][GET_DEF_VALUE] = 2;
+	/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 end */
 	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][SET_CUR_VALUE] = 0;
 	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][GET_CUR_VALUE] = 0;
 
 	/* PF Mode */
 	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][GET_MAX_VALUE] = 4;
 	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][GET_MIN_VALUE] = 0;
-	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][GET_DEF_VALUE] = 0;
+	/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 start */
+	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][GET_DEF_VALUE] = 2;
+	/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 end */
 	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][SET_CUR_VALUE] = 0;
 	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][GET_CUR_VALUE] = 0;
 
