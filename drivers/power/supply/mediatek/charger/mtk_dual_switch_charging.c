@@ -606,7 +606,8 @@ static u32 get_charge_cycle_count_level(struct charger_manager *info)
 
 static void swchg_select_cv(struct charger_manager *info)
 {
-	u32 constant_voltage;
+	u32 constant_voltage = 0;
+	u32 dynamic_cv = 0;
 	bool chg2_chip_enabled = false;
 
 /*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 start*/
@@ -616,8 +617,7 @@ static void swchg_select_cv(struct charger_manager *info)
 	if (info->enable_sw_ffc) {
 		if (ffc_constant_voltage != 0) {
 			chr_err("%s, ffc_constant_voltage  = %d\n", __func__, ffc_constant_voltage);
-			charger_dev_set_constant_voltage(info->chg1_dev,ffc_constant_voltage);
-			return;
+			constant_voltage = ffc_constant_voltage;
 		}
 	}
 	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 end*/
@@ -627,15 +627,18 @@ static void swchg_select_cv(struct charger_manager *info)
 	if (info->enable_sw_jeita)
 		if (info->sw_jeita.cv != 0) {
 			chr_err("%s, info->sw_jeita.cv  = %d\n", __func__, info->sw_jeita.cv);
-			charger_dev_set_constant_voltage(info->chg1_dev,
-							info->sw_jeita.cv);
-			return;
+			if ((constant_voltage !=0)  &&  (constant_voltage > info->sw_jeita.cv)) {
+				constant_voltage =  info->sw_jeita.cv;
+			}
 		}
 
 	/* dynamic cv*/
-	constant_voltage = info->data.battery_cv;
-	mtk_get_dynamic_cv(info, &constant_voltage);
+	dynamic_cv = info->data.battery_cv;
+	mtk_get_dynamic_cv(info, &dynamic_cv);
 /*K19A HQ-144349 K19A for CV by langjunjun at 2021/7/5 start*/
+	if ((constant_voltage !=0)  &&  (constant_voltage > dynamic_cv)) {
+			constant_voltage =  dynamic_cv;
+	}
 	chr_err("%s, constant_voltage  = %d\n", __func__,constant_voltage);
 /*K19A HQ-144349 K19A for CV by langjunjun at 2021/7/5 end*/
 	charger_dev_set_constant_voltage(info->chg1_dev, constant_voltage);
