@@ -606,7 +606,7 @@ static u32 get_charge_cycle_count_level(struct charger_manager *info)
 
 static void swchg_select_cv(struct charger_manager *info)
 {
-	u32 constant_voltage = 0;
+	u32 constant_voltage = 4450000;
 	u32 dynamic_cv = 0;
 	bool chg2_chip_enabled = false;
 
@@ -627,7 +627,7 @@ static void swchg_select_cv(struct charger_manager *info)
 	if (info->enable_sw_jeita)
 		if (info->sw_jeita.cv != 0) {
 			chr_err("%s, info->sw_jeita.cv  = %d\n", __func__, info->sw_jeita.cv);
-			if ((constant_voltage !=0)  &&  (constant_voltage > info->sw_jeita.cv)) {
+			if ( constant_voltage > info->sw_jeita.cv) {
 				constant_voltage =  info->sw_jeita.cv;
 			}
 		}
@@ -636,7 +636,7 @@ static void swchg_select_cv(struct charger_manager *info)
 	dynamic_cv = info->data.battery_cv;
 	mtk_get_dynamic_cv(info, &dynamic_cv);
 /*K19A HQ-144349 K19A for CV by langjunjun at 2021/7/5 start*/
-	if ((constant_voltage !=0)  &&  (constant_voltage > dynamic_cv)) {
+	if ( constant_voltage > dynamic_cv) {
 			constant_voltage =  dynamic_cv;
 	}
 	chr_err("%s, constant_voltage  = %d\n", __func__,constant_voltage);
