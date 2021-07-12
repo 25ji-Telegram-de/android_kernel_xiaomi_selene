@@ -4,10 +4,10 @@
 #include "aw87xxx_monitor.h"
 
 #define AWINIC_CFG_UPDATE_DELAY
-#define AW_I2C_RETRIES			(5)
+#define AW_I2C_RETRIES			(2)
 #define AW_I2C_RETRY_DELAY		(2)
 
-#define AW_READ_CHIPID_RETRIES		(5)
+#define AW_READ_CHIPID_RETRIES		(2)
 #define AW_READ_CHIPID_RETRY_DELAY	(2)
 
 #define AW87XXX_CFG_NAME_MAX		(64)
