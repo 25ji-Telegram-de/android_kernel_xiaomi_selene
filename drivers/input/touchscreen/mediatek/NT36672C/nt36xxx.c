@@ -1709,6 +1709,12 @@ extern int32_t nvt_get_er_range_switch(uint8_t *er_range_switch);
 
 static int nvt_set_cur_value(int mode, int value)
 {
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
+	mutex_lock(&ts->lock);
+#if NVT_TOUCH_ESD_PROTECT
+	nvt_esd_check_enable(false);
+#endif /* #if NVT_TOUCH_ESD_PROTECT */
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
 	if (mode < Touch_Mode_NUM && mode >= 0) {
 		xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE] = value;
 		if (xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE] > xiaomi_touch_interfaces.touch_mode[mode][GET_MAX_VALUE])
@@ -1745,7 +1751,9 @@ static int nvt_set_cur_value(int mode, int value)
 			NVT_LOG("don't support\n", __func__);
 	} else
 		NVT_LOG("don't support\n", __func__);
-
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
+	mutex_unlock(&ts->lock);
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
 	return 0;
 }
 
@@ -1753,7 +1761,14 @@ static int nvt_get_mode_cur_value(int mode)
 {
 	int ret = 0;
 	uint8_t pf_switch = xiaomi_touch_interfaces.touch_mode[mode][GET_DEF_VALUE];
-
+		
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
+	mutex_lock(&ts->lock);
+#if NVT_TOUCH_ESD_PROTECT
+	nvt_esd_check_enable(false);
+#endif /* #if NVT_TOUCH_ESD_PROTECT */
+	/* Huaqin modify for TP optimutex_unlock protectmization by zhangjiangbin at 2021/07/13 end */
+	
 	if (mode < Touch_Mode_NUM && mode >= 0) {
 		printk("%s ,mode = %d\n", __func__, mode);
 		if (mode == 2) {
@@ -1776,6 +1791,9 @@ static int nvt_get_mode_cur_value(int mode)
 		printk("%s, mode %d don't support\n", __func__, mode);
 	}
 	printk("%s mode:%d pf_switch:%d\n", mode, pf_switch);
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
+	mutex_unlock(&ts->lock);
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
 	return pf_switch;
 }
 
@@ -1852,19 +1870,37 @@ static int nvt_get_mode_all(int mode, int *value)
 
 static int nvt_reset_Mode(int mode)
 {
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
 	if (mode < Touch_Mode_NUM && mode >= 0) {
-		if (mode == 0)
+		if (mode == 0) {
 			nvt_set_cur_value(0, 0);
-			else if (mode == 2)
-				nvt_set_sensitivity_switch(3);
-			else if (mode == 3)
-				nvt_set_pf_switch(0);
-			else if (mode == 7)
-				nvt_set_er_range_switch(2);
-			else
-				NVT_LOG("%s,unknown value", __func__);
+		} else if (mode == 2) {
+			mutex_lock(&ts->lock);
+#if NVT_TOUCH_ESD_PROTECT
+			nvt_esd_check_enable(false);
+#endif /* #if NVT_TOUCH_ESD_PROTECT */
+			nvt_set_sensitivity_switch(3);
+			mutex_unlock(&ts->lock);
+		} else if (mode == 3) {
+			mutex_lock(&ts->lock);
+#if NVT_TOUCH_ESD_PROTECT
+			nvt_esd_check_enable(false);
+#endif /* #if NVT_TOUCH_ESD_PROTECT */
+			nvt_set_pf_switch(0);
+			mutex_unlock(&ts->lock);
+		} else if (mode == 7) {
+			mutex_lock(&ts->lock);
+#if NVT_TOUCH_ESD_PROTECT
+			nvt_esd_check_enable(false);
+#endif /* #if NVT_TOUCH_ESD_PROTECT */
+			nvt_set_er_range_switch(2);
+			mutex_unlock(&ts->lock);
+		} else {
+			NVT_LOG("%s,unknown value", __func__);
+		}
 	} else
 	NVT_LOG("%s,don't support", __func__);
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
 	return 0;
 }
 /*BSP.Touch - 2020.12.31 - add game mode - start*/
@@ -1900,12 +1936,20 @@ int nvt_palm_sensor_write(int value)
 		ts->palm_sensor_changed = false;
 		return 0;
 	}
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
+	mutex_lock(&ts->lock);
+#if NVT_TOUCH_ESD_PROTECT
+	nvt_esd_check_enable(false);
+#endif /* #if NVT_TOUCH_ESD_PROTECT */
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
 	ret = nvt_palm_sensor_cmd(value);
 	if (!ret) {
 		NVT_LOG("%s %d succeed\n", __func__, value);
 		ts->palm_sensor_changed = true;
 	}
-
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
+	mutex_unlock(&ts->lock);
+	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
 	return ret;
 }
 #endif
@@ -2566,7 +2610,12 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 	}
 
 	spi_set_drvdata(client, NULL);
-
+	/* Huaqin modify for TP GESTURE by zhangjiangbin at 2021/07/13 start */
+	if (ts->xbuf) {
+		kfree(ts->xbuf);
+		ts->xbuf = NULL;
+	}
+	/* Huaqin modify for TP GESTURE by zhangjiangbin at 2021/07/13 end */
 	if (ts) {
 		kfree(ts);
 		ts = NULL;
@@ -2840,9 +2889,15 @@ static int32_t nvt_ts_resume(struct device *dev)
 	} else {
 		nvt_check_fw_reset_state(RESET_STATE_REK);
 	}
-
+	/* Huaqin modify for TP GESTURE by zhangjiangbin at 2021/07/13 start */
+#if WAKEUP_GESTURE
+	if (nvt_gesture_flag == false)
+		nvt_irq_enable(true);
+#else
 	nvt_irq_enable(true);
-
+#endif
+	/* Huaqin modify for TP GESTURE by zhangjiangbin at 2021/07/13 end */
+	
 #if NVT_TOUCH_ESD_PROTECT
 	nvt_esd_check_enable(false);
 	queue_delayed_work(nvt_esd_check_wq, &nvt_esd_check_work,
@@ -2901,9 +2956,14 @@ int32_t nvt_ts_tp_resume(void)
 	} else {
 		nvt_check_fw_reset_state(RESET_STATE_REK);
 	}
-
+	/* Huaqin modify for TP GESTURE by zhangjiangbin at 2021/07/13 start */
+#if WAKEUP_GESTURE
+	if (nvt_gesture_flag == false)
+		nvt_irq_enable(true);
+#else
 	nvt_irq_enable(true);
-
+#endif
+	/* Huaqin modify for TP GESTURE by zhangjiangbin at 2021/07/13 end */
 #if NVT_TOUCH_ESD_PROTECT
 	nvt_esd_check_enable(false);
 	queue_delayed_work(nvt_esd_check_wq, &nvt_esd_check_work,

@@ -1735,8 +1735,9 @@ extern uint8_t	bTouchIsAwake;
 static int32_t c_tp_selftest_show(struct seq_file *m, void *v)
 {
 	NVT_LOG("+++\n");
-
-	nvt_mp_printf("FW Version: %d\n\n", ts->fw_ver);
+	/* Huaqin modify for TP MP version by zhangjiangbin at 2021/07/13 start */	
+	nvt_mp_printf("FW Version: %d\n\n", fw_ver);
+	/* Huaqin modify for TP MP version by zhangjiangbin at 2021/07/13 end */
 	if (!TP_SELFTEST_SPI_flag && !TP_SELFTEST_Open_flag &&
 		!TP_SELFTEST_Short_flag) {
 		seq_printf(m, "%d\n", 0);
@@ -1862,6 +1863,9 @@ static ssize_t nvt_tp_selftest_store(struct file *file, const char __user *buff,
 		NVT_ERR("get fw info fail!\n");
 		return -EAGAIN;
 	}
+	/* Huaqin modify for TP MP version by zhangjiangbin at 2021/07/13 start */
+	fw_ver = ts->fw_ver;
+	/* Huaqin modify for TP MP version by zhangjiangbin at 2021/07/13 end */
 	/* Parsing criteria from dtscount */
 	if (of_property_read_bool(np, "novatek,mp-support-dt")) {
 		/*
