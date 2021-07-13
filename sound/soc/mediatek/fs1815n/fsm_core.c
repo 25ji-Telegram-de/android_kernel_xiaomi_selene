@@ -729,7 +729,9 @@ int fsm_reg_dump(fsm_dev_t *fsm_dev)
 			ret |= fsm_access_key(fsm_dev, 1);
 		}
 		ret |= fsm_reg_read(fsm_dev, reg_addr, &value);
-		snprintf(buf+idx*8, LOG_BUF_SIZE, "%02X:%04X ", reg_addr, value);
+/*K19A code for HQ-145950 by zhangpeng at 2021.7.12 start*/
+		snprintf(buf+idx*8, 9, "%02X:%04X ", reg_addr, value);
+/*K19A code for HQ-145950 by zhangpeng at 2021.7.12 end*/
 		idx++;
 		if (idx % 8 == 0 || reg_addr == reg_end) {
 			buf[idx*8-1] = '\0';
@@ -995,11 +997,18 @@ int fsm_parse_preset(const void *data, uint32_t size)
 	crc_size = (size - sizeof(struct preset_header) + 2)/sizeof(uint16_t);
 	if (hdr->size == 0 || hdr->size != size) {
 		pr_err("invalid size: hdr:%d, fw:%d", hdr->size, size);
+/*K19A code for HQ-145950 by zhangpeng at 2021.7.12 start*/
+		fsm_free_mem((void **)&pfile);
+/*K19A code for HQ-145950 by zhangpeng at 2021.7.12 end*/
 		return -EINVAL;
 	}
+/*K19A code for HQ-145950 by zhangpeng at 2021.7.12 end*/
 	checksum = fsm_calc_checksum((uint16_t *)(&(pfile->hdr.ndev)), crc_size);
 	if (checksum != hdr->crc16) {
 		pr_err("checksum(%04X) not match(%04X)", checksum, hdr->crc16);
+/*K19A code for HQ-145950 by zhangpeng at 2021.7.12 start*/
+		fsm_free_mem((void **)&pfile);
+/*K19A code for HQ-145950 by zhangpeng at 2021.7.12 end*/
 		return -EINVAL;
 	} else {
 		pr_info("checksum success!");
