@@ -25,6 +25,10 @@
 #include "cmdq-bdg.h"
 #include "cmdq_helper_ext.h"
 
+/* Huaqin modify for HQ-145948 by liunianliang at 2021/07/13 start */
+#define CMDQ_IRQ_MASK			GENMASK(CMDQ_THR_MAX_COUNT - 1, 0)
+/* Huaqin modify for HQ-145948 by liunianliang at 2021/07/13 end */
+
 #define SYSREG_IRQ_CTRL2	0x1c
 #define SYSREG_IRQ_MSK_CLR	0x74
 
@@ -528,7 +532,8 @@ s32 cmdq_bdg_irq_handler(void)
 		return IRQ_NONE;
 
 	ret = IRQ_HANDLED;
-	for_each_clear_bit(bit, &irq, 32) {
+	/* Huaqin modify for HQ-145948 by liunianliang at 2021/07/13 start */
+	for_each_clear_bit(bit, &irq, fls(CMDQ_IRQ_MASK)) {
 		thread = &cmdq->thread[bit];
 		cmdq_msg("%s: bit:%d thread:%u occupied:%d",
 			__func__, bit, thread->idx, thread->occupied);
@@ -539,6 +544,7 @@ s32 cmdq_bdg_irq_handler(void)
 		}
 		cmdq_bdg_thread_irq_handler(thread);
 	}
+	/* Huaqin modify for HQ-145948 by liunianliang at 2021/07/13 end */
 
 	spi_write_reg(cmdq->base_pa + CMDQ_THR_IRQ_FLAG, UINT_MAX);
 	cmdq_msg("%s: cmdq:%pa usage:%#x irq:%#x:%#x",
