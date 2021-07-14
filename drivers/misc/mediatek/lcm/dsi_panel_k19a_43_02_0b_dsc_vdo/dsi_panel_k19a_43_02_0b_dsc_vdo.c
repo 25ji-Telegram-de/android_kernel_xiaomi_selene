@@ -40,6 +40,10 @@
 #  include <asm/arch/mt_gpio.h>
 #endif
 
+/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/14 start */
+extern int hq_selene_pcba_config;
+/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/14 end */
+
 /* Huaqin add for K19A-315 by feiwen at 2021/06/16 start */
 #ifdef mdelay
 #undef mdelay
@@ -312,6 +316,65 @@ static struct LCM_setting_table init_setting_vdo[] = {
         {0xFF, 1, {0XD0} },
         {0xFB, 1, {0x01} },
         {0X53, 1, {0X22} },
+	{0X54, 1, {0X02} },
+
+        {0XFF, 1, {0XC0} },
+        {0XFB, 1, {0X01} },
+	{0X9C, 1, {0X11} },
+	{0X9D, 1, {0X11} },
+
+        {0xFF, 1, {0X27} },
+        {0XFB, 1, {0X01} },
+	/* Huaqin modify for K19A-271 by caogaojie at 2021/05/13 start */
+        {0X3F, 1, {0X09} },
+	/* Huaqin modify for K19A-271 by caogaojie at 2021/05/13 end */
+        {0X40, 1, {0X25} },
+        {0X43, 1, {0X08} },
+
+        {0XFF, 1, {0X10} },
+        {0XFB, 1, {0X01} },
+	{0X35, 1, {0X00} },
+
+        {0x11, 0, {} },
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
+	{0x11, 0, {} },
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
+	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 start */
+        {REGFLAG_DELAY, 70, {} },
+        {0x29, 0, {} },
+	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
+};
+
+/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/14 start */
+static struct LCM_setting_table init_setting_vdo_K19L[] = {
+	{0xFF, 1, {0x10} },
+        {0xFB, 1, {0x01} },
+	{0XB0, 1, {0x00} },
+	{0XC0, 1, {0x03} },
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 start */
+        {0xC1, 16, {0x89,0x28,0x00,0x08,0x00,0xAA,0x02,0x0E,0x00,0x2B,0x00,0x07,0x0D,0xB7,0x0C,0xB7} },
+	/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/07 end */
+        {0XC2, 2, {0X1B,0XA0} },
+//FR
+	/*{0xFF, 1, {0x27} },
+	{0xFB, 1, {0x01} },
+	{0x40, 1, {0x22} },*/
+
+        {0xFF, 1, {0XE0} },
+        {0XFB, 1, {0X01} },
+        {0X35, 1, {0X82} },
+        {0X85, 1, {0X32} },
+
+        {0xFF, 1, {0XF0} },
+        {0xFB, 1, {0x01} },
+        {0X1C, 1, {0X01} },
+        {0X33, 1, {0X01} },
+        {0X5A, 1, {0X00} },
+	{0X9C, 1, {0X00} },
+
+        {0xFF, 1, {0XD0} },
+        {0xFB, 1, {0x01} },
+        {0X53, 1, {0X22} },
   	{0X54, 1, {0X02} },
 
         {0XFF, 1, {0XC0} },
@@ -327,6 +390,12 @@ static struct LCM_setting_table init_setting_vdo[] = {
         {0X40, 1, {0X25} },
         {0X43, 1, {0X08} },
 
+        {0XFF, 1, {0X20} },
+        {0XFB, 1, {0X01} },
+        {0X1F, 1, {0XF0} },
+        {0X20, 1, {0XF0} },
+        {0X21, 1, {0X01} },//MUX_driving
+
         {0XFF, 1, {0X10} },
         {0XFB, 1, {0X01} },
   	{0X35, 1, {0X00} },
@@ -340,7 +409,7 @@ static struct LCM_setting_table init_setting_vdo[] = {
         {0x29, 0, {} },
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
 };
-
+/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/14 end */
 static struct LCM_setting_table
 __maybe_unused lcm_deep_sleep_mode_in_setting[] = {
 	{0x28, 1, {0x00} },
@@ -698,10 +767,17 @@ static void lcm_init(void)
 		g_trigger_disp_esd_recovery = false;
 	}
 	/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
-	LCM_LOGI("[DENNIS__v2][%s][%d]\n", __func__, __LINE__);
-	push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
-	LCM_LOGI("nt36672c_fhdp----tps6132----lcm mode = vdo mode :%d----\n",
-		 lcm_dsi_mode);
+
+	/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/14 start */
+	//2:PCBA_K19A_LA 8:PCBA_K19L_LA
+	if (hq_selene_pcba_config == 2 || hq_selene_pcba_config == 8){
+		push_table(NULL, init_setting_vdo_K19L, ARRAY_SIZE(init_setting_vdo_K19L), 1);
+		LCM_LOGI("%s this is K19L %d\n",__func__,hq_selene_pcba_config);
+	} else {
+		push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
+		LCM_LOGI("%s this is the other config %d\n",__func__,hq_selene_pcba_config);
+	}
+	/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/14 end */
 }
 
 static void lcm_suspend(void)
