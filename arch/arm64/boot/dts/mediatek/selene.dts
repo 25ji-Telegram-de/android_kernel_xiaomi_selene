@@ -485,12 +485,16 @@
 };
 &lk_charger  {
 	/* charging current */
-	ac_charger_current = <1000000>;
+	ac_charger_current = <2000000>;
 	non_std_ac_charger_current = <1000000>;
 
 	/* battery temperature protection */
-	temp_t4_threshold = <55>;
-	temp_t3_threshold = <45>;
+	temp_t4_threshold = <45>;
+	temp_t3_threshold = <10>;
+	/*K19A HQHW-963 K19A for lk jeita by langjunjun at 2021/7/15 start*/
+	temp_t5_threshold = <60>;
+	temp_t2_threshold = <5>;
+	/*K19A HQHW-963 K19A for lk jeita  by langjunjun at 2021/7/15 end*/
 	temp_t1_threshold = <0>;
 };
 
