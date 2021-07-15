@@ -6791,19 +6791,7 @@ static void _ovl_sbch_invalid_config(struct cmdqRecStruct *cmdq_handle)
 		}
 	}
 }
-static bool has_secure_layer(struct disp_frame_cfg_t *cfg)
-{
-	int i;
-	bool secure_layer = false;
-	for (i = 0; i < cfg->input_layer_num; i++) {
-		struct disp_input_config *input_cfg = &cfg->input_cfg[i];
-		if (input_cfg->security == DISP_SECURE_BUFFER) {
-			secure_layer = true;
-			break;
-		}
-	}
-	return secure_layer;
-}
+
 static int _config_ovl_input(struct disp_frame_cfg_t *cfg,
 			     disp_path_handle disp_handle,
 			     struct cmdqRecStruct *cmdq_handle)
@@ -7285,14 +7273,10 @@ static int _config_ovl_input(struct disp_frame_cfg_t *cfg,
 			data_config->read_dum_reg[i] = 0;
 
 			/* full transparent layer */
-
-			if (!has_secure_layer(cfg)) {
-				cmdqRecBackupRegisterToSlot(cmdq_handle,
-					pgc->ovl_dummy_info, i,
-					disp_addr_convert
-					(DISP_REG_OVL_DUMMY_REG + ovl_base));
-                          }
-
+			cmdqRecBackupRegisterToSlot(cmdq_handle,
+				pgc->ovl_dummy_info, i,
+				disp_addr_convert
+				(DISP_REG_OVL_DUMMY_REG + ovl_base));
 		}
 	}
 
@@ -7302,10 +7286,8 @@ static int _config_ovl_input(struct disp_frame_cfg_t *cfg,
 		/* last OVL is DISP_MODULE_OVL0_2L */
 		unsigned long ovl_base = ovl_base_addr(DISP_MODULE_OVL0_2L);
 
-		if (!has_secure_layer(cfg)) {
-			cmdqRecBackupRegisterToSlot(cmdq_handle, pgc->ovl_status_info,
-				0, disp_addr_convert(DISP_REG_OVL_STA + ovl_base));
-                }
+		cmdqRecBackupRegisterToSlot(cmdq_handle, pgc->ovl_status_info,
+			0, disp_addr_convert(DISP_REG_OVL_STA + ovl_base));
 	}
 
 done:

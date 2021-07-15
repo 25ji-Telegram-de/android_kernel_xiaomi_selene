@@ -101,7 +101,7 @@ struct cmdq_sec_thread {
 	u32			wait_cookie;
 	u32			next_cookie;
 	u32			task_cnt;
-	struct cmdq_task	*task_list[CMDQ_MAX_TASK_IN_SECURE_THREAD_MAX];
+	struct cmdq_task	*task_list[CMDQ_MAX_TASK_IN_SECURE_THREAD];
 	struct workqueue_struct *task_exec_wq;
 	struct timer_list	timeout;
 	struct work_struct	timeout_work;
@@ -124,18 +124,6 @@ struct cmdq {
 
 /* TODO: should be removed? */
 static struct cmdq *g_cmdq;
-
-#if IS_ENABLED(CONFIG_MACH_MT6779) || IS_ENABLED(CONFIG_MACH_MT6785)
-static const s32 cmdq_max_task_in_secure_thread[
-	CMDQ_MAX_SECURE_THREAD_COUNT] = {10, 10, 4, 10};
-static const s32 cmdq_tz_cmd_block_size[CMDQ_MAX_SECURE_THREAD_COUNT] = {
-	4 << 12, 4 << 12, 20 << 12, 4 << 12};
-#else
-static const s32 cmdq_max_task_in_secure_thread[
-	CMDQ_MAX_SECURE_THREAD_COUNT] = {10, 10, 4};
-static const s32 cmdq_tz_cmd_block_size[CMDQ_MAX_SECURE_THREAD_COUNT] = {
-	4 << 12, 4 << 12, 20 << 12};
-#endif
 
 const u32 isp_iwc_buf_size[] = {
 	CMDQ_SEC_ISP_CQ_SIZE,
@@ -459,10 +447,9 @@ s32 cmdq_sec_fill_iwc_command_msg_unlocked(
 
 	/* check command size first */
 	if ((task->pkt->cmd_buf_size + reserve_cmd_size) >
-		cmdq_tz_cmd_block_size[thread - CMDQ_MIN_SECURE_THREAD_ID]) {
+		CMDQ_TZ_CMD_BLOCK_SIZE) {
 		CMDQ_ERR("[SEC]SESSION_MSG: task %p size %zu > %d\n",
-			task, task->pkt->cmd_buf_size, cmdq_tz_cmd_block_size[
-			thread - CMDQ_MIN_SECURE_THREAD_ID]);
+			task, task->pkt->cmd_buf_size, CMDQ_TZ_CMD_BLOCK_SIZE);
 		return -EFAULT;
 	}
 
@@ -1375,8 +1362,7 @@ static s32 cmdq_sec_remove_handle_from_thread_by_cookie(
 {
 	struct cmdq_task *task;
 
-	if (!thread || index < 0 || index >=  cmdq_max_task_in_secure_thread[
-		thread->idx - CMDQ_MIN_SECURE_THREAD_ID]) {
+	if (!thread || index < 0 || index >= CMDQ_MAX_TASK_IN_SECURE_THREAD) {
 		CMDQ_ERR(
 			"remove task from thread array, invalid param THR:0x%p task_slot:%d\n",
 			thread, index);
@@ -1500,8 +1486,7 @@ s32 cmdq_sec_handle_wait_result_impl(struct cmdqRecStruct *handle, s32 thread,
 		/* remove all tasks in tread since we have reset HW thread
 		 * in SWd
 		 */
-		for (i = 0; i < cmdq_max_task_in_secure_thread[
-			thread - CMDQ_MIN_SECURE_THREAD_ID]; i++) {
+		for (i = 0; i < CMDQ_MAX_TASK_IN_SECURE_THREAD; i++) {
 			struct cmdq_task *task = thread_context->task_list[i];
 
 			if (!task)
@@ -1852,7 +1837,6 @@ static s32 cmdq_sec_insert_handle_from_thread_array_by_cookie(
 	struct cmdq_task *task, struct cmdq_sec_thread *thread,
 	const s32 cookie, const bool reset_thread)
 {
-	s32 err = 0, max_task = 0;
 	if (!task || !thread) {
 		CMDQ_ERR(
 			"invalid param pTask:0x%p pThread:0x%p cookie:%d needReset:%d\n",
@@ -1890,27 +1874,13 @@ static s32 cmdq_sec_insert_handle_from_thread_array_by_cookie(
 		thread->task_cnt++;
 	}
 
-	thread->task_list[cookie % cmdq_max_task_in_secure_thread[
-		thread->idx - CMDQ_MIN_SECURE_THREAD_ID]] = task;
-	max_task = cmdq_max_task_in_secure_thread[
-		thread->idx - CMDQ_MIN_SECURE_THREAD_ID];
-	if (thread->task_cnt > max_task) {
-		CMDQ_ERR("task_cnt:%u cannot more than %u task:%p thrd-idx:%u",
-			task->thread->task_cnt, max_task,
-			task, task->thread->idx);
-		err = -EMSGSIZE;
-	}
-
-	thread->task_list[cookie % cmdq_max_task_in_secure_thread[
-		thread->idx - CMDQ_MIN_SECURE_THREAD_ID]] = task;
-
+	thread->task_list[cookie % CMDQ_MAX_TASK_IN_SECURE_THREAD] = task;
 	task->handle->secData.waitCookie = cookie;
 	task->handle->secData.resetExecCnt = reset_thread;
 
 	CMDQ_MSG("%s leave task:0x%p handle:0x%p insert with idx:%d\n",
 		__func__, task, task->handle,
-		cookie % cmdq_max_task_in_secure_thread[
-		thread->idx - CMDQ_MIN_SECURE_THREAD_ID]);
+		cookie % CMDQ_MAX_TASK_IN_SECURE_THREAD);
 
 	return 0;
 }
@@ -1929,7 +1899,6 @@ static void cmdq_sec_exec_task_async_impl(struct work_struct *work_item)
 	struct cmdq_sec_thread *thread = task->thread;
 	u32 cookie;
 	unsigned long flags;
-	s32 err = 0;
 
 	thread_id = thread->idx;
 	buf = list_first_entry(&handle->pkt->buf, struct cmdq_pkt_buffer,
@@ -1958,7 +1927,7 @@ static void cmdq_sec_exec_task_async_impl(struct work_struct *work_item)
 		if (thread->task_cnt <= 0) {
 			/* TODO: enable clock */
 			cookie = 1;
-			err = cmdq_sec_insert_handle_from_thread_array_by_cookie(
+			cmdq_sec_insert_handle_from_thread_array_by_cookie(
 				task, thread, cookie, true);
 
 			mod_timer(&thread->timeout,
@@ -1966,33 +1935,12 @@ static void cmdq_sec_exec_task_async_impl(struct work_struct *work_item)
 		} else {
 			/* append directly */
 			cookie = thread->next_cookie;
-			err = cmdq_sec_insert_handle_from_thread_array_by_cookie(
+			cmdq_sec_insert_handle_from_thread_array_by_cookie(
 				task, thread, cookie, false);
 		}
 
 		spin_unlock_irqrestore(&cmdq_sec_task_list_lock, flags);
-		if (err) {
-			cmdq_sec_task_callback(task->handle->pkt, err);
 
-			spin_lock_irqsave(&task->thread->chan->lock, flags);
-			if (!task->thread->task_cnt)
-				CMDQ_ERR("thread:%u task_cnt:%u cannot below zero",
-					task->thread->idx, task->thread->task_cnt);
-			else
-				task->thread->task_cnt -= 1;
-
-			task->thread->next_cookie = (task->thread->next_cookie - 1 +
-				CMDQ_MAX_COOKIE_VALUE) % CMDQ_MAX_COOKIE_VALUE;
-
-			CMDQ_ERR(
-				"gce: err:%d task:%p pkt:%p thread:%u task_cnt:%u wait_cookie:%u next_cookie:%u",
-				(unsigned long) err, task, task->handle->pkt,
-				task->thread->idx, task->thread->task_cnt,
-				task->thread->wait_cookie, task->thread->next_cookie);
-			spin_unlock_irqrestore(&task->thread->chan->lock, flags);
-
-			cmdq_sec_release_task(task);
-		}
 		handle->state = TASK_STATE_BUSY;
 		handle->trigger = sched_clock();
 
@@ -2087,8 +2035,7 @@ static bool cmdq_sec_thread_timeout_excceed(struct cmdq_sec_thread *thread)
 	s32 i, last_idx;
 	CMDQ_TIME last_trigger = 0;
 
-	for (i = cmdq_max_task_in_secure_thread[
-		thread->idx - CMDQ_MIN_SECURE_THREAD_ID] - 1; i >= 0; i--) {
+	for (i = CMDQ_MAX_TASK_IN_SECURE_THREAD - 1; i >= 0; i--) {
 		/* task put in array from index 1 */
 		if (!thread->task_list[i])
 			continue;
@@ -2126,8 +2073,7 @@ static bool cmdq_sec_task_list_empty(struct cmdq_sec_thread *thread)
 {
 	u32 i;
 
-	for (i = 0; i < cmdq_max_task_in_secure_thread[
-		thread->idx - CMDQ_MIN_SECURE_THREAD_ID]; i++) {
+	for (i = 0; i < CMDQ_MAX_TASK_IN_SECURE_THREAD; i++) {
 		if (thread->task_list[i])
 			return false;
 	}
@@ -2151,8 +2097,7 @@ static void cmdq_sec_thread_irq_handle_by_cookie(
 {
 	u32 task_done_cnt, i;
 	unsigned long flags;
-	u32 max_task_cnt = cmdq_max_task_in_secure_thread[
-		thread->idx - CMDQ_MIN_SECURE_THREAD_ID];
+	u32 max_task_cnt = CMDQ_MAX_TASK_IN_SECURE_THREAD;
 	struct cmdq_task *task;
 
 	spin_lock_irqsave(&cmdq_sec_task_list_lock, flags);
@@ -2199,7 +2144,7 @@ static void cmdq_sec_thread_irq_handle_by_cookie(
 		/* remove all task */
 		struct cmdq_task *tmp;
 
-		for (i = 0; i < max_task_cnt; i++) {
+		for (i = 0; i < CMDQ_MAX_TASK_IN_SECURE_THREAD; i++) {
 			if (!thread->task_list[i])
 				continue;
 
@@ -2236,7 +2181,7 @@ static void cmdq_sec_thread_irq_handle_by_cookie(
 		thread->wait_cookie -= (CMDQ_MAX_COOKIE_VALUE + 1);
 	}
 	task = thread->task_list[thread->wait_cookie %
-		max_task_cnt];
+		CMDQ_MAX_TASK_IN_SECURE_THREAD];
 
 	if (task) {
 		mod_timer(&thread->timeout,
@@ -2246,7 +2191,7 @@ static void cmdq_sec_thread_irq_handle_by_cookie(
 
 		CMDQ_ERR("%s task is empty, wait cookie:%d dump for sure\n",
 			__func__, thread->wait_cookie);
-		for (i = 0; i < max_task_cnt; i++) {
+		for (i = 0; i < CMDQ_MAX_TASK_IN_SECURE_THREAD; i++) {
 			task = thread->task_list[i];
 			if (task)
 				CMDQ_LOG(
@@ -2294,8 +2239,7 @@ static void cmdq_sec_task_timeout_work(struct work_struct *work_item)
 
 	cookie = cmdq_sec_get_secure_thread_exec_counter(thread->idx);
 	timeout_task = thread->task_list[(cookie + 1) %
-		cmdq_max_task_in_secure_thread[
-		thread->idx - CMDQ_MIN_SECURE_THREAD_ID]];
+		CMDQ_MAX_TASK_IN_SECURE_THREAD];
 
 	wait_cookie = thread->wait_cookie;
 
