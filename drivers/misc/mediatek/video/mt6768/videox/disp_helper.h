@@ -82,10 +82,6 @@ enum DISP_HELPER_OPT {
 	DISP_OPT_TUI_MODE, /* 0: single-window; 1: multi-window */
 	/*DynFPS*/
 	DISP_OPT_DYNAMIC_FPS,
-#ifdef CONFIG_MTK_MT6382_BDG
-	DISP_OPT_6382_DBG,
-#endif
-
 	DISP_OPT_NUM
 };
 

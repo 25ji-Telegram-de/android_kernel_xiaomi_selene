@@ -939,7 +939,7 @@ static int mtk_spi_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "failed to register master (%d)\n", ret);
 		goto err_disable_runtime_pm;
 	}
-	printk("[%s-%d] run to here\n", __func__, __LINE__);
+
 	if (mdata->dev_comp->need_pad_sel) {
 		if (mdata->pad_num != master->num_chipselect) {
 			dev_err(&pdev->dev,

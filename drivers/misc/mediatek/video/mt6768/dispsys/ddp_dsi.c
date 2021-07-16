@@ -357,7 +357,7 @@ enum DSI_STATUS DSI_DumpRegisters(enum DISP_MODULE_ENUM module, int level)
 			for (k = 0; k < sizeof(struct DSI_REGS); k += 16) {
 				offset = dsi_base_addr + k;
 				DDPDUMP("0x%04x: 0x%08x 0x%08x 0x%08x 0x%08x\n",
-					0x200 + k, INREG32(offset),
+					k, INREG32(offset),
 					INREG32(offset + 0x4),
 					INREG32(offset + 0x8),
 					INREG32(offset + 0xc));
@@ -5641,10 +5641,14 @@ int ddp_dsi_config(enum DISP_MODULE_ENUM module,
 		_dump_dsi_params(&(_dsi_context[i].dsi_params));
 	}
 
+	if (bdg_is_bdg_connected() == 1) {
+		set_bdg_tx_mode(dsi_config->mode);
 	dsi_config->data_rate = get_ap_data_rate();
 	DISPINFO(
 		"%s, PLL_CLOCK=%d, data_rate=%d, mode=%d\n",
-		__func__, dsi_config->PLL_CLOCK, dsi_config->data_rate, dsi_config->mode);
+			__func__, dsi_config->PLL_CLOCK, dsi_config->data_rate,
+			dsi_config->mode);
+	}
 
 	if (!MIPITX_IsEnabled(module, cmdq) || PanelMaster_is_enable()) {
 		DISPCHECK("MIPITX is not inited, will config mipitx clk=%d\n",
@@ -6598,17 +6602,18 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 			return -1;
 		}
 	} else if (state == CMDQ_ESD_CHECK_READ) {
-#ifdef CONFIG_MTK_MT6382_BDG
 		unsigned char rxbypass0[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x84
 		unsigned char rxbypass1[] = {0x10, 0x02, 0x00, 0x02, 0x00, 0x00, 0x00}; //ID 0x84
 		unsigned char rxsel0[] = {0x31, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x70
 		unsigned char rxsel1[] = {0x31, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00}; //ID 0x70
 
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x84, 7,
-				rxbypass1, 1); //0x00021084 = 0x00000002
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x70, 7,
-				rxsel0, 1); // //0x00023170 = 0x00000000
-#endif
+		if (bdg_is_bdg_connected() == 1) {
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x84, 7,
+				rxbypass1, 1);
+
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x70, 7,
+				rxsel0, 1);
+		}
 		/* enable dsi interrupt: RD_RDY/CMD_DONE (need do this here?) */
 		DSI_OUTREGBIT(cmdq_trigger_handle, struct DSI_INT_ENABLE_REG,
 			      DSI_REG[dsi_i]->DSI_INTEN, RD_RDY, 1);
@@ -6636,8 +6641,6 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 			/* write DSI CMDQ */
 			DSI_OUTREG32(cmdq_trigger_handle,
 				&DSI_CMDQ_REG[dsi_i]->data[0], AS_UINT32(&t1));
-			DSI_OUTREG32(cmdq_trigger_handle,
-				&DSI_CMDQ_REG[dsi_i]->data[1], AS_UINT32(&t0));
 			DSI_OUTREG32(cmdq_trigger_handle,
 				&DSI_REG[dsi_i]->DSI_CMDQ_SIZE, 1);
 
@@ -6716,12 +6719,12 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 			/* loop: 0~4 */
 		}
 
-#ifdef CONFIG_MTK_MT6382_BDG
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x84, 7,
+		if (bdg_is_bdg_connected() == 1) {
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x84, 7,
 				rxbypass0, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x70, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x70, 7,
 				rxsel1, 1);
-#endif
+		}
 
 	} else if (state == CMDQ_ESD_CHECK_CMP) {
 		struct LCM_esd_check_item *lcm_esd_tb;
@@ -6892,12 +6895,10 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 			}
 		}
 	} else if (state == CMDQ_STOP_VDO_MODE) {
-#ifdef CONFIG_MTK_MT6382_BDG
 		unsigned char stopdsi[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x00
 		unsigned char setcmd[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x14
 		unsigned char reset0[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x10
 		unsigned char reset1[] = {0x10, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00}; //ID 0x10
-#endif
 		/* use cmdq to stop dsi vdo mode */
 		/* 0. set dsi cmd mode */
 		//DSI_SetMode(module, cmdq_trigger_handle, CMD_MODE);
@@ -6941,29 +6942,30 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 
 		DSI_SetMode(module, cmdq_trigger_handle, CMD_MODE);
 
-#ifdef CONFIG_MTK_MT6382_BDG
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
+		if (bdg_is_bdg_connected() == 1) {
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
 				stopdsi, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x10, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x10, 7,
 				reset1, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x10, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x10, 7,
 				reset0, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
 				setcmd, 1);
-#endif
+		}
 	} else if (state == CMDQ_START_VDO_MODE) {
-#ifdef CONFIG_MTK_MT6382_BDG
 		unsigned char setvdo[] = {0x10, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00}; //ID 0x14
 		unsigned char stopdsi[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x00
 		unsigned char startdsi[] = {0x10, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00}; //ID 0x00
 
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
+		if (bdg_is_bdg_connected() == 1) {
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
 				setvdo, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
+
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
 				stopdsi, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
 				startdsi, 1);
-#endif
+		}
 		/* 0. dual dsi set DSI_START/DSI_DUAL_EN */
 		if (module == DISP_MODULE_DSIDUAL) {
 			DSI_OUTREGBIT(cmdq_trigger_handle, struct DSI_START_REG,
@@ -6988,8 +6990,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 
 		/* 1. set dsi vdo mode */
 		DSI_SetMode(module, cmdq_trigger_handle, dsi_params->mode);
-		set_bdg_tx_mode(SYNC_PULSE_VDO_MODE);
-
+		//set_bdg_tx_mode(dsi_params->mode);
 	} else if (state == CMDQ_DSI_RESET) {
 		DISPCHECK("CMDQ Timeout, Reset DSI\n");
 		DSI_DumpRegisters(module, 1);

@@ -60,6 +60,7 @@ unsigned int dsc_en;
 unsigned int mt6382_init;
 unsigned int bdg_tx_mode;
 static int bdg_eint_irq;
+static int mt6382_connected;
 static bool irq_already_requested;
 
 #define T_DCO		5  // nominal: 200MHz
@@ -80,7 +81,6 @@ int bdg_dsi0_done_gce_event;
 int bdg_dsi0_target_gce_event;
 int bdg_rdma0_sof_gce_event;
 int bdg_rdma0_eof_gce_event;
-static int mt6382_connected;
 
 #define REGFLAG_DELAY		0xFFFC
 #define REGFLAG_UDELAY		0xFFFB
@@ -1949,7 +1949,7 @@ int bdg_dsi_dump_reg(enum DISP_BDG_ENUM module, unsigned int level)
 int bdg_tx_wait_for_idle(enum DISP_BDG_ENUM module)
 {
 	int i;
-	unsigned int timeout = 5000;
+	unsigned int timeout = 5000; /* unit: usec */
 	unsigned int status;
 
 	DISPFUNCSTART();
@@ -4214,7 +4214,6 @@ LEGACY_VFP:
 	cmdqRecDestroy(handle);
 }
 
-#define _n36672c_
 int bdg_dsc_init(enum DISP_BDG_ENUM module,
 			void *cmdq, struct LCM_DSI_PARAMS *tx_params)
 {
@@ -4449,7 +4448,6 @@ int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
 //	if (out_type) {
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RDY_TO_CNT_OS, 0);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RESP_TO_CNT_OS, 0);
-	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_VALID_VC_CFG_OS, 0xf);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_VALID_VC_CFG_OS, 0xf);
 	/* 0x1b for MMCLK 270M 0x37 for MMCLK 407M */
 #ifdef _90HZ_

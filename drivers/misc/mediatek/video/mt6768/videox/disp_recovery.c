@@ -204,7 +204,6 @@ int _esd_check_config_handle_cmd(struct cmdqRecStruct *qhandle)
  * Config cmdq_handle_config_esd
  * return value: 0:success, 1:fail
  */
-
 int _esd_check_config_handle_vdo(struct cmdqRecStruct *qhandle)
 {
 	int ret = 0;
@@ -243,10 +242,8 @@ int _esd_check_config_handle_vdo(struct cmdqRecStruct *qhandle)
 
 	/* 6.flush instruction */
 	dprec_logger_start(DPREC_LOGGER_ESD_CMDQ, 0, 0);
-		ret = cmdqRecFlush(qhandle);
-
+	ret = cmdqRecFlush(qhandle);
 	dprec_logger_done(DPREC_LOGGER_ESD_CMDQ, 0, 0);
-
 	DISPINFO("[ESD]%s ret=%d\n", __func__, ret);
 	primary_display_manual_unlock();
 
@@ -483,6 +480,7 @@ int do_lcm_vdo_lp_read(struct ddp_lcm_read_cmd_table *read_table)
 
 		/* 6.flush instruction */
 		ret = cmdqRecFlush(handle);
+
 	} else {
 		DISPINFO("Not support cmd mode\n");
 	}
@@ -592,7 +590,6 @@ int do_lcm_vdo_lp_write(struct ddp_lcm_write_cmd_table *write_table,
 
 		/* 6.flush instruction */
 		ret = cmdqRecFlush(handle);
-
 	} else {
 		DISPINFO("Not support cmd mode\n");
 	}
@@ -816,7 +813,6 @@ int primary_display_esd_recovery(void)
 	mmp_event mmp_r = ddp_mmp_get_events()->esd_recovery_t;
 
 	DISPFUNC();
-
 	dprec_logger_start(DPREC_LOGGER_ESD_RECOVERY, 0, 0);
 	mmprofile_log_ex(mmp_r, MMPROFILE_FLAG_START, 0, 0);
 	DISPCHECK("[ESD]ESD recovery begin\n");
@@ -879,11 +875,6 @@ int primary_display_esd_recovery(void)
 	/*after dsi_stop, we should enable the dsi basic irq.*/
 	dsi_basic_irq_enable(DISP_MODULE_DSI0, NULL);
 	disp_lcm_suspend(primary_get_lcm());
-	if (primary_get_lcm()->drv->suspend_power) {
-		primary_get_lcm()->drv->suspend_power();
-	} else {
-		printk("[%s]: ESD recovery,lcm suspend power fail!\n", __func__);
-	}
 	DISPCHECK("[POWER]lcm suspend[end]\n");
 
 	mmprofile_log_ex(mmp_r, MMPROFILE_FLAG_PULSE, 0, 7);
@@ -909,24 +900,22 @@ int primary_display_esd_recovery(void)
 	DISPCHECK("[ESD]dsi power reset[end]\n");
 	if (bdg_is_bdg_connected() == 1) {
 		struct disp_ddp_path_config *data_config;
- 
+
 //		extern ddp_dsi_config(enum DISP_MODULE_ENUM module,
 //		struct disp_ddp_path_config *config, void *cmdq);
- 
+
 		data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
 		data_config->dst_dirty = 1;
 		dpmgr_path_config(primary_get_dpmgr_handle(), data_config, NULL);
 //		ddp_dsi_config(DISP_MODULE_DSI0, data_config, NULL);
- 
+
 		data_config->dst_dirty = 0;
 	}
-
 	DISPDBG("[ESD]lcm recover[begin]\n");
 	disp_lcm_esd_recover(primary_get_lcm());
 	DISPCHECK("[ESD]lcm recover[end]\n");
 	mmprofile_log_ex(mmp_r, MMPROFILE_FLAG_PULSE, 0, 8);
-
-if (bdg_is_bdg_connected() == 1 && get_mt6382_init()) {
+	if (bdg_is_bdg_connected() == 1 && get_mt6382_init()) {
 		DISPCHECK("set 6382 mode start\n");
 		bdg_tx_set_mode(DISP_BDG_DSI0, NULL, get_bdg_tx_mode());
 		bdg_tx_start(DISP_BDG_DSI0, NULL);
@@ -1298,6 +1287,7 @@ static int external_display_check_recovery_worker_kthread(void *data)
 	int esd_try_cnt = 5;	/* 20; */
 	int recovery_done = 0;
 
+	DISPFUNC();
 	sched_setscheduler(current, SCHED_RR, &param);
 
 	while (1) {

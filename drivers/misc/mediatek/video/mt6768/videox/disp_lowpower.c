@@ -977,6 +977,7 @@ void _vdo_mode_leave_idle(void)
 			MMPROFILE_FLAG_END,
 			!primary_display_is_decouple_mode(), bandwidth);
 #endif
+
 }
 
 void _cmd_mode_enter_idle(void)
@@ -1012,6 +1013,7 @@ void _cmd_mode_enter_idle(void)
 			MMPROFILE_FLAG_END,
 			!primary_display_is_decouple_mode(), 0);
 #endif
+
 }
 
 void _cmd_mode_leave_idle(void)

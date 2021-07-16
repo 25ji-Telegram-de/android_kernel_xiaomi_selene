@@ -35,7 +35,6 @@
 #define RXTX_RATIO		(299)
 #else
 #define RXTX_RATIO		(225) //for vdo 90Hz
-//#define RXTX_RATIO		(230) //for vdo 120Hz
 #endif
 
 enum DISP_BDG_ENUM {
@@ -74,7 +73,6 @@ enum MIPI_TX_PAD_VALUE {
 int bdg_tx_init(enum DISP_BDG_ENUM module,
 		   struct disp_ddp_path_config *config, void *cmdq);
 int bdg_tx_deinit(enum DISP_BDG_ENUM module, void *cmdq);
-void bdg_first_init(void);
 int bdg_common_init(enum DISP_BDG_ENUM module,
 			struct disp_ddp_path_config *config, void *cmdq);
 int bdg_common_deinit(enum DISP_BDG_ENUM module, void *cmdq);
@@ -127,6 +125,7 @@ int mtk_spi_mask_write(u32 addr, u32 msk, u32 value);
 //irqreturn_t bdg_eint_irq_handler(int irq, void *data);
 irqreturn_t bdg_eint_thread_handler(int irq, void *data);
 void bdg_request_eint_irq(void);
+void bdg_first_init(void);
 //void bdg_free_eint_irq(void);
 
 #endif

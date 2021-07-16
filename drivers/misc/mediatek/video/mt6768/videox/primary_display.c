@@ -9297,7 +9297,7 @@ done:
 	return ret;
 #endif
 	struct ddp_lcm_read_cmd_table read_table;
-	int recv_data_cnt;
+	int  recv_data_cnt;
 	char read_buffer[16];
 
 	memset(&read_table, 0,
