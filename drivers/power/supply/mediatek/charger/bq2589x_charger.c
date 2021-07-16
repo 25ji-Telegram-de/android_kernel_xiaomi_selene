@@ -1761,8 +1761,6 @@ static void bq2589x_charger_shutdown(struct i2c_client *client)
 	bq2589x_disable_otg(bq);
 	pr_err("bq2589x_disable_otg for shutdown\n");
 	/*K19A-185 charge by wangchao at 2021/4/26 end*/
-	bq2589x_disable_maxcen(bq);
-	pr_err("bq2589x_disable_maxcen for shutdown\n");
 }
 
 static struct i2c_driver bq2589x_charger_driver = {
