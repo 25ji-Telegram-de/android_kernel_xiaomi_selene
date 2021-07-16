@@ -834,6 +834,19 @@ static int bq2589x_get_charger_type_ext(struct charger_device *chg_dev, u32 *typ
 	return 0;
 }
 EXPORT_SYMBOL_GPL(bq2589x_get_charger_type_ext);
+/*K19A HQ-138863 K19A  cdp by zhixueyin at 2021/7/10 start*/
+static int chip_num(struct bq2589x *bq)
+{
+	int ret = 0;
+	int id_dis = 0;
+	u8 reg_val = 0;
+	ret = bq2589x_read_byte(bq,BQ2589X_REG_14,&reg_val);
+	id_dis = (reg_val & BQ2589X_PN_MASK);
+	id_dis >>= BQ2589X_PN_SHIFT;
+	pr_err(" bq2589x:id_dis:%d", id_dis);
+	return id_dis;
+}
+/*K19A HQ-138863 K19A  cdp by zhixueyin at 2021/7/10 end*/
 static int bq2589x_get_charger_type(struct bq2589x *bq, enum charger_type *type)
 {
 	int ret;
@@ -1758,9 +1771,23 @@ static void bq2589x_charger_shutdown(struct i2c_client *client)
 {
 	/*K19A-185 charge by wangchao at 2021/4/15 start*/
 	struct bq2589x *bq = i2c_get_clientdata(client);
+	/*HQ-138863 charge by zhixueyin at 2021/7/13 start*/
+	u8 reg_val = 0;
+	int ichg = 0;
+	/*HQ-138863 charge by zhixueyin at 2021/7/13 end*/
 	bq2589x_disable_otg(bq);
 	pr_err("bq2589x_disable_otg for shutdown\n");
 	/*K19A-185 charge by wangchao at 2021/4/26 end*/
+	/*HQ-138863 charge by zhixueyin at 2021/7/13 start*/
+	if (chip_num(bq) != 3) {
+		bq2589x_read_byte(bq, BQ2589X_REG_04, &reg_val);
+		ichg = (reg_val & BQ2589X_ICHG_MASK) >> BQ2589X_ICHG_SHIFT;
+		ichg = ichg * BQ2589X_ICHG_LSB + BQ2589X_ICHG_BASE;
+		if (ichg < 128) {
+			bq2589x_set_chargecurrent(bq, 128);
+		}
+	}
+	/*HQ-138863 charge by zhixueyin at 2021/7/13 end*/
 }
 
 static struct i2c_driver bq2589x_charger_driver = {
