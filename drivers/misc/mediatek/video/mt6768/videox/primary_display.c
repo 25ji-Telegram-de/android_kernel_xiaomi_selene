@@ -109,7 +109,7 @@
 
 #define FRM_UPDATE_SEQ_CACHE_NUM (DISP_INTERNAL_BUFFER_COUNT+1)
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/08 start */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 start */
 #define _SUPPORT_LCM_BOOST_
 #define SWITCH_FPS_IN_WORKQUEUE
 
@@ -135,6 +135,8 @@ static struct timeval begin, end;
 static wait_queue_head_t _bdg_check_task_wq;
 static atomic_t _bdg_check_task_wakeup = ATOMIC_INIT(0);
 static bool bdg_should_init = 1;
+static int is_test_mode = 0;
+static int bdg_timeout = BGD_DEINT_TIMEOUT_TIME;
 
 #ifdef CONFIG_PM_SLEEP
 static struct wakeup_source *bdg_ws;
@@ -148,7 +150,7 @@ void bdg_check_enable(int enable);
 static struct work_struct sWork;
 static struct workqueue_struct *fb_resume_workqueue;
 #endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/08 end */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 end */
 
 static struct disp_internal_buffer_info
 	*decouple_buffer_info[DISP_INTERNAL_BUFFER_COUNT];
@@ -297,8 +299,29 @@ void lock_primary_wake_lock(bool lock)
 
 }
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/08 start */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 start */
 #ifdef _SUPPORT_LCM_BOOST_
+static int _check_progress_in_task(char *name)
+{
+	struct task_struct *task;
+	int ret = 0;
+
+	if (!name)
+		return ret;
+
+	read_lock(&tasklist_lock);
+	for_each_process(task) {
+		if (task && (strncmp(task->comm, name, strlen(name)) == 0)) {
+			DISPMSG("[XTEST_FLAG] %s found pid:%d.\n",
+					task->comm, task->pid);
+			ret = task->pid;
+			break;
+		}
+	}
+	read_unlock(&tasklist_lock);
+	return ret;
+}
+
 static int fb_boost_start(void)
 {
 	int i, cluster_num;
@@ -373,9 +396,9 @@ static int bdg_check_worker_kthread(void *data)
 		do_gettimeofday(&end);
 		val = end.tv_sec - begin.tv_sec;
 
-		DISPMSG("display suspend time is %lu s\n", val);
+		DISPMSG("display suspend time is %lu s, bdg_timeout is %d\n", val, bdg_timeout);
 
-		if (val >= BGD_DEINT_TIMEOUT_TIME && bdg_is_bdg_connected() == 1) {
+		if (val >= bdg_timeout && bdg_is_bdg_connected() == 1) {
 			DISPMSG("after suspend %lu s, deint bdg...\n", val);
 			bdg_common_deinit(DISP_BDG_DSI0, NULL);
 			bdg_should_init = 1;
@@ -397,6 +420,8 @@ void bdg_check_enable(int enable)
 {
 	DISPMSG("[BDG]%s, enable = %d\n", __func__, enable);
 	if (enable) {
+		if (is_test_mode)
+			bdg_timeout = 1;
 		atomic_set(&_bdg_check_task_wakeup, 1);
 		wake_up_interruptible(&_bdg_check_task_wq);
 	} else {
@@ -418,6 +443,7 @@ void bdg_status_check_init(void)
 	if (!bdg_ws)
 		DISPMSG("bdg wakelock register fail!\n");
 }
+
 #endif
 
 #ifdef SWITCH_FPS_IN_WORKQUEUE
@@ -447,7 +473,7 @@ void fb_resume_queue_work(void)
 	queue_work(fb_resume_workqueue, &sWork);
 }
 #endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/08 end */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 end */
 
 static int smart_ovl_try_switch_mode_nolock(void);
 
@@ -5170,11 +5196,12 @@ done:
 	fb_boost_release();
 #endif
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 start */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 start */
 #ifdef _SUPPORT_LCM_BOOST_
+	is_test_mode = _check_progress_in_task("id.cts.verifier");
 	bdg_check_enable(1);
 #endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 end */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 end */
 	return ret;
 }
 
@@ -5281,6 +5308,7 @@ int primary_display_resume(void)
 	unsigned int in_fps = 60;
 	unsigned int out_fps = 60;
 #endif
+
 	DISPCHECK("%s begin\n", __func__);
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
