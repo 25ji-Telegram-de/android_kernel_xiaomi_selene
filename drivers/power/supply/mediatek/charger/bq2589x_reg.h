@@ -1,7 +1,6 @@
 #ifndef __BQ2589X_HEADER__
 #define __BQ2589X_HEADER__
 
-
 /* Register 00h */
 #define BQ2589X_REG_00				0x00
 #define BQ2589X_ENHIZ_MASK			0x80
@@ -21,7 +20,6 @@
 /* Register 01h */
 #define BQ2589X_REG_01				0x01
 #if __BQ25890H__ || __BQ25898D__
-bool bq2589x_get_cdp_status(void);
 #define	BQ2589X_DPDAC_MASK			0xE0
 #define	BQ2589X_DPDAC_SHIFT			5
 #define BQ2589X_DP_HIZ				0x00
