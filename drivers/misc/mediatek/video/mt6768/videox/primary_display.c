@@ -5375,6 +5375,16 @@ int primary_display_resume(void)
 	}
 
 	DISPCHECK("%s: bdg_common_init begin\n", __func__);
+
+/* Huaqin modify for HQ-147027 by caogaojie at 2021/07/29 start */
+#ifdef _SUPPORT_LCM_BOOST_
+	if (bdg_is_bdg_connected() == 1 && !bdg_should_init) {
+               data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
+               bdg_tx_init(DISP_BDG_DSI0, data_config, NULL);
+	}
+#endif
+/* Huaqin modify for HQ-147027 by caogaojie at 2021/07/29 end */
+
 /* Huaqin modify for HQ-131657 by liunianliang at 2021/06/30 start */
 #ifdef _SUPPORT_LCM_BOOST_
 	if (bdg_is_bdg_connected() == 1 && bdg_should_init) {
@@ -5390,7 +5400,6 @@ int primary_display_resume(void)
 	}
 /* Huaqin modify for HQ-131657 by liunianliang at 2021/06/30 start */
 	DISPCHECK("%s: bdg_common_init end\n", __func__);
- 
 
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
 	/*DynFPS*/
