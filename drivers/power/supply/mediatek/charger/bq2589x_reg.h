@@ -20,6 +20,10 @@
 /* Register 01h */
 #define BQ2589X_REG_01				0x01
 #if __BQ25890H__ || __BQ25898D__
+/*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 start*/
+bool bq2589x_get_cdp_status(void);
+void wusb3801_intr_handler_resume(void);
+/*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 end*/
 #define	BQ2589X_DPDAC_MASK			0xE0
 #define	BQ2589X_DPDAC_SHIFT			5
 #define BQ2589X_DP_HIZ				0x00
