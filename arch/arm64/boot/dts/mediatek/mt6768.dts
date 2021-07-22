@@ -2034,7 +2034,9 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 
 	spi0:spi0@1100a000 {
 		compatible = "mediatek,mt6765-spi";
-		mediatek,pad-select = <0>;
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+		mediatek,pad-select = <0>,<1>;
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 		reg = <0 0x1100a000 0 0x1000>;
 		interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_LOW>;
 		clocks = <&topckgen CLK_TOP_SYSPLL3_D2>,

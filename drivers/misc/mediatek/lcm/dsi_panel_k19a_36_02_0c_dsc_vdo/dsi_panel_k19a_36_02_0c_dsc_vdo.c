@@ -141,6 +141,9 @@ static int _lcm_i2c_probe(struct i2c_client *client,
 	const struct i2c_device_id *id);
 static int _lcm_i2c_remove(struct i2c_client *client);
 
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+void fts_fwresume_work(void);
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 
 /*****************************************************************************
  * Data Structure
@@ -781,7 +784,9 @@ static void lcm_init(void)
       	MDELAY(2);
       	SET_RESET_PIN(1);
 	MDELAY(20);
-
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+	fts_fwresume_work();
+	/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 	push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
 }
 

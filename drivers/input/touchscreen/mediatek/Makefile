@@ -31,3 +31,6 @@ obj-$(CONFIG_TOUCHSCREEN_MTK_FT8719P)	+=  FT8719P/
 obj-$(CONFIG_TOUCHSCREEN_MTK_GT9157)    +=  GT9157/
 
 obj-$(CONFIG_TOUCHSCREEN_NT36672C)      += NT36672C/
+# Huaqin add for HQ-147450 by feiwen at 2021/7/23 start
+obj-$(CONFIG_TOUCHSCREEN_FTS_XIAOMI)	+=  focaltech_touch_k19a/
+# Huaqin add for HQ-147450 by feiwen at 2021/7/23 end

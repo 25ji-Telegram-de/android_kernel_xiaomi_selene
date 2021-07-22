@@ -2075,6 +2075,9 @@ Description:
 return:
 	Executive outcomes. 0---succeed. negative---failed
 *******************************************************/
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+int is_nvt = 0;
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 static int32_t nvt_ts_probe(struct spi_device *client)
 {
 	int32_t ret = 0;
@@ -2412,6 +2415,9 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 #endif
 
 	bTouchIsAwake = 0;
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+	is_nvt = 1;
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 	/*BSP.TP add nvt_irq - 2020.11.11 - Start*/
 	ret = nvt_create_sysfs(client);
 	if (ret) {
@@ -3146,6 +3152,11 @@ int __init is_lcm_detect(char *str)
 	}else if (!(strcmp(str, "dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv"))) {
 		is_ft_lcm = 5;
 		NVT_LOG("Func:%s is_ft 5:%d", __func__, is_ft_lcm);
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+	}else if (!(strcmp(str, "dsi_panel_k19a_36_02_0c_dsc_vdo_lcm_drv"))) {
+		is_ft_lcm = 6;
+		NVT_LOG("Func:%s is_ft 6:%d", __func__, is_ft_lcm);
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 	}
 	printk("Func:%s is_lcm_detect:%s", __func__, str);
 	return 0;
@@ -3174,8 +3185,9 @@ static int32_t __init nvt_driver_init(void)
 	int32_t ret = 0;
 
 	NVT_LOG("start\n");
-
-	if (2 == is_ft_lcm){
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+	if ((4 != is_ft_lcm) && (5 != is_ft_lcm)){
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 		printk("%s result  is_ft:%d", __func__, is_ft_lcm);
 		return -1;
 	}
