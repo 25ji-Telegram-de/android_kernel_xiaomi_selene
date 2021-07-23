@@ -540,12 +540,13 @@
 	jeita_temp_t0_to_t1_cv = <4450000>;
 	jeita_temp_below_t0_cv = <4450000>;
 
-
-	jeita_temp_t3_to_t4_cc = <2432000>;
-	jeita_temp_t2_to_t3_cc = <3008000>;
-	jeita_temp_t1_to_t2_cc = <2432000>;
-	jeita_temp_t0_to_t1_cc = <960000>;
-	jeita_temp_below_t0_cc = <448000>;
+	/*K19A HQHW-1022 K19A for JEITA by langjunjun at 2021/7/15 start*/
+	jeita_temp_t3_to_t4_cc = <2368000>;
+	jeita_temp_t2_to_t3_cc = <2944000>;
+	jeita_temp_t1_to_t2_cc = <2368000>;
+	jeita_temp_t0_to_t1_cc = <896000>;
+	jeita_temp_below_t0_cc = <384000>;
+	/*K19A HQHW-1022 K19A for JEITA  by langjunjun at 2021/7/15 end*/
 
 	temp_t4_thres = <60>;
 	temp_t4_thres_minus_x_degree = <60>;
