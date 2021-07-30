@@ -762,7 +762,7 @@ KBUILD_LDFLAGS  += --plugin-opt=-import-instr-limit=40
 endif
 endif
 else
-KBUILD_CFLAGS   += -O3
+KBUILD_CFLAGS   += -O3 -ffp-contract=fast
 endif
 
 # Tell compiler to tune the performance of the code for a specified
