@@ -54,7 +54,9 @@ struct DSI_TX_PHY_TIMCON2_REG timcon2;
 struct DSI_TX_PHY_TIMCON3_REG timcon3;
 unsigned int bg_tx_data_phy_cycle = 0, tx_data_rate = 0, ap_tx_data_rate = 0;
 //unsigned int ap_tx_data_phy_cycle = 0;
-unsigned int hsa_byte = 0, hbp_byte = 0, hfp_byte = 0, bllp_byte = 0, bg_tx_line_cycle = 0;
+/* Huaqin modify for HQ-146521 by caogaojie at 2021/08/02 start */
+int hsa_byte = 0, hbp_byte = 0, hfp_byte = 0, bllp_byte = 0, bg_tx_line_cycle = 0;
+/* Huaqin modify for HQ-146521 by caogaojie at 2021/08/02 end */
 //unsigned int ap_tx_hsa_wc = 0, ap_tx_hbp_wc = 0, ap_tx_hfp_wc = 0, ap_tx_bllp_wc = 0;
 unsigned int dsc_en;
 unsigned int mt6382_init;
@@ -1469,7 +1471,9 @@ int bdg_tx_vdo_timing_set(enum DISP_BDG_ENUM module,
 			void *cmdq, struct LCM_DSI_PARAMS *tx_params)
 {
 	int i;
-	u32 dsi_buf_bpp, data_init_byte;
+/* Huaqin modify for HQ-146521 by caogaojie at 2021/08/02 start */
+	u32 dsi_buf_bpp = 0, data_init_byte = 0;
+/* Huaqin modify for HQ-146521 by caogaojie at 2021/08/02 end */
 
 	DISPFUNCSTART();
 
