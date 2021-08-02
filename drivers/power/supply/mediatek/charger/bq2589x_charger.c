@@ -119,6 +119,9 @@ bool cdp_detect = false;
 
 static int charger_detect_count = 3;
 /* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 end */
+
+bool cdp_unattach = false;
+
 int get_charger_type()
 {
 	return g_charger_type;
@@ -985,10 +988,33 @@ static int bq2589x_inform_charger_type_report(struct bq2589x *bq)
 /*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 start*/
 static void bq2589x_cdp_work(struct work_struct *work)
 {
+	int timer_count = 0;
+	
 	struct bq2589x *bq = container_of(work, struct bq2589x, cdp_work.work);
-	bq2589x_inform_charger_type_report(bq);
-	cdp_detect = false;
-	wusb3801_intr_handler_resume();
+	while (1) {
+		if (timer_count >= 10 && cdp_unattach){
+			bq2589x_inform_charger_type_report(bq);
+			cdp_detect = false;
+			wusb3801_intr_handler_resume();
+			pr_err("wlc timer_count more than 10,timer_count:%d \n", timer_count);
+			timer_count = 0;
+			cdp_unattach = false;
+			break;
+		} else if(timer_count < 10  && cdp_unattach) {
+			pr_err("wlc 5S count down! \n");
+			msleep(5000);
+			bq2589x_inform_charger_type_report(bq);
+			cdp_detect = false;
+			wusb3801_intr_handler_resume();
+			pr_err("wlc 5S finish! timer_count less than 10,timer_count:%d \n", timer_count);
+			timer_count = 0;
+			cdp_unattach = false;
+			break;
+		}
+
+		msleep(1000);
+		timer_count++;
+	}
 }
 
 static void bq2589x_inform_charger_type(struct bq2589x *bq)
@@ -999,8 +1025,11 @@ static void bq2589x_inform_charger_type(struct bq2589x *bq)
 			if ((bq->power_good) && (cdp_detect == false)) {
 				cdp_detect = true;
 				bq2589x_inform_charger_type_report(bq);
+				schedule_delayed_work(&bq->cdp_work, msecs_to_jiffies(1));
+				pr_err("wlc cdp detected \n");
 			} else if ((!bq->power_good) && (cdp_detect == true)) {
-				schedule_delayed_work(&bq->cdp_work, msecs_to_jiffies(5000));
+				cdp_unattach = true;
+				pr_err("wlc cdp unattach happend \n");
 			} else {
 				cancel_delayed_work_sync(&bq->cdp_work);
 			}
