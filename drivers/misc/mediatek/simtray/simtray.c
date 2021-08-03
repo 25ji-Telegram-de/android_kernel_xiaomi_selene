@@ -14,7 +14,9 @@
 #include <linux/poll.h>
 #include <linux/slab.h>
 
-#define SIMTRAY_GPIO 371
+/* Huaqin modify for HQ-124268 by liunianliang at 2021/08/03 start */
+#define SIMTRAY_GPIO 372
+/* Huaqin modify for HQ-124268 by liunianliang at 2021/08/03 end */
 
 struct simtray_data {
 	struct device *dev;
