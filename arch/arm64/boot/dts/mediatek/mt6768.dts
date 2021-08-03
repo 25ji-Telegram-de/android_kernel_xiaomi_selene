@@ -1434,7 +1434,9 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 	};
 	simtray {
 		compatible = "xiaomi,simtray-status";
-		status-gpio = <&pio 46 0>;
+		/* Huaqin modify for HQ-124268 by liunianliang at 2021/08/03 start */
+		status-gpio = <&pio 47 0>;
+		/* Huaqin modify for HQ-124268 by liunianliang at 2021/08/03 end */
 	};
 /*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
 #if (CONFIG_MTK_GAUGE_VERSION == 30)
