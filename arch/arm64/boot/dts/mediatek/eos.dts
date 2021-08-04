@@ -169,10 +169,10 @@
 	};
 };
 /* flashlight end*/
-
+/*Huaqin modify for HQ-147511 by baoguangxiu at 2021.8.4 start*/
 &i2c3 {
-	status = "okay";
-	nxp@28 {
+	status = "disable";
+	/*nxp@28 {
 		compatible = "nq-nci";
 		reg = <0x28>;
 		nq-irq = <&pio 9 0x00>;
@@ -183,10 +183,10 @@
 		nq-clkreq = <&pio 11 0x0>;
 		//nq-esepwr = <&tlmm 42 0x00>;
 		interrupt-names = "irq_nfc";
-	};
+	};*/
 
 };
-
+/*Huaqin modify for HQ-147511 by baoguangxiu at 2021.8.4 end*/
 /* add goodix fingerprint start*/
 
 &spi2 {
