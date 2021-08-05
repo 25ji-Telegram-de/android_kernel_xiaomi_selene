@@ -376,6 +376,20 @@
 		reg = <0x4e>;
 		status = "okay";
 	};
+/*HQ-147485 nfc bring up by fenghaitao at 2021/8/5 start*/
+	nxp@28 {
+		compatible = "nq-nci";
+		reg = <0x28>;
+		nq-irq = <&pio 9 0x00>;
+		interrupt-parent = <&pio>;
+		interrupts = <9 IRQ_TYPE_LEVEL_HIGH 9 0>;
+		nq-ven = <&pio 159 0x0>;
+		nq-firm = <&pio 17 0x0>;
+		nq-clkreq = <&pio 11 0x0>;
+		//nq-esepwr = <&tlmm 42 0x00>;
+		interrupt-names = "irq_nfc";
+	};
+/*HQ-147485 nfc bring up by fenghaitao at 2021/8/5 end*/
 };
 /*K19A WXYFB-996 K19A charger bring up by miaozhichao at 2021/3/20 end*/
 
