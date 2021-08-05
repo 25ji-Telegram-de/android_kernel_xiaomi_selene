@@ -48,6 +48,7 @@ struct charger_data;
 #define CHRLOG_DEBUG_LEVEL   2
 
 extern int chr_get_debug_level(void);
+extern bool g_get_smb135x(void);
 /*K19A-104 wangchao modify debug log at 2021/4/8 start*/
 #define chr_err(fmt, args...)					\
 do {								\
