@@ -125,8 +125,8 @@ int get_ymtc_hr(struct mmc_card *card, char *buf)
 {
 	int err = 0, i = 0;
 	int status;
-	u8 hr_ymtc[512] = {0};
-	err = mmc_send_cxd_witharg_data(card, card->host, 56, 0x594d54fb, hr_ymtc, 512);
+/*Huaqin modify for HQ-150264 by luocheng at 2021/08/12 start*/
+	err = mmc_send_cxd_witharg_data(card, card->host, 56, 0x594d54fb, buf, 512);
 	if (err) {
 		pr_mem_err("YMTC: CMD56 failed.err:%d\n", err);
 		goto out;
@@ -138,10 +138,8 @@ int get_ymtc_hr(struct mmc_card *card, char *buf)
 		goto out;
 	}
 
-	for (i = 0; i < 512; i++)
-		hr_ymtc[i] = 0;
-
-	err = mmc_send_cxd_witharg_data(card, card->host, 56, 0x29, hr_ymtc, 512);
+	err = mmc_send_cxd_witharg_data(card, card->host, 56, 0x29, buf, 512);
+/*Huaqin modify for HQ-150264 by luocheng at 2021/08/12 end*/
 	if (err) {
 		pr_mem_err("YMTC: CMD56 failed.err:%d\n", err);
 		goto out;
@@ -152,9 +150,6 @@ int get_ymtc_hr(struct mmc_card *card, char *buf)
 		pr_mem_err("YMTC: CMD13 failed,status:%d err:%d\n", status, err);
 		goto out;
 	}
-
-	for (i = 0; i < 128; i++)
-		buf[i] = hr_ymtc[i];
 
 out:
 	return err;
@@ -215,7 +210,6 @@ static ssize_t hr_show(struct device *dev, struct device_attribute *attr, char *
 		}
 	}
 #endif
-
 	/*run relevant rountion*/
 	err = mmc_cb->get_hr(card, hr);
 	if (err) {
