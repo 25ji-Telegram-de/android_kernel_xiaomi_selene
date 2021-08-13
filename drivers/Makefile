@@ -186,5 +186,9 @@ obj-$(CONFIG_TEE)		+= tee/
 obj-$(CONFIG_MULTIPLEXER)	+= mux/
 obj-$(CONFIG_TRUSTY)	+= trusty/
 obj-$(CONFIG_GNSS)		+= gnss/
+
 obj-$(CONFIG_SWITCH)            += switch/
 obj-$(CONFIG_NXP_P73_DEVICES) += p73-spi/
+obj-$(CONFIG_MIHW)		+= mihw/
+
+>>>>>>> 4a9cf2e2882e... [K19]Scheduler: boost vip task in none-migt
