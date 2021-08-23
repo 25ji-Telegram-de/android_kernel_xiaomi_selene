@@ -16,7 +16,9 @@
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/pinctrl/mt6768-pinfunc.h>
-#include "mediatek/cust_mt6768_touch_1080x2400.dtsi"
+/* Huaqin modify for HQ-152282 by zhangjiangbin at 2021/08/24 start */
+#include "mediatek/cust_mt6768_touch_eos_1080x2400.dtsi"
+/* Huaqin modify for HQ-152282 by zhangjiangbin at 2021/08/24 end */
 
 &reserved_memory {
 	reserve-memory-scp_share {
