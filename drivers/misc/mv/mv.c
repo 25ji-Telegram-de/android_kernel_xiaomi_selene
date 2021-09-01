@@ -63,6 +63,12 @@ static int mv_proc_show(struct seq_file *file, void*data)
 		sprintf(part_num,"%s","MT29VZZZAD9DQKSM_046W_9K9");
 	}
         /* Huaqin modify for K19A-274 by luocheng at 2021/05/14 end */
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/08/31 start */
+	else if(strcmp("K19S_Micro_WTA",part_num) == 0)
+	{
+		sprintf(part_num,"%s","MT53E1536M32DDNQ_046_WTA");
+	}
+	/* Huaqin modify for HQ-123324 by luocheng at 2021/08/31 end */
 	manfidd = mmc_get_manfid();
 	snprintf(manfid, 5,"0x%x", manfidd);
 	seq_printf(file,"D: %s %s\n", ddr_id, RAM_size);
