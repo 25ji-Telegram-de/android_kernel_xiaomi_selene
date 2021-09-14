@@ -191,16 +191,16 @@ static struct imgsensor_info_struct imgsensor_info = {
 		.mipi_pixel_rate = 281600000,
 		.max_framerate = 300,
 	},
-	.custom1 = {		/*data rate 1099.20 Mbps/lane */
-		.pclk = 145920000,
+	.custom1 = {
+		.pclk = 201592800,
 		.linelength = 1836,
-		.framelength = 2648,
+		.framelength = 3660,
 		.startx = 0,
 		.starty = 0,
 		.grabwindow_width = 1640,
 		.grabwindow_height = 1232,
-		.mipi_data_lp2hs_settle_dc = 85,
-		.mipi_pixel_rate = 145920000,
+		.mipi_data_lp2hs_settle_dc = 85,	/* unit , ns */
+		.mipi_pixel_rate = 202226949,
 		.max_framerate = 300,
 	},
 
@@ -283,7 +283,7 @@ static struct SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[10] = {
 	{3280, 2464, 0,   0,   3280, 2464, 3280, 2464, 0, 0, 3280, 2464,  0,  0, 3280, 2464}, /* normal video */
 	{3280, 2464, 0,   0,   3280, 2464, 3280, 2464, 0, 0, 3280, 2464,  0,  0, 3280, 2464},
 	{3280, 2464, 0,   0,   3280, 2464, 3280, 2464, 0, 0, 3280, 2464,  0,  0, 3280, 2464},
-	{3280, 2464, 0,   0,   3280, 2464, 1640, 1232, 0, 0, 1640, 1232,  0,  0, 1640, 1232}, /* custom1 */
+	{3280, 2464, 0,   0,   3280, 2464, 1640, 1232, 0, 0, 1640, 1232,  0,  0, 1640, 1232},	/* custom1 */
 };
 
 #ifdef IMX355_PDAF_SUPPORT
@@ -2592,13 +2592,14 @@ static void slim_video_setting(void)
 }				/*    slim_video_setting  */
 
 kal_uint16 addr_data_pair_custom1_imx355aac[] = {
+	0x0100, 0x00,
 	0x0112, 0x0A,
 	0x0113, 0x0A,
 	0x0114, 0x03,
 	0x0342, 0x07,
 	0x0343, 0x2C,
-	0x0340, 0x0A,
-	0x0341, 0x58,
+	0x0340, 0x0E,
+	0x0341, 0x4C,
 	0x0344, 0x00,
 	0x0345, 0x00,
 	0x0346, 0x00,
@@ -2622,15 +2623,15 @@ kal_uint16 addr_data_pair_custom1_imx355aac[] = {
 	0x0306, 0x00,
 	0x0307, 0x78,
 	0x030B, 0x01,
-	0x030D, 0x03,
+	0x030D, 0x04,
 	0x030E, 0x00,
-	0x030F, 0x39,
+	0x030F, 0x54,
 	0x0310, 0x00,
 	0x0700, 0x00,
 	0x0701, 0x10,
-	0x0820, 0x05,
-	0x0821, 0xB3,
-	0x3088, 0x02,
+	0x0820, 0x07,
+	0x0821, 0xE0,
+	0x3088, 0x04,
 	0x6813, 0x01,
 	0x6835, 0x00,
 	0x6836, 0x00,
@@ -2638,8 +2639,8 @@ kal_uint16 addr_data_pair_custom1_imx355aac[] = {
 	0x684D, 0x00,
 	0x684E, 0x00,
 	0x684F, 0x02,
-	0x0202, 0x0A,
-	0x0203, 0x4E,
+	0x0202, 0x0E,
+	0x0203, 0x42,
 	0x0204, 0x00,
 	0x0205, 0x00,
 	0x020E, 0x01,
