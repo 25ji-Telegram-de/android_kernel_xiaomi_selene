@@ -501,12 +501,16 @@
 };
 &lk_charger  {
 	/* charging current */
-	ac_charger_current = <1000000>;
+	ac_charger_current = <2000000>;
 	non_std_ac_charger_current = <1000000>;
 
 	/* battery temperature protection */
-	temp_t4_threshold = <55>;
-	temp_t3_threshold = <45>;
+	temp_t4_threshold = <45>;
+	temp_t3_threshold = <10>;
+	/*K19A HQHW-963 K19A for lk jeita by langjunjun at 2021/7/15 start*/
+	temp_t5_threshold = <60>;
+	temp_t2_threshold = <5>;
+	/*K19A HQHW-963 K19A for lk jeita  by langjunjun at 2021/7/15 end*/
 	temp_t1_threshold = <0>;
 };
 
@@ -531,9 +535,20 @@
 
 	pd_vbus_upper_bound = <9000000>;
 
+	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 start*/
+	enable_sw_ffc;
+	ffc_cv_1 = <4450000>;
+	ffc_cv_2 = <4440000>;
+	ffc_cv_3 = <4430000>;
+	ffc_cv_4 = <4420000>;
+	chg_cycle_count_level1 = <1>;
+	chg_cycle_count_level2 = <100>;
+	chg_cycle_count_level3 = <200>;
+	chg_cycle_count_level4 = <300>;
+	/*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 end*/
 
 	/* sw jeita */
-	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/6/1 start*/
 	jeita_temp_above_t4_cv = <4100000>;
 	jeita_temp_t3_to_t4_cv = <4100000>;
 	jeita_temp_t2_to_t3_cv = <4450000>;
@@ -541,25 +556,26 @@
 	jeita_temp_t0_to_t1_cv = <4450000>;
 	jeita_temp_below_t0_cv = <4450000>;
 
-
-	jeita_temp_t3_to_t4_cc = <2432000>;
-	jeita_temp_t2_to_t3_cc = <3008000>;
-	jeita_temp_t1_to_t2_cc = <2432000>;
-	jeita_temp_t0_to_t1_cc = <960000>;
-	jeita_temp_below_t0_cc = <448000>;
+	/*K19A HQHW-1022 K19A for JEITA by langjunjun at 2021/7/15 start*/
+	jeita_temp_t3_to_t4_cc = <2368000>;
+	jeita_temp_t2_to_t3_cc = <2944000>;
+	jeita_temp_t1_to_t2_cc = <2368000>;
+	jeita_temp_t0_to_t1_cc = <896000>;
+	jeita_temp_below_t0_cc = <384000>;
+	/*K19A HQHW-1022 K19A for JEITA  by langjunjun at 2021/7/15 end*/
 
 	temp_t4_thres = <60>;
-	temp_t4_thres_minus_x_degree = <58>;
+	temp_t4_thres_minus_x_degree = <60>;
 	temp_t3_thres = <48>;
-	temp_t3_thres_minus_x_degree = <46>;
+	temp_t3_thres_minus_x_degree = <48>;
 	temp_t2_thres = <10>;
-	temp_t2_thres_plus_x_degree = <12>;
+	temp_t2_thres_plus_x_degree = <10>;
 	temp_t1_thres = <5>;
-	temp_t1_thres_plus_x_degree = <7>;
+	temp_t1_thres_plus_x_degree = <5>;
 	temp_t0_thres = <0>;
 	temp_t0_thres_plus_x_degree = <0>;
 	temp_neg_10_thres = <0>;
-	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
+	/*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/6/1 end*/
 	/* battery temperature protection */
 	enable_min_charge_temp;
 	min_charge_temp = <0>;
