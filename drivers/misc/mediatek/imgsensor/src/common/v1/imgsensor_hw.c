@@ -176,6 +176,19 @@ static enum IMGSENSOR_RETURN imgsensor_hw_power_sequence(
 				    IMGSENSOR_HW_PIN_DOVDD,
 				    IMGSENSOR_HW_PIN_STATE_LEVEL_1800);
 			}
+
+		if ((sensor_idx == IMGSENSOR_SENSOR_IDX_SUB || sensor_idx == IMGSENSOR_SENSOR_IDX_MAIN2) &&
+		    ppwr_info->pin ==IMGSENSOR_HW_PIN_AVDD)
+		{
+		    pdev = phw->pdev[psensor_pwr_Mi->id[IMGSENSOR_HW_PIN_DOVDD]];
+
+		    if (pdev->set != NULL)
+		        pdev->set(
+		            pdev->pinstance,
+		            IMGSENSOR_SENSOR_IDX_SUB2,
+		            IMGSENSOR_HW_PIN_DOVDD,
+		            IMGSENSOR_HW_PIN_STATE_LEVEL_1800);
+		}
 #endif
 		}
 
@@ -212,6 +225,19 @@ static enum IMGSENSOR_RETURN imgsensor_hw_power_sequence(
 					    IMGSENSOR_SENSOR_IDX_SUB2,
 					    IMGSENSOR_HW_PIN_DOVDD,
 					    IMGSENSOR_HW_PIN_STATE_LEVEL_0);
+	}
+
+	if ((sensor_idx == IMGSENSOR_SENSOR_IDX_SUB || sensor_idx == IMGSENSOR_SENSOR_IDX_MAIN2) &&
+	    ppwr_info->pin ==IMGSENSOR_HW_PIN_AVDD)
+	{
+	    pdev = phw->pdev[psensor_pwr_Mi->id[IMGSENSOR_HW_PIN_DOVDD]];
+
+	    if (pdev->set != NULL)
+	        pdev->set(
+	            pdev->pinstance,
+	            IMGSENSOR_SENSOR_IDX_SUB2,
+	            IMGSENSOR_HW_PIN_DOVDD,
+	            IMGSENSOR_HW_PIN_STATE_LEVEL_0);
 	}
 #endif
 			}
