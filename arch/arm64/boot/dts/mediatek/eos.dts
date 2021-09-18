@@ -817,19 +817,24 @@
 	#size-cells = <0>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&spislv_pins_default>;
+/* Huaqin add for HQ-155940 by caogaojie at 2021/09/18 start */
+	mediatek,kthread-rt = <1>;
+/* Huaqin add for HQ-155940 by caogaojie at 2021/09/18 end */
 
+/* Huaqin modify for HQ-155940 by caogaojie at 2021/07/21 start */
 	spislv@0 {
 		compatible = "mediatek,spi_slave";
 		reg = <0>;
 		spi-max-frequency = <55000000>;
 		spi-tx-bus-width = <1>;
 		spi-rx-bus-width = <1>;
-		low-speed-tick-delay = /bits/ 8 <1>;
+		low-speed-tick-delay = /bits/ 8 <4>;
 		low-speed-early-trans = /bits/ 8 <0>;
-		high-speed-tick-delay = /bits/ 8 <1>;
-		high-speed-early-trans = /bits/ 8 <1>;
+		high-speed-tick-delay = /bits/ 8 <2>;
+		high-speed-early-trans = /bits/ 8 <0>;
 		slave-drive-strength = /bits/ 8 <3>;
 	};
+/* Huaqin modify for HQ-155940 by caogaojie at 2021/07/21 end */
 };
 &pio {
 	spislv_pins_default: spislv_mode_default {
