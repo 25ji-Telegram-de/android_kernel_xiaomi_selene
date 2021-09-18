@@ -713,8 +713,9 @@ static void lcm_init(void)
 	/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/05 end */
 		LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/06 start */
-	//2:PCBA_K19A_LA 8:PCBA_K19L_LA
-	if (hq_selene_pcba_config == 2 || hq_selene_pcba_config == 8){
+	/* Huaqin modify for HQ-155949 by caogaojie at 2021/09/18 start */
+	//2:PCBA_K19A_LA 8:PCBA_K19L_LA  13:PCBA_K19S_LA
+	if (hq_selene_pcba_config == 2 || hq_selene_pcba_config == 8 || hq_selene_pcba_config == 13){
 		push_table(NULL, init_setting_vdo_K19L, ARRAY_SIZE(init_setting_vdo_K19L), 1);
 		LCM_LOGI("%s this is K19L %d\n",__func__,hq_selene_pcba_config);
 	} else {
@@ -722,6 +723,7 @@ static void lcm_init(void)
 		LCM_LOGI("%s this is the other config %d\n",__func__,hq_selene_pcba_config);
 	}
 	/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/06 end */
+	/* Huaqin modify for HQ-155949 by caogaojie at 2021/09/18 end */
 }
 
 static void lcm_suspend(void)
