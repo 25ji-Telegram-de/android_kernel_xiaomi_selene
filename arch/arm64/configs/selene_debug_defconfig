@@ -108,9 +108,9 @@ CONFIG_MTK_IMGSENSOR=y
 CONFIG_MTK_JPEG=y
 CONFIG_MTK_SMI_EXT=y
 CONFIG_MTK_LCM=y
-# Huaqin add for HQ-123493 by caogaojie at 2021/7/21 start
-CONFIG_CUSTOM_KERNEL_LCM="dsi_panel_k19a_36_02_0a_dsc_vdo dsi_panel_k19a_43_02_0b_dsc_vdo dsi_panel_k19a_36_02_0c_dsc_vdo"
-# Huaqin add for HQ-123493 by caogaojie at 2021/7/21 end
+# Huaqin add for HQ-148596 by caogaojie at 2021/9/27 start
+CONFIG_CUSTOM_KERNEL_LCM="dsi_panel_k19a_36_02_0a_dsc_vdo dsi_panel_k19a_43_02_0b_dsc_vdo dsi_panel_k19a_36_03_0c_dsc_vdo"
+# Huaqin add for HQ-148596 by caogaojie at 2021/9/27 end
 CONFIG_MTK_FB=y
 CONFIG_MTK_LCM_PHYSICAL_ROTATION="0"
 CONFIG_LCM_HEIGHT="2400"

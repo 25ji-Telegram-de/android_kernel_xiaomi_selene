@@ -364,9 +364,9 @@ extern struct LCM_DRIVER dsi_panel_k19a_36_02_0a_dsc_vdo_lcm_drv;
 /* Huaqin add for HQ-123491 by caogaojie at 2021/3/29 start */
 extern struct LCM_DRIVER dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv;
 /* Huaqin add for HQ-123491 by caogaojie at 2021/3/29 end */
-/* Huaqin add for HQ-123493 by caogaojie at 2021/7/21 start */
-extern struct LCM_DRIVER dsi_panel_k19a_36_02_0c_dsc_vdo_lcm_drv;
-/* Huaqin add for HQ-123493 by caogaojie at 2021/7/21 end */
+/* Huaqin add for HQ-148596 by caogaojie at 2021/9/27 start */
+extern struct LCM_DRIVER dsi_panel_k19a_36_03_0c_dsc_vdo_lcm_drv;
+/* Huaqin add for HQ-148596 by caogaojie at 2021/9/27 end */
 #ifdef BUILD_LK
 extern void mdelay(unsigned long msec);
 #endif

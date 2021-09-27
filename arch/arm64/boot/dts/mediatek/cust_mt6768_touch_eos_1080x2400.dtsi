@@ -79,8 +79,22 @@
 };
 
 &spi0 {
+/*K19A coad for HQ-148596 by caogaojie at 2021/9/27 start*/
+	focaltech@0 {
+		compatible = "focaltech,fts";
+		reg = <1>;
+		status = "ok";
+		spi-max-frequency = <6000000>;
+		interrupt-parent = <&pio>;
+		interrupts = <1 0x2>;
+		focaltech,reset-gpio = <&pio 92 0x00>;
+		focaltech,irq-gpio = <&pio 1 0x2001>;
+		focaltech,max-touch-number = <10>;
+		focaltech,display-coords =  <0 0 1080 2400>;
+	};
 	novatek@0 {
-		compatible = "novatek,NVT-ts-spi","focaltech8719P,FTS-ts-spi";
+		compatible = "novatek,NVT-ts-spi";
+/*K19A coad for HQ-148596 by caogaojie at 2021/9/27 end*/
 		reg = <0>; //Same as CS ID
 		status = "ok";
 
