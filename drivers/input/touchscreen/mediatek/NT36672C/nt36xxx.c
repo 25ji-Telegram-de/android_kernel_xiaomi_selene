@@ -3152,11 +3152,11 @@ int __init is_lcm_detect(char *str)
 	}else if (!(strcmp(str, "dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv"))) {
 		is_ft_lcm = 5;
 		NVT_LOG("Func:%s is_ft 5:%d", __func__, is_ft_lcm);
-/*K19A coad for HQ-148596 by caogaojie at 2021/9/27 start*/
-	}else if (!(strcmp(str, "dsi_panel_k19a_36_03_0c_dsc_vdo_lcm_drv"))) {
+/* Huaqin add for HQ-148560 by caogaojie at 2021/9/30 start */
+	}else if (!(strcmp(str, "dsi_panel_k19s_36_03_0c_dsc_vdo_lcm_drv"))) {
 		is_ft_lcm = 6;
 		NVT_LOG("Func:%s is_ft 6:%d", __func__, is_ft_lcm);
-/*K19A coad for HQ-148596 by caogaojie at 2021/9/27 end*/
+/* Huaqin add for HQ-148560 by caogaojie at 2021/9/30 end */
 	}
 	printk("Func:%s is_lcm_detect:%s", __func__, str);
 	return 0;

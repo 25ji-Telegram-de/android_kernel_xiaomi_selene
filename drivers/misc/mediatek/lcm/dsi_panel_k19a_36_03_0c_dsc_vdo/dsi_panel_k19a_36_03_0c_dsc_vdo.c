@@ -589,7 +589,9 @@ static void lcm_setbacklight_cmdq(void *handle, unsigned int level)
 
 static void lcm_set_hw_info(void)
 {
-	hq_regiser_hw_info(HWID_LCM, "incell,vendor:TianMa,IC:nt36672C(novatek)");
+	/* Huaqin add for HQ-148560 by caogaojie at 2021/9/30 start */
+	hq_regiser_hw_info(HWID_LCM, "incell,vendor:TianMa,IC:ft8720M(focal)");
+	/* Huaqin add for HQ-148560 by caogaojie at 2021/9/30 end */
 }
 
 static void lcm_update(unsigned int x, unsigned int y, unsigned int width,
@@ -648,9 +650,9 @@ static unsigned int lcm_compare_id(void)
 		return 0;
 
 }
-
+/* Huaqin add for HQ-148560 by caogaojie at 2021/9/30 start */
 struct LCM_DRIVER dsi_panel_k19a_36_03_0c_dsc_vdo_lcm_drv = {
-	.name = "dsi_panel_k19a_36_03_0c_dsc_vdo_lcm_drv",
+	.name = "dsi_panel_k19s_36_03_0c_dsc_vdo_lcm_drv",
 	.set_util_funcs = lcm_set_util_funcs,
 	.get_params = lcm_get_params,
 	.init = lcm_init,
@@ -668,4 +670,4 @@ struct LCM_DRIVER dsi_panel_k19a_36_03_0c_dsc_vdo_lcm_drv = {
 	//.esd_recover = lcd_esd_recover,
 #endif
 };
-
+/* Huaqin add for HQ-148560 by caogaojie at 2021/9/30 end */
