@@ -1315,6 +1315,10 @@ int hq_config()
 		config = K19A;
 	else if(hq_selene_pcba_config == 3 || hq_selene_pcba_config == 4)
 		config = K19B;
+	else if(hq_selene_pcba_config == 11)
+	/* K19SFAC-41 code for K19T by wanglicheng at 20210929 start */
+		config = K19T;
+	/* K19SFAC-41 code for K19T by wanglicheng at 20210929 end */
 	else
 		config = K19D;
 	printk("%s: config = %d",__func__,config);

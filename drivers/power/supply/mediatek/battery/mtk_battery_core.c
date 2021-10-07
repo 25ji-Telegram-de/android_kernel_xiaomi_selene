@@ -419,8 +419,16 @@ void fgauge_get_profile_id(void)
 		gm.battery_id = 2;
 	}else if (id_volt >= COSMX_MIN_VOLTAGE && id_volt <= COSMX_MAX_VOLTAGE) {
 		gm.battery_id = 1;
+		/* K19SFAC-41 code for K19T by wanglicheng at 20210929 start */
+		if(hq_config()== 4)
+			gm.battery_id = 5;
+		/* K19SFAC-41 code for K19T by wanglicheng at 20210929 end */
 	} else if (id_volt >= SWD_SEC_MIN_VOLTAGE && id_volt <= SWD_SEC_MAX_VOLTAGE) {
 		gm.battery_id = 3;
+		/* K19SFAC-41 code for K19T by wanglicheng at 20210929 start */
+		if(hq_config()== 4)
+			gm.battery_id = 4;
+		/* K19SFAC-41 code for K19T by wanglicheng at 20210929 end */
 	}else if (id_volt >= SECRET_MIN_VOLTAGE && id_volt <= SECRET_MAX_VOLTAGE) {
 		gm.battery_id = 4;
 	}else {
@@ -934,10 +942,7 @@ void fg_custom_init_from_dts(struct platform_device *dev)
 
 	fgauge_get_profile_id();
 	bat_id = gm.battery_id;
-	/*K19A HQ-134272 K19A charger of fguage by wangqi at 2021/5/20 start*/
-	if (bat_id > 3)
-		bat_id = 2;
-	/*K19A HQ-134272 K19A charger of fguage by wangqi at 2021/5/20 end*/
+
 	bm_err("%s bat_id = %d\n", __func__, bat_id);
 
 	fg_read_dts_val(np, "MULTI_BATTERY", &(multi_battery), 1);
