@@ -225,14 +225,18 @@ struct LCM_setting_table {
 	unsigned char count;
 	unsigned char para_list[64];
 };
-
+/* Huaqin add for HQ-148587 by caogaojie at 2021/10/8 start */
 static struct LCM_setting_table lcm_suspend_setting[] = {
 	{0x28, 0, {} },
 	{REGFLAG_DELAY, 20, {} },
 	{0x10, 0, {} },
-	{REGFLAG_DELAY, 120, {} }
+	{0X35, 1, {0X00} },
+	{REGFLAG_DELAY, 120, {} },
+	{0x00, 1, {0x00} },
+	{0x00, 1, {0x00} },
+	{0xF7, 4, {0x5A,0xA5,0x95,0x27}}
 };
-
+/* Huaqin add for HQ-148587 by caogaojie at 2021/10/8 end */
 static struct LCM_setting_table init_setting_vdo[] = {
 	{0x00,1,{0x00}},
 	{0xFF,3,{0x87,0x20,0x01}},
@@ -494,8 +498,9 @@ static void lcm_init_power(void)
 	SET_RESET_PIN(0);
 	MDELAY(3);
 	lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 1);
-	MDELAY(3);
-
+	/* Huaqin add for HQ-148587 by caogaojie at 2021/10/8 start */
+	MDELAY(5);
+	/* Huaqin add for HQ-148587 by caogaojie at 2021/10/8 end */
 	lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 1);
 	MDELAY(15);
 
