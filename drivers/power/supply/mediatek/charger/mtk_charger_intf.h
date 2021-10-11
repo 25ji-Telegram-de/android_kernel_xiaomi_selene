@@ -156,6 +156,9 @@ enum hq_config {
 	K19C,
 	K19D,
 	K19T,
+	K19S,
+	K19U,
+	K19V
 };
 /*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
 

@@ -39,7 +39,7 @@
 #define __BQ25890H__	1
 
 #include "bq2589x_reg.h"
-
+extern int hq_config(void);
 enum {
 	PN_BQ25890,
 	PN_BQ25892,
@@ -1274,6 +1274,11 @@ static int bq2589x_init_device(struct bq2589x *bq)
 		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 start */
 		ret = bq2589x_set_term_current(bq, 128);
 		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 end */
+		if (hq_config() == 4 ||hq_config() == 5 ||
+			 hq_config() == 6 || hq_config() == 7) {
+			ret = bq2589x_set_term_current(bq, 200);
+			pr_err("only K19S set 200ma ieoc wlc\n");
+		}
 		ret = bq2589x_disable_hvdcp(bq);
 		pr_err("disable hvdcp,ret = %d\n",ret);
 	}else{
