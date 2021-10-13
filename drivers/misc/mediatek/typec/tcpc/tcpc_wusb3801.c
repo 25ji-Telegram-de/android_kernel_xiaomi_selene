@@ -563,10 +563,10 @@ static int wusb3801_tcpc_get_mode(struct tcpc_device *tcpc, int *typec_mode)
 	/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
 	switch (type) {
 	case WUSB3801_TYPE_SNK:
-		*typec_mode = 1;
+		*typec_mode = 2;
 		break;
 	case WUSB3801_TYPE_SRC:
-		*typec_mode = 2;
+		*typec_mode = 1;
 		break;
 	default:
 		*typec_mode = 0;

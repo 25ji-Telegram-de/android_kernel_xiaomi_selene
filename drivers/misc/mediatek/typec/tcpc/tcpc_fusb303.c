@@ -2299,11 +2299,11 @@ int fusb303_get_mode(struct tcpc_device *tcpc, int *typec_mode)
 	case FUSB303_TYPE_SRC:
 	case FUSB303_TYPE_SRC_ACC:
 	case FUSB303_TYPE_DBG_ACC_SRC:
-		*typec_mode = 1;
+		*typec_mode = 2;
 		break;
 	case FUSB303_TYPE_SNK:
 	case FUSB303_TYPE_DBG_ACC_SNK:
-		*typec_mode = 2;
+		*typec_mode = 1;
 		break;
 	default:
 		*typec_mode = 0;
