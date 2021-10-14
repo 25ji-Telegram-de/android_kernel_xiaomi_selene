@@ -480,10 +480,10 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 					pdata->input_current_limit_by_aicl;
 	}
 	/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 start*/
-	if (call_mode != -1) {
-		if (pdata->charging_current_limit > call_mode) {
-			pdata->charging_current_limit = call_mode;
-			pr_err("call mode is %d\n", call_mode);
+	if (call_mode >= 0) {
+		if (pdata->charging_current_limit >= (call_mode*1000)) {
+			pdata->charging_current_limit = (call_mode*1000);
+			pr_err("call mode is %d\n", call_mode*1000);
 		}
 	}
 	/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 end*/
