@@ -84,6 +84,11 @@ extern	int	fts_tp_data_dump_proc_init(void);
 extern	void fts_tp_data_dump_proc_exit(void);
 #endif
 
+/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+extern atomic_t lcm_ready;
+#endif
+/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 end */
 /*****************************************************************************
 * Static function prototypes
 *****************************************************************************/
@@ -2015,6 +2020,14 @@ static int fts_ts_suspend(struct device *dev)
 		FTS_INFO("fw upgrade in process, can't suspend");
 		return 0;
 	}
+
+/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	atomic_set(&lcm_ready, 0);
+	FTS_INFO("[ESD] atomic_set(&lcm_ready, 0)\n");
+#endif
+/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 end */
+
 #ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
 	if (fts_data->palm_sensor_switch) {
 		FTS_INFO("%s: palm sensor on status, switch to off\n", __func__);

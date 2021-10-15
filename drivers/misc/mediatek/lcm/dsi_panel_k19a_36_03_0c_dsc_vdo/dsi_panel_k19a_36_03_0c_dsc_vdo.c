@@ -130,6 +130,9 @@ static unsigned ENN = 494; //gpio169
 #define GPIO_LCD_BIAS_ENP   ENP
 #define GPIO_LCD_BIAS_ENN   ENN
 
+/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 start */
+extern bool fts_gesture_flag;
+/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 end */
 
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
 
@@ -346,8 +349,10 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	/* dfps_params[0].PLL_CLOCK = 574; */
 	/* dfps_params[0].data_rate = xx; */
 	dfps_params[0].vertical_frontporch = 1300;
-	dfps_params[0].vertical_frontporch_for_low_power = 0;
-
+	/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 start */
+	dfps_params[0].vertical_frontporch_for_low_power = 2510;
+	/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 end */
+  
 	/* DPFS_LEVEL1 */
 	dfps_params[1].level = DFPS_LEVEL1;
 	dfps_params[1].fps = 9000;/*real fps * 100, to support float*/
@@ -356,8 +361,10 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	/* dfps_params[1].PLL_CLOCK = 380; */
 	/* dfps_params[1].data_rate = xx; */
 	dfps_params[1].vertical_frontporch = 54;
-	dfps_params[1].vertical_frontporch_for_low_power = 0;
-
+	/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 start */
+	dfps_params[1].vertical_frontporch_for_low_power = 2510;
+	/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 end */
+  
 	dsi->dfps_num = 2;
 }
 #endif
@@ -509,14 +516,16 @@ static void lcm_init_power(void)
 
 static void lcm_suspend_power(void)
 {
-	
-
+/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 start */
+	if(!fts_gesture_flag)
+	{
 		lcm_set_gpio_output(GPIO_LCD_BIAS_ENN, 0);
 		MDELAY(3);
 		lcm_set_gpio_output(GPIO_LCD_BIAS_ENP, 0);
 		MDELAY(5);
+	}
 }
-
+/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 end */
 
 static void lcm_resume_power(void)
 {
