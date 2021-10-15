@@ -37,7 +37,6 @@
 #include "mtk_charger_intf.h"
 
 #define __BQ25890H__	1
-
 #include "bq2589x_reg.h"
 extern int hq_config(void);
 enum {
@@ -118,6 +117,7 @@ bool cdp_detect = false;
 /*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 end*/
 
 static int charger_detect_count = 3;
+static int charger_float_count = 0;
 /* Huaqin add for HQ-134476 by miaozhichao at 2021/5/29 end */
 
 bool cdp_unattach = false;
@@ -1112,9 +1112,14 @@ static void bq2589x_read_byte_work(struct work_struct *work)
 				pr_err("foce dpdm ti\n");
 				bq2589x_force_dpdm(bq);
 			}else if(vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_UNKNOWN ) {
-				bq2589x_force_dpdm(bq);
 				charger_detect_count++;
-				pr_err(" foce UNKNOWN ti\n");
+				charger_float_count++;
+				if(charger_float_count <= 30){
+					bq2589x_force_dpdm(bq);
+				} else {
+					charger_float_count = 31;//avoid overflow
+				}
+				pr_err(" foce UNKNOWN ti,charger_float_count:%d\n",charger_float_count);
 			}else if (vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_NON_STD) {
 				Charger_Detect_Init();
 				bq2589x_dp_set_3P3V(bq);
@@ -1134,9 +1139,14 @@ static void bq2589x_read_byte_work(struct work_struct *work)
 			std_mode_dec = false;
 			pr_err("foce dpdm silergy\n");
 		} else if (vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_UNKNOWN) {
-			bq2589x_force_dpdm(bq);
+			charger_float_count++;
+			if (charger_float_count <= 30) {
+				bq2589x_force_dpdm(bq);
+			} else {
+				charger_float_count = 31;//avoid overflow
+			}
 			std_mode_dec = false;
-			pr_err("float foce dpdm\n");
+			pr_err(" foce UNKNOWN silergy,charger_float_count:%d\n",charger_float_count);
 		} else if (vbus_gd && vbus_stat == BQ2589X_VBUS_TYPE_NON_STD && !std_mode_dec) {
 			std_mode_dec = true;
 			ret = bq2589x_enter_hiz_mode(bq);
@@ -1176,9 +1186,11 @@ static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 	if (!prev_pg && bq->power_good) {
 		pr_err("adapter/usb inserted\n");
 		charger_detect_count = 3;
+		charger_float_count = 0;
 	}else if (prev_pg && !bq->power_good){
 		hvdcp_type_tmp = HVDCP_NULL;
 		charger_detect_count = 0;
+		charger_float_count = 30;
 	}else{
 		pr_err("prev_pg = %d  bq->power_good = %d\n",prev_pg,bq->power_good);
 	}
