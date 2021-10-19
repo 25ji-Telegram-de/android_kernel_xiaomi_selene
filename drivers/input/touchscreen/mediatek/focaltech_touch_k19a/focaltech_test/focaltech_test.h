@@ -40,7 +40,9 @@
 #define FTS_ITO_TEST				"self_test"
 #endif
 #define FTS_INI_FILE_PATH                       "/data/vendor/focaltech/"
-#define FTS_INI_FILE_NAME               "focaltech_mp_fw_tianma.ini"
+/*K19S coad for HQ-158437 by gaoxue at 2021/10/19 start*/
+#define FTS_INI_FILE_NAME               "Conf_MultipleTest.ini"
+/*K19S coad for HQ-158437 by gaoxue at 2021/10/19 end*/
 #define FTS_ITO_RESULT_PATH             "/sdcard/Download/fts_"
 #define FTS_CSV_FILE_NAME					   "testdata.csv"
 #define FTS_TXT_FILE_NAME					   "testresult.txt"
