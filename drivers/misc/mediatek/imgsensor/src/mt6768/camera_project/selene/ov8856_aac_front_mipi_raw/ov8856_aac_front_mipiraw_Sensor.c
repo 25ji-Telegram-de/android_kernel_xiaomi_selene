@@ -62,7 +62,7 @@ static imgsensor_info_struct imgsensor_info = {
 		/*       following for MIPIDataLowPwr2HighSpeedSettleDelayCount by different scenario   */
 		.mipi_data_lp2hs_settle_dc = 23,
 		/*       following for GetDefaultFramerateByScenario()  */
-		.mipi_pixel_rate = 254554699,
+		.mipi_pixel_rate = 268800000,
 		.max_framerate = 300,
 		},
 	.cap = {
@@ -74,7 +74,7 @@ static imgsensor_info_struct imgsensor_info = {
 		.grabwindow_width = 3264,
 		.grabwindow_height = 2448,
 		.mipi_data_lp2hs_settle_dc = 23,
-		.mipi_pixel_rate = 254554665,
+		.mipi_pixel_rate = 268800000,
 		.max_framerate = 300,
 		},
 	.cap1 = {		/* capture for PIP 24fps relative information, capture1 mode must use same framelength, linelength with Capture mode for shutter calculate */
@@ -98,7 +98,7 @@ static imgsensor_info_struct imgsensor_info = {
 		.grabwindow_width  = 3264,
 		.grabwindow_height = 1836,
 		.mipi_data_lp2hs_settle_dc = 85,
-		.mipi_pixel_rate = 254400000,
+		.mipi_pixel_rate = 268800000,
 		.max_framerate = 300,
 			 },
 	.hs_video = {
@@ -1073,7 +1073,7 @@ write_cmos_sensor(0x5E00, 0x00 );
 static void preview_setting(void)
 {
 	LOG_INF("E\n");
-write_cmos_sensor(0x0302, 0x35 );
+write_cmos_sensor(0x0302, 0x38 );//0x35
 write_cmos_sensor(0x0303, 0x00 );
 write_cmos_sensor(0x3501, 0x9a );
 write_cmos_sensor(0x3502, 0x20 );
@@ -1101,7 +1101,7 @@ write_cmos_sensor(0x3820, 0x80 );
 write_cmos_sensor(0x3821, 0x46 );
 write_cmos_sensor(0x382a, 0x01 );
 write_cmos_sensor(0x4009, 0x0b );
-write_cmos_sensor(0x4837, 0x0c );
+write_cmos_sensor(0x4837, 0x0b );//0x0c
 write_cmos_sensor(0x5795, 0x02 );
 write_cmos_sensor(0x5796, 0x20 );
 write_cmos_sensor(0x5797, 0x20 );
@@ -1118,7 +1118,7 @@ write_cmos_sensor(0x57a1, 0x40 );
 static void capture_setting(kal_uint16 currefps)
 {
 	LOG_INF("E! currefps:%d\n", currefps);
-	write_cmos_sensor(0x0302, 0x35 );
+write_cmos_sensor(0x0302, 0x38 );//0x35
 write_cmos_sensor(0x0303, 0x00 );
 write_cmos_sensor(0x3501, 0x9a );
 write_cmos_sensor(0x3502, 0x20 );
@@ -1146,7 +1146,7 @@ write_cmos_sensor(0x3820, 0x80 );
 write_cmos_sensor(0x3821, 0x46 );
 write_cmos_sensor(0x382a, 0x01 );
 write_cmos_sensor(0x4009, 0x0b );
-write_cmos_sensor(0x4837, 0x0c );
+write_cmos_sensor(0x4837, 0x0b );//0x0c
 write_cmos_sensor(0x5795, 0x02 );
 write_cmos_sensor(0x5796, 0x20 );
 write_cmos_sensor(0x5797, 0x20 );
@@ -1223,7 +1223,7 @@ static void vga_setting_120fps(void)
 static void normal_video_setting(kal_uint16 currefps)
 {
 	LOG_INF("normal_video_setting:%d\n", currefps);
-	write_cmos_sensor(0x0302, 0x35);
+	write_cmos_sensor(0x0302, 0x38);//0x35
 	write_cmos_sensor(0x0303, 0x00);
 	write_cmos_sensor(0x3501, 0x9a);
 	write_cmos_sensor(0x3502, 0x20);
@@ -1251,7 +1251,7 @@ static void normal_video_setting(kal_uint16 currefps)
 	write_cmos_sensor(0x3821, 0x46);
 	write_cmos_sensor(0x382a, 0x01);
 	write_cmos_sensor(0x4009, 0x0b);
-	write_cmos_sensor(0x4837, 0x0c);
+	write_cmos_sensor(0x4837, 0x0b);//0x0c
 	write_cmos_sensor(0x5795, 0x02);
 	write_cmos_sensor(0x5796, 0x20);
 	write_cmos_sensor(0x5797, 0x20);
