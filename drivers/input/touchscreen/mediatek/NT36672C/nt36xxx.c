@@ -1728,9 +1728,11 @@ static int nvt_set_cur_value(int mode, int value)
 			if (value == 0) {
 				nvt_set_sensitivity_switch(3);
 				nvt_set_pf_switch(0);
+                        	/* Huaqin modify for HQ-158397 by jiangyue at 2021/10/25 start */
 				/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 start */
-				nvt_set_er_range_switch(0);
+				nvt_set_er_range_switch(2);
 				/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 end */
+				/* Huaqin modify for HQ-158397 by jiangyue at 2021/10/25 end */
 			} else {
 				nvt_set_sensitivity_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
 				nvt_set_pf_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
