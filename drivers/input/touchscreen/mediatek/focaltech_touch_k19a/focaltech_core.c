@@ -165,9 +165,19 @@ void fts_tp_state_recovery(struct fts_ts_data *ts_data)
 	fts_gesture_recovery(ts_data);
 	FTS_FUNC_EXIT();
 }
-
+/* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+extern atomic_t lcm_ready;
+#endif
+/* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 end */
 int fts_reset_proc(int hdelayms)
 {
+	/* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 start */
+        #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+                atomic_set(&lcm_ready,0);
+                FTS_INFO("[ESD]atomic_set(&lcm_ready,0)\n");
+        #endif
+        /* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 end */
 	gpio_direction_output(fts_data->pdata->reset_gpio, 0);
 	/* ����kernel msleep����ʱ���Ʈ��1ms�п��ܱ��20ms�����Բ���mdelay(2)
 	   ���ʵ�����ⷢ�ֲ���Ʈ�ܳ���Ҳ���Բ��ģ���Ҫ��Ӱ��FW����ʱ��
@@ -177,7 +187,12 @@ int fts_reset_proc(int hdelayms)
 	if (hdelayms) {
 		msleep(hdelayms);
 	}
-
+	/* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 start */
+        #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+                atomic_set(&lcm_ready,1);
+                FTS_INFO("[ESD]atomic_set(&lcm_ready,1)\n");
+        #endif
+        /* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 end */
 	return 0;
 }
 
