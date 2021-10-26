@@ -348,10 +348,10 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	/* if mipi clock solution */
 	/* dfps_params[0].PLL_CLOCK = 574; */
 	/* dfps_params[0].data_rate = xx; */
-	dfps_params[0].vertical_frontporch = 1300;
-	/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 start */
-	dfps_params[0].vertical_frontporch_for_low_power = 2510;
-	/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 end */
+	/* Huaqin add for HQ-148591 by jiangyue at 2021/10/27 start */
+	dfps_params[0].vertical_frontporch = 1250;
+	dfps_params[0].vertical_frontporch_for_low_power = 2430;
+	/* Huaqin add for HQ-148591 by jiangyue at 2021/10/27 end */
   
 	/* DPFS_LEVEL1 */
 	dfps_params[1].level = DFPS_LEVEL1;
@@ -408,12 +408,16 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 
 	params->dsi.vertical_sync_active = 4;
 	params->dsi.vertical_backporch = 20;
-	params->dsi.vertical_frontporch = 1300;
+	/* Huaqin add for HQ-148591 by jiangyue at 2021/10/27 start */
+	params->dsi.vertical_frontporch = 1250;
+	/* Huaqin add for HQ-148591 by jiangyue at 2021/10/27 end */
 	//params->dsi.vertical_frontporch_for_low_power = 750;
 	params->dsi.vertical_active_line = FRAME_HEIGHT;
 
 	params->dsi.horizontal_sync_active = 10;
-	params->dsi.horizontal_backporch = 31;
+	/* Huaqin add for HQ-148591 by jiangyue at 2021/10/27 start */
+	params->dsi.horizontal_backporch = 34;
+	/* Huaqin add for HQ-148591 by jiangyue at 2021/10/27 end */
 	params->dsi.horizontal_frontporch = 165;
 	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
 	params->dsi.ssc_disable = 1;
