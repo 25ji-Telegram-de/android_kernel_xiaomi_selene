@@ -471,30 +471,30 @@ static void write_shutter(kal_uint64 shutter)
 		} else {
 			imgsensor.frame_length =
 			    (imgsensor.frame_length >> 1) << 1;
-			write_cmos_sensor(0x3208, 0x00);
+			// write_cmos_sensor(0x3208, 0x00);
 			write_cmos_sensor(0x3840, imgsensor.frame_length >> 16);
 			write_cmos_sensor(0x380e, imgsensor.frame_length >> 8);
 			write_cmos_sensor(0x380f, imgsensor.frame_length & 0xFF);
-			write_cmos_sensor(0x3208, 0x10);
-			write_cmos_sensor(0x3208, 0xa0);
+			// write_cmos_sensor(0x3208, 0x10);
+			// write_cmos_sensor(0x3208, 0xa0);
 		}
 	} else {
 	    imgsensor.frame_length = (imgsensor.frame_length >> 1) << 1;
-		write_cmos_sensor(0x3208, 0x00);
+		// write_cmos_sensor(0x3208, 0x00);
 		write_cmos_sensor(0x3840, imgsensor.frame_length >> 16);
 		write_cmos_sensor(0x380e, imgsensor.frame_length >> 8);
 		write_cmos_sensor(0x380f, imgsensor.frame_length & 0xFF);
-		write_cmos_sensor(0x3208, 0x10);
-		write_cmos_sensor(0x3208, 0xa0);
+		// write_cmos_sensor(0x3208, 0x10);
+		// write_cmos_sensor(0x3208, 0xa0);
 	}
 
 	/*Warning : shutter must be even. Odd might happen Unexpected Results */
-	write_cmos_sensor(0x3208, 0x00);
+	// write_cmos_sensor(0x3208, 0x00);
 	write_cmos_sensor(0x3500, (shutter >> 16) & 0xFF);
 	write_cmos_sensor(0x3501, (shutter >> 8) & 0xFF);
 	write_cmos_sensor(0x3502, (shutter)  & 0xFF);
-	write_cmos_sensor(0x3208, 0x10);
-	write_cmos_sensor(0x3208, 0xa0);
+	// write_cmos_sensor(0x3208, 0x10);
+	// write_cmos_sensor(0x3208, 0xa0);
 	LOG_DBG("shutter =%d, framelength =%d, realtime_fps =%d\n",
 		shutter, imgsensor.frame_length, realtime_fps);
 }
