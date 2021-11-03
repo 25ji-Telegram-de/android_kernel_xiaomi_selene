@@ -549,7 +549,9 @@
 	/*K19A HQHW-1022 K19A for JEITA  by langjunjun at 2021/7/15 end*/
 
 	temp_t4_thres = <60>;
-	temp_t4_thres_minus_x_degree = <60>;
+        /*HQ-166871 code for K19u by wanglicheng at 20211210 end */
+	temp_t4_thres_minus_x_degree = <58>;
+        /*HQ-166871  code for K19u by wanglicheng at 20211210 start */
 	temp_t3_thres = <48>;
 	temp_t3_thres_minus_x_degree = <48>;
 	temp_t2_thres = <10>;

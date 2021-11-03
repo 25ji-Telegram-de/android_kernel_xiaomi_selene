@@ -89,7 +89,6 @@ extern bool tp_charger_status;
 /* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 end */
 
 static DEFINE_MUTEX(consumer_mutex);
-
 #if defined(TARGET_PRODUCT_LANCELOT) || defined(TARGET_PRODUCT_SHIVA)
 typedef enum {
 	PCBA_UNKNOW = 0,
@@ -1401,6 +1400,13 @@ void do_sw_jeita_state_machine(struct charger_manager *info)
 				info->data.temp_t4_thres);
 
 			sw_jeita->charging = false;
+                /*HQ-166871  code for K19u by wanglicheng at 20211210 start */
+//		}else if(info->battery_temp >= info->data.temp_t4_thres_minus_x_degree) {
+		}else if(info->battery_temp >= 58) {
+			sw_jeita->charging = false;
+			sw_jeita->sm = TEMP_ABOVE_T4;
+			chr_err("[SW_JEITA]wlc now temprature is %d, te_thres_minus: %d !!\n",info->battery_temp, info->data.temp_t4_thres_minus_x_degree);
+                /*HQ-166871 code for K19u by wanglicheng at 20211210 end */
 		} else {
 			chr_err("[SW_JEITA] Battery Temperature between %d and %d !!\n",
 				info->data.temp_t3_thres,
@@ -2288,6 +2294,7 @@ static int charger_routine_thread(void *arg)
 
 		if (info->charger_thread_polling == true)
 			mtk_charger_start_timer(info);
+
 
 		charger_update_data(info);
 		check_battery_exist(info);
