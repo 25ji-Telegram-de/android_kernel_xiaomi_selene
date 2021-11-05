@@ -754,19 +754,19 @@ static void lcm_init(void)
 	MDELAY(10);
 	/* Huaqin modify for HQ-132702 by caogaojie at 2021/06/15 end */
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
-	/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+	/* Huaqin modify for HQ-161950 by jiangyue at 2021/11/05 start */
 	if(esd_flag){
 		nvt_bootloader_reset_locked();
 		push_table(NULL, tp_reset_cmd1, ARRAY_SIZE(tp_reset_cmd1), 1);
-		MDELAY(100);
+		MDELAY(10);
 		nvt_esd_vdd_tp_recovery();
-		MDELAY(100);
+		MDELAY(20);
 		push_table(NULL, tp_reset_cmd2, ARRAY_SIZE(tp_reset_cmd2), 1);
-		MDELAY(50);
+		MDELAY(10);
 		esd_flag = false;
 		g_trigger_disp_esd_recovery = false;
 	}
-	/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
+	/* Huaqin modify for HQ-161950 by jiangyue at 2021/11/05 end */
 
 	/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/14 start */
 	/* Huaqin modify for HQ-155949 by caogaojie at 2021/09/18 start */

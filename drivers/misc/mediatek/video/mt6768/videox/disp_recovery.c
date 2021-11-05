@@ -780,9 +780,9 @@ static int primary_display_check_recovery_worker_kthread(void *data)
 #else
 	while (1) {
 next:		if(!atomic_read(&lcm_ready)){
-	/* Huaqin modify for HQ-138988 by caogaojie at 2021/07/09 start */
-			msleep(2000);
-	/* Huaqin modify for HQ-138988 by caogaojie at 2021/07/09 end */
+	/* Huaqin modify for HQ-161950 by jiangyue at 2021/11/05 start */
+			msleep(200);
+	/* Huaqin modify for HQ-161950 by jiangyue at 2021/11/05 end */
 			continue;
 		}
 		DISPINFO("[ESD] primary_display_check_recovery_worker_kthread start 2");
