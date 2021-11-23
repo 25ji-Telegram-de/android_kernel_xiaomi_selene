@@ -422,8 +422,17 @@ static int bms_get_property(struct power_supply *psy,
 		val->intval = my_battery_id_voltage;
 		break;
 	case POWER_SUPPLY_PROP_BATTERY_TYPE:
-		pr_info("gm.battery_id :%d.\n", gm.battery_id);
-		val->intval = gm.battery_id;
+		/*HQ-167546  code for K19u by wanglicheng at 20211123 start */
+		pr_info("wlc raw battery_type index :%d.\n", gm.battery_id);
+		if (gm.battery_id == 4) {
+			val->intval = 3;
+		} else if (gm.battery_id == 5){
+			val->intval = 1;
+		} else {
+			val->intval = gm.battery_id;
+		}
+		pr_info("wlc mature battery_type index:%d.\n", val->intval);
+		/*HQ-167546 code for K19u by wanglicheng at 20211123 end */
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL:
 /*K19A HQ-138551 K19A charger of charge_full by miaozhichao at 2021/6/2 start*/
