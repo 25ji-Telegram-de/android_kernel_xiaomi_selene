@@ -836,7 +836,7 @@
 
 /* DISPSYS GPIO standardization end*/
 
-#include <selene/cust.dtsi>
+#include "mediatek/selene/cust.dtsi"
 #include "mediatek/tcpc_config.dtsi"
 #include "mediatek/cust_mt6768_selene_camera.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
