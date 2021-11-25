@@ -134,6 +134,12 @@ static unsigned ENN = 494; //gpio169
 extern bool fts_gesture_flag;
 /* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 end */
 
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 start*/
+extern int32_t fts_ts_tp_suspend(void);
+extern int32_t fts_ts_tp_resume(void);
+extern bool esd_flag;
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 end*/
+
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
 
 #endif
@@ -536,6 +542,7 @@ static void lcm_resume_power(void)
 
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	lcm_init_power();
+
 }
 
 static void lcm_init(void)
@@ -551,12 +558,24 @@ static void lcm_init(void)
 	fts_fwresume_work();
 	/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 	push_table(NULL, init_setting_vdo, ARRAY_SIZE(init_setting_vdo), 1);
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 start*/
+	if (esd_flag == true) {
+	    LCM_LOGI("%s, Now esd_flag = %d\n", __func__, esd_flag);
+	    fts_ts_tp_resume();
+	}
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 end*/
 }
 
 static void lcm_suspend(void)
 {
 
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 start*/
+	if (esd_flag == true) {
+	    LCM_LOGI("%s, Now esd_flag = %d\n", __func__, esd_flag);
+	    fts_ts_tp_suspend();
+	}
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 end*/
 	push_table(NULL, lcm_suspend_setting,
 		   ARRAY_SIZE(lcm_suspend_setting), 1);
 }
@@ -565,6 +584,7 @@ static void lcm_resume(void)
 {
 	LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	lcm_init();
+
 }
 
 static unsigned int lcm_ata_check(unsigned char *buffer)

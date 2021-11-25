@@ -69,7 +69,9 @@
 #include "disp_partial.h"
 #include "ddp_dsi.h"
 #include "ddp_disp_bdg.h"
-
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 start*/
+bool esd_flag;
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 end*/
 /* For abnormal check */
 static struct task_struct *primary_display_check_task;
 /* used for blocking check task  */
@@ -711,6 +713,9 @@ static int primary_display_check_recovery_worker_kthread(void *data)
 /* Huaqin modify for HQ-124138 by dongtingchi at 2021/04/29 start */
 #ifndef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
 	int recovery_done = 0;
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 start*/
+	esd_flag = false;
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 end*/
 #endif
 /* Huaqin modify for HQ-124138 by dongtingchi at 2021/04/29 end */
 
@@ -781,7 +786,7 @@ static int primary_display_check_recovery_worker_kthread(void *data)
 	while (1) {
 next:		if(!atomic_read(&lcm_ready)){
 	/* Huaqin modify for HQ-161950 by jiangyue at 2021/11/05 start */
-			msleep(200);
+			msleep(700);
 	/* Huaqin modify for HQ-161950 by jiangyue at 2021/11/05 end */
 			continue;
 		}
@@ -796,6 +801,10 @@ next:		if(!atomic_read(&lcm_ready)){
 			DISPERR(
 				"[ESD]esd check fail, will do esd recovery. try=%d\n",
 				i);
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 start*/
+			esd_flag = true;
+			DISPERR("[ESD]Now esd_flag = %d\n",esd_flag);
+/*K19S code for HQ-168893 by gaoxue at 2021/11/23 end*/
 			primary_display_esd_recovery();
 			goto next;
 		} while (++i < esd_try_cnt);
