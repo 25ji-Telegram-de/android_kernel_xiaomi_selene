@@ -141,13 +141,13 @@ inline s32 spi_write_mem(const u32 addr, void *val, const s32 len)
 static inline u32 cmdq_bdg_thread_get_reg(struct cmdq_thread *thread,
 	const u32 addr)
 {
-	return spi_read_reg((u32)thread->base + addr);
+	return spi_read_reg((uintptr_t)thread->base + addr);
 }
 
 static inline void cmdq_bdg_thread_set_reg(struct cmdq_thread *thread,
 	const u32 addr, const u32 val)
 {
-	spi_write_reg((u32)thread->base + addr, val);
+	spi_write_reg((uintptr_t)thread->base + addr, val);
 }
 
 static s32 cmdq_bdg_thread_warm_reset(struct cmdq_thread *thread)
@@ -362,10 +362,10 @@ static inline u32 cmdq_bdg_dump_thread(struct cmdq_thread *thread)
 	u64 inst;
 
 	spi_read_mem(
-		(u32)thread->base + CMDQ_THR_STATUS, val, sizeof(u32) * 10);
+		(uintptr_t)thread->base + CMDQ_THR_STATUS, val, sizeof(u32) * 10);
 	pc = cmdq_bdg_thread_get_pc(thread);
 	end = cmdq_bdg_thread_get_end(thread);
-	spi_read_mem((u32)thread->base + CMDQ_THR_SPR0, spr, sizeof(u32) * 4);
+	spi_read_mem((uintptr_t)thread->base + CMDQ_THR_SPR0, spr, sizeof(u32) * 4);
 	spi_read_mem(pc, &inst, CMDQ_INST_SIZE);
 
 	cmdq_msg(
