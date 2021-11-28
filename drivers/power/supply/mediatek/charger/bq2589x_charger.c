@@ -122,7 +122,7 @@ static int charger_float_count = 0;
 
 bool cdp_unattach = false;
 
-int get_charger_type()
+int get_charger_type(void)
 {
 	return g_charger_type;
 }
