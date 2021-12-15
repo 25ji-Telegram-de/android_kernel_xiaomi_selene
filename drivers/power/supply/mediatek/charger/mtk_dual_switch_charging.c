@@ -609,14 +609,9 @@ static void swchg_select_cv(struct charger_manager *info)
 	u32 constant_voltage = 4450000;
 	u32 dynamic_cv = 0;
 	bool chg2_chip_enabled = false;
-	u32 ffc_constant_voltage = 0;
-
-	if (g_get_smb135x()) {
-		constant_voltage = 4460000;
-		chr_err("wlc, g_get_smb135x:%d, set 4460000 \n", g_get_smb135x());
-	}
 
 /*K19A HQ-124491 K19A for ffc parameters by langjunjun at 2021/6/15 start*/
+	u32 ffc_constant_voltage = 0;
 	ffc_constant_voltage = get_charge_cycle_count_level(info);
 
 	if (info->enable_sw_ffc) {

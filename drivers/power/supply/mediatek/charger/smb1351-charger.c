@@ -606,7 +606,6 @@ static int hvdcp_det_count;
 static int hvdcp_rerun_aicl_count;
 #define HVDCP_RERUN_AICL_COUNT_MAX 3
 static void _smb1351_enable_hvdcp_det(struct smb1351_charger *chip, bool enable);
-bool g_smb135x_exist =  false;
 
 static int smb1351_read_reg(struct smb1351_charger *chip, int reg, u8 *val)
 {
@@ -3106,14 +3105,6 @@ retry:
 			msecs_to_jiffies(100));
 }
 
-bool g_get_smb135x(void){
-
-	return g_smb135x_exist;
-
-}
-EXPORT_SYMBOL(g_get_smb135x);
-
-
 static int smb1351_charger_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
@@ -3139,10 +3130,8 @@ static int smb1351_charger_probe(struct i2c_client *client,
 	chip->rerun_apsd_count = 0;
 	rc = smb_chip_get_version(chip);
 	if (rc < 0) {
-		g_smb135x_exist =  false;
 		return -ENOMEM;
 	}
-	g_smb135x_exist =  true;
 	mutex_init(&chip->chgdet_lock);
 	i2c_set_clientdata(client, chip);
 
