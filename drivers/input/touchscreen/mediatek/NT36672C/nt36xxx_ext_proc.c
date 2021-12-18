@@ -35,7 +35,9 @@
 /*BSP.TP - Add MAX_POWER - 2020.12.08*/
 #define NVT_MAX_POWER_SWITCH "nvt_max_power_switch"
 /*BSP.TP - Add MAX_POWER - 2020.12.08*/
-#define NVT_TP_INFO "nvt_tp_info"
+/* Huaqin add for HQ-173111 by gaoxue at 2021/12/18 start */
+#define NVT_TP_INFO "tp_info"
+/* Huaqin add for HQ-173111 by gaoxue at 2021/12/18 end */
 #define NVT_IRQ_CONTROL "nvt_irq_control"
 #define NVT_CHARGER_SWITCH "nvt_charger_switch"
 #define NVT_GESTURE_MODE "nvt_gesture_mode"

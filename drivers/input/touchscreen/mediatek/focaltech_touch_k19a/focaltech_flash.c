@@ -45,7 +45,9 @@
 #define FTS_READ_BOOT_ID_TIMEOUT					3
 #define FTS_FLASH_PACKET_LENGTH_SPI_LOW			 (4 * 1024 - 4)
 #define FTS_FLASH_PACKET_LENGTH_SPI				 (32 * 1024 - 16)
-#define FTS_TP_INFO "fts_tp_info"
+/* Huaqin add for HQ-173111 by gaoxue at 2021/12/18 start */
+#define FTS_TP_INFO "tp_info"
+/* Huaqin add for HQ-173111 by gaoxue at 2021/12/18 end */
 static struct proc_dir_entry *FTS_proc_tp_info_entry;
 
 
