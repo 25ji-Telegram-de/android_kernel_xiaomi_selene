@@ -168,6 +168,9 @@ void fts_tp_state_recovery(struct fts_ts_data *ts_data)
 /* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 start */
 #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
 extern atomic_t lcm_ready;
+/* Huaqin add for HQ-174687 by jiangyue at 2021/12/31 start */
+extern atomic_t lcm_valid_irq;
+/* Huaqin add for HQ-174687 by jiangyue at 2021/12/31 end */
 #endif
 /* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 end */
 int fts_reset_proc(int hdelayms)
@@ -175,6 +178,9 @@ int fts_reset_proc(int hdelayms)
 	/* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 start */
         #ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
                 atomic_set(&lcm_ready,0);
+		/* Huaqin add for HQ-174687 by jiangyue at 2021/12/31 start */
+		atomic_set(&lcm_valid_irq,1);
+		/* Huaqin add for HQ-174687 by jiangyue at 2021/12/31 end */
                 FTS_INFO("[ESD]atomic_set(&lcm_ready,0)\n");
         #endif
         /* Huaqin add for HQ-158437 by gaoxue at 2021/10/25 end */
