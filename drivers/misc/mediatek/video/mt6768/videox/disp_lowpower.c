@@ -373,7 +373,9 @@ int primary_display_dsi_vfp_change(int state)
 	}
 
 	if (state == 1 || state == 0) {
-		if (bdg_is_bdg_connected() == 1) {
+	/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+		if (pgc->vfp_chg_sync_bdg && bdg_is_bdg_connected() == 1) {
+	/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 			cmdqRecWait(handle, CMDQ_EVENT_MUTEX0_STREAM_EOF);
 
 			/* 2.stop dsi vdo mode */
@@ -397,10 +399,10 @@ int primary_display_dsi_vfp_change(int state)
 						DDP_DSI_PORCH_CHANGE, &apply_vfp);
 		}
 	}
-/* Huaqin modify for HQ-141739 by caogaojie at 2021/07/05 start */
-	if (bdg_is_bdg_connected() != 1)
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+	if (!pgc->vfp_chg_sync_bdg)
 		cmdqRecFlushAsync(handle);
-/* Huaqin modify for HQ-141739 by caogaojie at 2021/07/05 end*/
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 	cmdqRecDestroy(handle);
 	return ret;
 }
