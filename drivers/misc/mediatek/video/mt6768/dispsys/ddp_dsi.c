@@ -877,7 +877,9 @@ int ddp_dsi_porch_setting(enum DISP_MODULE_ENUM module, void *handle,
 		if (type == DSI_VFP) {
 			DISPINFO("set dsi%d vfp to %d\n", i, value);
 			DSI_OUTREG32(handle, &DSI_REG[i]->DSI_VFP_NL, value);
-			if (bdg_is_bdg_connected() == 1)
+		/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+			if (pgc->vfp_chg_sync_bdg && bdg_is_bdg_connected() == 1)
+		/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 				ddp_dsi_set_bdg_porch_setting(module, handle, value);
 		/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
 			if(value == 54){
