@@ -571,17 +571,19 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 
 	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
 
+/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 start */
 	params->dsi.vertical_sync_active = 10;
 	params->dsi.vertical_backporch = 10;
-	params->dsi.vertical_frontporch = 54;
+	params->dsi.vertical_frontporch = 46;
 	//params->dsi.vertical_frontporch_for_low_power = 750;
 	params->dsi.vertical_active_line = FRAME_HEIGHT;
 
-	params->dsi.horizontal_sync_active = 22;
-	params->dsi.horizontal_backporch = 22;
-	params->dsi.horizontal_frontporch = 165;
+	params->dsi.horizontal_sync_active = 16;
+	params->dsi.horizontal_backporch = 16;
+	params->dsi.horizontal_frontporch = 148;
 	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
 	params->dsi.ssc_disable = 1;
+	/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 end */
 #ifdef CONFIG_MTK_MT6382_BDG
 	params->dsi.bdg_ssc_disable = 1;
 	params->dsi.dsc_params.ver = 17;
@@ -621,8 +623,10 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	/* this value must be in MTK suggested table */
 #ifdef DSC_ENABLE
-	params->dsi.bdg_dsc_enable = 1;
-	params->dsi.PLL_CLOCK = 380; //with dsc
+	/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 start */
+    params->dsi.bdg_dsc_enable = 1;
+    params->dsi.PLL_CLOCK = 360; //with dsc
+/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 end */
 #else
 	params->dsi.bdg_dsc_enable = 0;
 	params->dsi.PLL_CLOCK = 574; //without dsc
