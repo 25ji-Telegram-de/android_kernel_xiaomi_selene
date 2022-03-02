@@ -1751,6 +1751,7 @@ static int nqx_suspend(struct device *device)
 	struct pn544_dev *pn544_dev = i2c_get_clientdata(client);
 
 	if (device_may_wakeup(&client->dev) && pn544_dev->irq_enabled) {
+		device_wakeup_disable(&client->dev);
 		if (!enable_irq_wake(client->irq))
 			pn544_dev->irq_wake_up = true;
 	}
@@ -1763,6 +1764,7 @@ static int nqx_resume(struct device *device)
 	struct pn544_dev *pn544_dev = i2c_get_clientdata(client);
 
 	if (device_may_wakeup(&client->dev) && pn544_dev->irq_wake_up) {
+		device_wakeup_enable(&client->dev);
 		if (!disable_irq_wake(client->irq))
 			pn544_dev->irq_wake_up = false;
 	}
