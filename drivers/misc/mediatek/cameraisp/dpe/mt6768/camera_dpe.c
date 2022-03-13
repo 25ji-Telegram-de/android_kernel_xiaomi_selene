@@ -4783,10 +4783,11 @@ if (bResulst == MTRUE) {
 	}
 
 	spin_unlock(&(DPEInfo.SpinLockIrq[DPE_IRQ_TYPE_INT_DPE_ST]));
-	if (bResulst == MFALSE)
+	if (bResulst == MFALSE) {
 		ConfigDVEFrameByReqIdx(g_DVE_RequestRing.HWProcessIdx);
+	}
 
-		log_dbg("DVE:bFound:%d, DveWriteIdx:%d, WriteIdx:%d\n",
+	log_dbg("DVE:bFound:%d, DveWriteIdx:%d, WriteIdx:%d\n",
 		bFound, DveWriteIdx,
 		g_DVE_RequestRing.WriteIdx);
 		log_dbg("DVE:gDveCnt:%d,RequestState:%d,HWIdx:%d\n",
@@ -4794,11 +4795,13 @@ if (bResulst == MTRUE) {
 		g_DVE_RequestRing.DVEReq_Struct[DveWriteIdx].RequestState,
 		g_DVE_RequestRing.HWProcessIdx);
 
-	if (bResulst == MTRUE)
+	if (bResulst == MTRUE) {
 		wake_up_interruptible(&DPEInfo.WaitQueueHead);
+	}
 
-	if (bFound == MTRUE)
+	if (bFound == MTRUE) {
 		ConfigDVERequest(DveWriteIdx);
+	}
 
 }
 
