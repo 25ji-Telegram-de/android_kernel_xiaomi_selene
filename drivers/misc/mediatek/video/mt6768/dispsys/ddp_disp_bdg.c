@@ -99,7 +99,7 @@ struct lcm_setting_table {
 int mtk_mm_clk = 0;
 int mtk_rxtx_ratio = 0;
 extern char *saved_command_line;
-int mtk_panel_compare()
+int mtk_panel_compare(void)
 {
     if (strstr(saved_command_line, "dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv")) {
         mtk_mm_clk = 405;
