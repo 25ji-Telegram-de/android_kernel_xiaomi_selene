@@ -63,7 +63,7 @@ static struct work_struct rst_trigger_work;
  *     0 if success, otherwise error code
  *
  */
-void bt_report_hw_error()
+void bt_report_hw_error(void)
 {
 	const uint8_t HCI_EVT_HW_ERROR[] = {0x04, 0x10, 0x01, 0x00};
 	btmtk_recv(g_bdev->hdev, HCI_EVT_HW_ERROR, sizeof(HCI_EVT_HW_ERROR));
