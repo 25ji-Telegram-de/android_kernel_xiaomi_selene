@@ -5,6 +5,8 @@ ccflags-y += -mllvm -inlinehint-threshold=10000
 endif
 endif
 
+ccflags-y := -O3
+
 ccflags-y += -I$(src)			# needed for trace events
 
 obj-y					+= ion/
