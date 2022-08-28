@@ -2,6 +2,9 @@
 ifeq ($(cc-name),clang)
 ccflags-y += -Wno-error=unneeded-internal-declaration
 endif
+
+ccflags-y += -O3
+
 # CPUfreq core
 obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
 
