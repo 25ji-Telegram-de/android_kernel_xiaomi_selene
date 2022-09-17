@@ -25,6 +25,7 @@ obj-$(CONFIG_TOUCHSCREEN_MTK_GT9157)    +=  GT9157/
 obj-$(CONFIG_TOUCHSCREEN_HIMAX_CHIPSET_8789P1_8185P3)    +=  hxchipset_8789p1_8185p3/
 obj-$(CONFIG_TOUCHSCREEN_HIMAX_CHIPSET) += hxchipset_hx83102p/
 obj-$(CONFIG_TOUCHSCREEN_GOODIX_BRL) += goodix_berlin_driver/
+obj-$(CONFIG_TOUCHSCREEN_COMMON)	+= tp_common.o
 
 obj-$(CONFIG_TOUCHSCREEN_NT36672C)      += NT36672C/
 # Huaqin add for HQ-147450 by feiwen at 2021/7/23 start
