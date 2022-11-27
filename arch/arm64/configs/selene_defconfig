@@ -239,7 +239,7 @@ CONFIG_SCSI_SCAN_ASYNC=y
 CONFIG_BLK_DEV_DM=y
 CONFIG_DM_CRYPT=y
 #/*K19A K19A-2 solve bsp version  by miaozhichao at 2021/3/26 start*/
-# CONFIG_MMC_CRYPTO_LEGACY=y
+# CONFIG_MMC_CRYPTO_LEGACY is not set
 #K19A HQ-135324 fix vts by feiwen at 2021.5.19 start
 CONFIG_BLK_INLINE_ENCRYPTION_FALLBACK=y
 #K19A HQ-135324 fix vts by feiwen at 2021.5.19 end
