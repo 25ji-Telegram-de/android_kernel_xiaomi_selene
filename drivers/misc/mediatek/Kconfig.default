@@ -243,6 +243,7 @@ config ANDROID_DEFAULT_SETTING
 	select UHID
 	select UID_SYS_STATS
 	select UNIX
+	select UNICODE
 	select USB
 	select USB_CONFIGFS
 	select USB_CONFIGFS_F_ACC
