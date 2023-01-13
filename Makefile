@@ -990,6 +990,14 @@ KBUILD_CPPFLAGS += $(ARCH_CPPFLAGS) $(KCPPFLAGS)
 KBUILD_AFLAGS   += $(ARCH_AFLAGS)   $(KAFLAGS)
 KBUILD_CFLAGS   += $(ARCH_CFLAGS)   $(KCFLAGS)
 
+# =============PROJECT==================================
+# Add macros by TARGET_PRODUCT for different projects
+ifeq ($(CONFIG_TARGET_PRODUCT_SELENECOMMON),y)
+# Define macros here only for selene project
+KBUILD_CFLAGS += -DTARGET_PRODUCT_SELENE
+endif
+# =============PROJECT==================================
+
 # Use --build-id when available.
 LDFLAGS_BUILD_ID := $(patsubst -Wl$(comma)%,%,\
 			      $(call cc-ldoption, -Wl$(comma)--build-id,))
