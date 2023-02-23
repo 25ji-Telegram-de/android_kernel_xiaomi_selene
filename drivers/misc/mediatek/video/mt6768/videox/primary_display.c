@@ -1731,9 +1731,12 @@ static void _cmdq_build_trigger_loop(void)
 		ret = cmdqRecSetEventToken(pgc->cmdq_handle_trigger,
 			CMDQ_SYNC_TOKEN_CABC_EOF);
 		/* RUN forever!!!! */
-		if (ret < 0)
+		if (ret < 0) {
+#ifdef CONFIG_MTK_AEE_AED
 			disp_aee_db_print("cmdq build trigger fail, ret=%d\n",
 				ret);
+#endif
+		}
 	}
 
 	/* dump trigger loop instructions to check
@@ -2891,8 +2894,10 @@ static int _convert_disp_input_to_ovl(struct OVL_CONFIG_STRUCT *dst,
 	unsigned int Bpp = 0;
 
 	if (!src || !dst) {
+#ifdef CONFIG_MTK_AEE_AED
 		disp_aee_print("%s src(0x%p) or dst(0x%p) is null\n",
 			__func__, src, dst);
+#endif
 		return -1;
 	}
 
@@ -3346,8 +3351,11 @@ static void DC_config_nightlight(struct cmdqRecStruct *cmdq_handle)
 			break;
 		}
 	}
-	if (all_zero)
+	if (all_zero) {
+#ifdef CONFIG_MTK_AEE_AED
 		disp_aee_print("Night light backup param is zero matrix\n");
+#endif
+	}
 	else
 		disp_ccorr_set_color_matrix(cmdq_handle, ccorr_matrix, mode);
 }
@@ -7279,8 +7287,11 @@ static int primary_frame_cfg_input(struct disp_frame_cfg_t *cfg)
 				break;
 			}
 		}
-		if (all_zero)
+		if (all_zero) {
+#ifdef CONFIG_MTK_AEE_AED
 			disp_aee_print("HWC set zero matrix\n");
+#endif
+		}
 		else if (!primary_display_is_decouple_mode()) {
 			disp_ccorr_set_color_matrix(cmdq_handle,
 				m_ccorr_config.color_matrix,
@@ -10065,7 +10076,9 @@ static int primary_display_enter_self_refresh(void)
 
 	if (primary_display_is_mirror_mode()) {
 		/* we only accept non-mirror mode */
+#ifdef CONFIG_MTK_AEE_AED
 		disp_aee_print("enter self-refresh mode fail\n");
+#endif
 		goto out;
 	}
 
@@ -10093,7 +10106,9 @@ static int primary_display_exit_self_refresh(void)
 
 	if (primary_display_is_mirror_mode()) {
 		/* we only accept non-mirror mode */
+#ifdef CONFIG_MTK_AEE_AED
 		disp_aee_print("enter self-refresh mode fail\n");
+#endif
 		goto out;
 	}
 
