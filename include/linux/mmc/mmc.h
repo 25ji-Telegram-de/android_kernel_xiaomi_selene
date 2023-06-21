@@ -25,9 +25,6 @@
 #define LINUX_MMC_MMC_H
 
 #include <linux/types.h>
-/*Huaqin modify for HQ-123324 by luocheng at 2021/04/29 start*/
-#include "card.h"
-/*Huaqin modify for HQ-123324 by luocheng at 2021/04/29 end*/
 
 /* Standard MMC commands (4.1)           type  argument     response */
    /* class 1 */
@@ -105,9 +102,6 @@ static inline bool mmc_op_multi(u32 opcode)
 	       opcode == MMC_READ_MULTIPLE_BLOCK;
 }
 
-uint32_t mmc_get_serial(void);
-
-uint32_t mmc_get_manfid(void);
 /*
  * MMC_SWITCH argument format:
  *
@@ -258,9 +252,6 @@ uint32_t mmc_get_manfid(void);
 #define EXT_CSD_EXP_EVENTS_STATUS	54	/* RO, 2 bytes */
 #define EXT_CSD_EXP_EVENTS_CTRL		56	/* R/W, 2 bytes */
 #define EXT_CSD_DATA_SECTOR_SIZE	61	/* R */
-/* Huaqin modify for HQ-123324 by luocheng at 2021/04/29 start */
-#define EXT_CSD_VENDOR_EXT_FEATURES_ENABLE 102
-/* Huaqin modify for HQ-123324 by luocheng at 2021/04/29 end */
 #define EXT_CSD_GP_SIZE_MULT		143	/* R/W */
 #define EXT_CSD_PARTITION_SETTING_COMPLETED 155	/* R/W */
 #define EXT_CSD_PARTITION_ATTRIBUTE	156	/* R/W */
@@ -353,6 +344,7 @@ uint32_t mmc_get_manfid(void);
 #define EXT_CSD_CMD_SET_NORMAL		(1<<0)
 #define EXT_CSD_CMD_SET_SECURE		(1<<1)
 #define EXT_CSD_CMD_SET_CPSECURE	(1<<2)
+
 #define EXT_CSD_CARD_TYPE_HS_26	(1<<0)	/* Card can run at 26MHz */
 #define EXT_CSD_CARD_TYPE_HS_52	(1<<1)	/* Card can run at 52MHz */
 #define EXT_CSD_CARD_TYPE_HS	(EXT_CSD_CARD_TYPE_HS_26 | \
