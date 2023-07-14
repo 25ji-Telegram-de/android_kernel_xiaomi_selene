@@ -2976,7 +2976,7 @@ void rlmDomainCopyFromConfigTable(struct CMD_CHANNEL_POWER_LIMIT *prCmdPwrLimit,
 #endif /* CFG_SUPPORT_DYNA_TX_PWR_CTRL_OFDM_SETTING */
 }
 
-static int config_len(){
+static int config_len(void){
     int len;
     int borad_cfg = wmt_get_cn_cfg();
     if(borad_cfg == 0){
