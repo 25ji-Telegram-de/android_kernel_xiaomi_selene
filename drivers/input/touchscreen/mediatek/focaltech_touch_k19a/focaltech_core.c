@@ -2490,7 +2490,7 @@ static int fts_reset_mode(int mode)
 /*****************************************************************************
 * TP Driver
 *****************************************************************************/
-extern is_nvt;
+extern int is_nvt;
 static int fts_ts_probe(struct spi_device *spi)
 {
 	int ret = 0;
