@@ -153,10 +153,6 @@ static int mtk_clk_rate_change(struct notifier_block *nb,
 {
 	struct clk_notifier_data *ndata = data;
 	struct clk_hw *hw = __clk_get_hw(ndata->clk);
-	if (!hw) {
-		pr_notice("%s: hw is NULL", __func__);
-		return NOTIFY_BAD;
-	}
 	const char *clk_name = __clk_get_name(hw->clk);
 	int vcore_opp = get_vcore_opp();
 
@@ -224,7 +220,6 @@ static void print_enabled_clks(void)
 	const char * const *cn;
 	const char * const *off_pn;
 	const char *fix_clk = "clk26m";
-	struct clk_hw *c_hw;
 
 	if (!clkchk_cfg)
 		return;
@@ -235,7 +230,7 @@ static void print_enabled_clks(void)
 	for (; *cn; cn++) {
 		int valid = 0;
 		struct clk *c = __clk_lookup(*cn);
-		c_hw = __clk_get_hw(c);
+		struct clk_hw *c_hw = __clk_get_hw(c);
 		struct clk_hw *p_hw;
 		const char *c_name;
 		const char *p_name;
