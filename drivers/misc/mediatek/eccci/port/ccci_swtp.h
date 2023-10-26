@@ -66,4 +66,5 @@ struct swtp_t {
 //extern int ccci_md_get_state_by_id(int md_id);
 /* Huaqin modify for HQ-123513 by liunianliang at 2021/04/25 end */
 extern int swtp_init(int md_id);
+extern void inject_pin_status_event(int pin_value, const char pin_name[]);
 #endif				/* __SWTP_H__ */

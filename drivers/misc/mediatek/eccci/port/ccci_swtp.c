@@ -36,6 +36,7 @@ const struct of_device_id swtp_of_match[] = {
 };
 #define SWTP_MAX_SUPPORT_MD 1
 struct swtp_t swtp_data[SWTP_MAX_SUPPORT_MD];
+static const char rf_name[] = "RF_cable";
 /*Huaqin add for HQ-123513 by shiwenlong at 2021.4.01 start*/
 int get_swtp_state = -1;
 int get_swtp_gpio = -1;
@@ -111,6 +112,32 @@ static int swtp_switch_mode(struct swtp_t *swtp)
 	}
 	CCCI_LEGACY_ALWAYS_LOG(swtp->md_id, SYS, "%s mode %d\n",
 		__func__, swtp->curr_mode);
+	if (swtp->gpio_state[i] == SWTP_EINT_PIN_PLUG_IN){
+		if(i == 0){
+			input_report_key(swtp_ipdev, KEY_ANT_UNCONNECT, 1);
+			input_report_key(swtp_ipdev, KEY_ANT_UNCONNECT, 0);
+			input_sync(swtp_ipdev);
+		}	
+		swtp->gpio_state[i] = SWTP_EINT_PIN_PLUG_OUT;
+	}
+	else {
+		if(i == 0){
+			input_report_key(swtp_ipdev, KEY_ANT_CONNECT, 1);
+			input_report_key(swtp_ipdev, KEY_ANT_CONNECT, 0);
+			input_sync(swtp_ipdev);
+		}
+		swtp->gpio_state[i] = SWTP_EINT_PIN_PLUG_IN;
+	}
+	swtp->tx_power_mode = SWTP_NO_TX_POWER;
+	for (i = 0; i < MAX_PIN_NUM; i++) {
+		if (swtp->gpio_state[i] == SWTP_EINT_PIN_PLUG_IN) {
+			swtp->tx_power_mode = SWTP_DO_TX_POWER;
+			break;
+		}
+	}
+
+	inject_pin_status_event(swtp->curr_mode, rf_name);
+
 	spin_unlock_irqrestore(&swtp->spinlock, flags);
 
 	return ret;
@@ -224,6 +251,25 @@ int swtp_init(int md_id)
 	u32 ints[1] = { 0 };
 	u32 ints1[4] = { 0, 0, 0, 0 };
 #endif
+
+	/*input system config*/
+	swtp_ipdev = input_allocate_device();
+	if (!swtp_ipdev) {
+		pr_err("swtp_init: input_allocate_device fail\n");
+		return -1;
+	}
+	swtp_ipdev->name = "swtp-input";
+	input_set_capability(swtp_ipdev, EV_KEY, KEY_ANT_CONNECT);
+	input_set_capability(swtp_ipdev, EV_KEY, KEY_ANT_UNCONNECT);
+	input_set_capability(swtp_ipdev, EV_KEY, DIV_ANT_CONNECT);
+	input_set_capability(swtp_ipdev, EV_KEY, DIV_ANT_UNCONNECT);
+	//set_bit(INPUT_PROP_NO_DUMMY_RELEASE, ant_info->ipdev->propbit);
+	ret = input_register_device(swtp_ipdev);
+	if (ret) {
+		pr_err("swtp_init: input_register_device fail rc=%d\n", ret);
+		return -1;
+	}
+	pr_info("swtp_init: input_register_device success \n");	
 
 	if (md_id < 0 || md_id >= SWTP_MAX_SUPPORT_MD) {
 		CCCI_LEGACY_ERR_LOG(-1, SYS,
