@@ -180,7 +180,7 @@ char ext_mtkfb_lcm_name[256] = { 0 };
 #endif
 
 /* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
-extern real_refresh;
+extern int real_refresh;
 /* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 DEFINE_SEMAPHORE(sem_flipping);
 DEFINE_SEMAPHORE(sem_early_suspend);
