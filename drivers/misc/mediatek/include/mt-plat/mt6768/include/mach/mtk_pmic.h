@@ -20,6 +20,9 @@
 
 #define PT_DLPT_BRINGUP 0
 
+/* Define for disable MTK Power Budget Management feature */
+#define DISABLE_PBM_FEATURE 1
+
 #if defined(CONFIG_FPGA_EARLY_PORTING) || PT_DLPT_BRINGUP
 /* Define for disable low battery protect feature,
  * default no define for enable low battery protect.
