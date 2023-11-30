@@ -101,9 +101,7 @@ do {\
 
 #define bm_trace(fmt, args...)\
 do {\
-	if (bat_get_debug_level() >= BMLOG_TRACE_LEVEL) {\
-		pr_notice(fmt, ##args);\
-	}						\
+	pr_debug(fmt, ##args);\
 } while (0)
 
 #define BM_DAEMON_DEFAULT_LOG_LEVEL 8
