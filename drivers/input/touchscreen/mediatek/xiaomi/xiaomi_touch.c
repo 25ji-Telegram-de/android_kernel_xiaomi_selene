@@ -154,11 +154,10 @@ struct device *get_xiaomi_touch_dev(void)
 
 int xiaomitouch_register_modedata(struct xiaomi_touch_interface *data)
 {
-	int ret = 0;
 	struct xiaomi_touch_interface *touch_data = NULL;
 
 	if (!touch_pdata)
-		ret = -ENOMEM;
+		return -ENOMEM;
 
 	touch_data = touch_pdata->touch_data;
 	printk("%s\n", __func__);
@@ -175,7 +174,7 @@ int xiaomitouch_register_modedata(struct xiaomi_touch_interface *data)
 
 	mutex_unlock(&xiaomi_touch_dev.mutex);
 
-	return ret;
+	return 0;
 }
 
 int update_palm_sensor_value(int value)
