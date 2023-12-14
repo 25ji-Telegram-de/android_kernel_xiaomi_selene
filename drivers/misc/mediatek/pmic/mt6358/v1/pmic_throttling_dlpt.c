@@ -743,7 +743,7 @@ int do_ptim_internal(bool isSuspend, unsigned int *bat,
 #else
 	*cur = 0;
 #endif
-	pr_info("%s: bat %d cur %d\n", __func__, *bat, *cur);
+	pr_debug("%s: bat %d cur %d\n", __func__, *bat, *cur);
 
 	return ret;
 }
