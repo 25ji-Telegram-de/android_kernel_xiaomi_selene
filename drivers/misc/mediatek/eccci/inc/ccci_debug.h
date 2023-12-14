@@ -28,11 +28,11 @@
 #define UDC "udc"
 
 enum {
-	CCCI_LOG_ALL_UART = 1,
+	CCCI_LOG_ALL_UART,
 	CCCI_LOG_ALL_MOBILE,
 	CCCI_LOG_CRITICAL_UART,
 	CCCI_LOG_CRITICAL_MOBILE,
-	CCCI_LOG_ALL_OFF,
+	CCCI_LOG_ALL_OFF = 1,
 };
 
 extern unsigned int ccci_debug_enable; /* Exported by CCCI core */
