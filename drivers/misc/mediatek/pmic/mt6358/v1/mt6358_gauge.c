@@ -1027,10 +1027,11 @@ static int fgauge_read_current(
 	Temp_Value = fg_div(Temp_Value, 100000);
 	dvalue = (unsigned int) Temp_Value;
 
-	if (*fg_is_charging == true)
+	if (*fg_is_charging == true) {
 		bm_trace("[%s]curr(charging) = %d mA\r\n",
 		__func__,
 			 dvalue);
+	}
 	else
 		bm_trace("[%s]curr(discharging) = %d mA\r\n",
 		__func__,
@@ -1880,15 +1881,6 @@ static int fgauge_get_ptim_current(
 		Temp_Value = Temp_Value * UNIT_FGCURRENT;
 		Temp_Value = fg_div(Temp_Value, 100000);
 		dvalue = (unsigned int) Temp_Value;
-
-		if (*is_charging == true)
-			bm_trace(
-			"[fgauge_read_IM_current]curr(charging)=%dmA\r\n",
-			dvalue);
-		else
-			bm_trace(
-			"[fgauge_read_IM_current]curr(discharging)=%dmA\r\n",
-			dvalue);
 
 		/* Auto adjust value */
 		if (gauge_dev->fg_cust_data->r_fg_value != 100) {
