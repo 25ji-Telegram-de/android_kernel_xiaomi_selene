@@ -1626,14 +1626,7 @@ void fg_construct_vboot(int table_idx)
 {
 	int iboot = 0;
 	int rac = get_ptimrac();
-	int ptim_vbat = get_ptim_vbat();
-	int ptim_i = get_ptim_i();
 	int vboot_t = 0;
-	int curr_temp = force_get_tbat(1);
-
-	bm_err("[%s] idx %d T_NEW %d T_table %d T_table_c %d qmax_sel %d\n",
-		__func__,
-		table_idx, curr_temp, T_table, T_table_c, pdata->qmax_sel);
 
 	if (pdata->iboot_sel == 0)
 		iboot = ptable->fg_profile[0].pon_iboot;
@@ -1671,45 +1664,10 @@ void fg_construct_vboot(int table_idx)
 			fg_construct_battery_profile_by_vboot(
 				vboot_c, table_idx);
 		}
-		bm_err("[%s]idx %d T_NEW %d T_table %d T_table_c %d qmax_sel %d vboot_t=[%d:%d:%d] %d %d rac %d\n",
-			__func__,
-			table_idx, curr_temp,
-			T_table, T_table_c,
-			pdata->qmax_sel, vboot_t,
-			vboot, vboot_c,
-			ptable->fg_profile[0].pmic_min_vol,
-			iboot, rac);
 	}
-
-/* batterypseudo1_auto = get_batterypseudo1_auto(vboot, shutdown_hl_zcv); */
 
 	if (qmax_t_aging == 9999999 || aging_factor > 10000)
 		aging_factor = 10000;
-
-	bm_err(
-		"[%s] qmax_sel=%d iboot_sel=%d iboot:%d vbat:%d i:%d vboot:%d %d %d\n",
-		__func__,
-		pdata->qmax_sel, pdata->iboot_sel, iboot,
-		ptim_vbat, ptim_i, vboot, vboot_c, vboot_t);
-
-	if (pdata->qmax_sel == 0) {
-		bm_err(
-			"[%s][by_qmax]qmax_sel %d qmax %d vboot %d %d pmic_min_vol %d iboot %d r %d\n",
-			__func__,
-			pdata->qmax_sel, qmax_t_0ma_h,
-			vboot, vboot_c,
-			ptable->fg_profile[0].pmic_min_vol,
-			iboot, rac);
-	}
-	if (pdata->qmax_sel == 1) {
-		bm_err(
-			"[%s][by_vboot]qmax_sel %d vboot_t %d vboot %d %d pmic_min_vol %d iboot %d rac %d\n",
-			__func__,
-			pdata->qmax_sel, vboot_t, vboot,
-			vboot_c,
-			ptable->fg_profile[0].pmic_min_vol,
-			iboot, rac);
-	}
 }
 
 

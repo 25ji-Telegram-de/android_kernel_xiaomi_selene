@@ -86,7 +86,6 @@ void set_shutdown_vbat_lt(int vbat_lt, int vbat_lt_lv1)
 int get_shutdown_cond(void)
 {
 	int ret = 0;
-	int vbat = battery_get_bat_voltage();
 
 	if (sdc.shutdown_status.is_soc_zero_percent)
 		ret |= 1;
@@ -94,11 +93,6 @@ int get_shutdown_cond(void)
 		ret |= 1;
 	if (sdc.lowbatteryshutdown)
 		ret |= 1;
-	bm_err("%s ret:%d %d %d %d vbat:%d\n",
-		__func__,
-	ret, sdc.shutdown_status.is_soc_zero_percent,
-	sdc.shutdown_status.is_uisoc_one_percent,
-	sdc.lowbatteryshutdown, vbat);
 
 	return ret;
 }
@@ -151,7 +145,6 @@ int set_shutdown_cond(int shutdown_cond)
 	int now_current;
 	int now_is_charging = 0;
 	int now_is_kpoc;
-	int vbat;
 	struct shutdown_condition *sds;
 	int enable_lbat_shutdown;
 
@@ -163,17 +156,10 @@ int set_shutdown_cond(int shutdown_cond)
 
 	now_current = battery_get_bat_current();
 	now_is_kpoc = is_kernel_power_off_charging();
-	vbat = battery_get_bat_voltage();
 	sds = &sdc.shutdown_status;
 
 	if (now_current >= 0)
 		now_is_charging = 1;
-
-	bm_err("%s %d %d kpoc %d curr %d is_charging %d flag:%d lb:%d\n",
-		__func__,
-		shutdown_cond, enable_lbat_shutdown,
-		now_is_kpoc, now_current, now_is_charging,
-		shutdown_cond_flag, vbat);
 
 	if (shutdown_cond_flag == 1)
 		return 0;
@@ -242,8 +228,6 @@ int set_shutdown_cond(int shutdown_cond)
 						VBAT2_DET_VOLTAGE1 / 10;
 				sdc.batidx = 0;
 			}
-			bm_err("LOW_BAT_VOLT:vbat %d %d",
-				vbat, VBAT2_DET_VOLTAGE1 / 10);
 			mutex_unlock(&sdc.lock);
 		}
 		break;

@@ -67,46 +67,28 @@
 #define BMLOG_TRACE_LEVEL   8
 
 #define bm_err(fmt, args...)   \
-do {\
-	if (bat_get_debug_level() >= BMLOG_ERROR_LEVEL) {\
-		pr_notice(fmt, ##args); \
-	} \
-} while (0)
+{\
+}
 
 #define bm_warn(fmt, args...)   \
-do {\
-	if (bat_get_debug_level() >= BMLOG_WARNING_LEVEL) {\
-		pr_notice(fmt, ##args); \
-	}								   \
-} while (0)
+{\
+}
 
 #define bm_notice(fmt, args...)   \
-do {\
-	if (bat_get_debug_level() >= BMLOG_NOTICE_LEVEL) {\
-		pr_notice(fmt, ##args); \
-	}								   \
-} while (0)
+{\
+}
 
 #define bm_info(fmt, args...)   \
-do {\
-	if (bat_get_debug_level() >= BMLOG_INFO_LEVEL) {\
-		pr_notice(fmt, ##args); \
-	}								   \
-} while (0)
+{\
+}
 
 #define bm_debug(fmt, args...)   \
-do {\
-	if (bat_get_debug_level() >= BMLOG_DEBUG_LEVEL) {\
-		pr_notice(fmt, ##args); \
-	}								   \
-} while (0)
+{\
+}
 
 #define bm_trace(fmt, args...)\
-do {\
-	if (bat_get_debug_level() >= BMLOG_TRACE_LEVEL) {\
-		pr_notice(fmt, ##args);\
-	}						\
-} while (0)
+{\
+}
 
 #define BM_DAEMON_DEFAULT_LOG_LEVEL 8
 
