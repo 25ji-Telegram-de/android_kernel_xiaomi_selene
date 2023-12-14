@@ -4441,6 +4441,9 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 
 	pgc->lcm_fps = lcm_fps;
 	pgc->lcm_refresh_rate = 60;
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+	pgc->vfp_chg_sync_bdg = false;
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 	/* keep lowpower init after setting lcm_fps */
 	primary_display_lowpower_init();
 
@@ -10527,8 +10530,9 @@ void primary_display_dynfps_chg_fps(int cfg_id)
 			return;
 		}
 		cmdqRecReset(qhandle);
-
-		if (bdg_is_bdg_connected() != 1) {
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+		if (!pgc->vfp_chg_sync_bdg) {
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 			if (need_send_cmd) {
 				cmdqRecWait(qhandle, CMDQ_EVENT_MUTEX0_STREAM_EOF);
 				DISPMSG("%s,send cmd to lcm in VFP solution\n", __func__);
@@ -10542,8 +10546,10 @@ void primary_display_dynfps_chg_fps(int cfg_id)
 
 			cmdqRecFlushAsync(qhandle);
 		} else {
-			cmdqRecWait(qhandle, CMDQ_EVENT_MUTEX0_STREAM_EOF);
-
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+			if (bdg_is_bdg_connected() == 1) {
+				cmdqRecWait(qhandle, CMDQ_EVENT_MUTEX0_STREAM_EOF);
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 			/* stop dsi vdo mode */
 			dpmgr_path_build_cmdq(primary_get_dpmgr_handle(),
 				qhandle, CMDQ_STOP_VDO_MODE, 0);
@@ -10558,8 +10564,10 @@ void primary_display_dynfps_chg_fps(int cfg_id)
 
 			ddp_mutex_set_sof_wait(dpmgr_path_get_mutex(
 				primary_get_dpmgr_handle()), qhandle, 0);
-
-			cmdqRecFlush(qhandle);
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+				cmdqRecFlush(qhandle);
+			}
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 		}
 	}
 	cmdqRecDestroy(qhandle);
