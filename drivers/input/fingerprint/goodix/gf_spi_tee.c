@@ -374,7 +374,6 @@ static void gf_hw_power_enable(struct gf_device *gf_dev, u8 onoff)
 static void gf_spi_clk_enable(struct gf_device *gf_dev, u8 bonoff)
 {
 	static int count;
-	pr_err("%s line:%d try to control spi clk\n", __func__, __LINE__);
 #ifdef CONFIG_MTK_CLKMGR
 	if (bonoff && (count == 0)) {
 		gf_debug(DEBUG_LOG, "%s, start to enable spi clk && count = %d.\n", __func__, count);
@@ -389,11 +388,9 @@ static void gf_spi_clk_enable(struct gf_device *gf_dev, u8 bonoff)
 
 
 	if (bonoff && (count == 0)) {
-		pr_err("%s line:%d enable spi clk\n", __func__, __LINE__);
 		mt_spi_enable_master_clk(gf_dev->spi);
 		count = 1;
 	} else if ((count > 0) && (bonoff == 0)) {
-		pr_err("%s line:%d disable spi clk\n", __func__, __LINE__);
 		mt_spi_disable_master_clk(gf_dev->spi);
 		count = 0;
 	}
@@ -794,11 +791,6 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		gf_irq_gpio_cfg(gf_dev);
 		retval = request_threaded_irq(gf_dev->irq, NULL, gf_irq,
 				IRQF_TRIGGER_RISING | IRQF_ONESHOT, "goodix_fp_irq", gf_dev);
-		if (!retval)
-			gf_debug(INFO_LOG, "%s irq thread request success!\n", __func__);
-		else
-			gf_debug(ERR_LOG, "%s irq thread request failed, retval=%d\n", __func__, retval);
-
 		gf_dev->irq_count = 1;
 		gf_disable_irq(gf_dev);
 
@@ -853,7 +845,6 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case GF_IOC_RESET:
-		printk("%s: chip reset command\n", __func__);
 		gf_hw_reset(gf_dev, 60);
 		break;
 
@@ -868,12 +859,10 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case GF_IOC_ENABLE_SPI_CLK:
-		printk("%s: GF_IOC_ENABLE_SPI_CLK ======\n", __func__);
 		gf_spi_clk_enable(gf_dev, 1);
 		break;
 
 	case GF_IOC_DISABLE_SPI_CLK:
-		printk("%s: GF_IOC_DISABLE_SPI_CLK ======\n", __func__);
 		gf_spi_clk_enable(gf_dev, 0);
 		break;
 
@@ -1148,14 +1137,12 @@ static ssize_t gf_debug_show(struct device *dev,
 /* K19A code for HQ-145238 by shicheng at 2021.7.12 start */
 static int gf_fingerprint_vcorefs_hold(void)
 {
-	printk("gf_fingerprint_vcorefs_hold\n");
 	pm_qos_update_request(&gf_fingerprint_ddr_req, DDR_OPP_0);
 	return 0;
 }
 
 static int gf_fingerprint_vcorefs_release(void)
 {
-	printk("gf_fingerprint_vcorefs_release\n");
 	pm_qos_update_request(&gf_fingerprint_ddr_req, DDR_OPP_UNREQ);
 	return 0;
 }
@@ -1163,12 +1150,10 @@ static int gf_fingerprint_vcorefs_release(void)
 extern int mdss_prim_panel_fb_unblank(int timeout);
 static void unblank_work(struct work_struct *work)
 {
-	printk("unblank_work gf unblank start\n");
 	gf_debug(INFO_LOG, "entry %s line %d \n", __func__, __LINE__);
 	gf_fingerprint_vcorefs_hold();
 	mdss_prim_panel_fb_unblank(200);
 	gf_fingerprint_vcorefs_release();
-	printk("unblank_work gf unblank end\n");
 }
 
 static void freq_release(struct work_struct *work)
@@ -1207,7 +1192,6 @@ static int freq_hold(int sec)
 		freq_to_set[i].max = -1;
 	}
 	if (atomic_read(&boosted) == 0) {
-		printk("%s: fingerprint down\n", __func__);
 		gf_debug(INFO_LOG, "%s for %d * 500 msec \n", __func__, sec);
 		update_userlimit_cpu_freq(CPU_KIR_FINGERPRINT, cluster_num,
 					freq_to_set);
@@ -1224,7 +1208,6 @@ static ssize_t performance_store(struct device *dev,
 				 size_t count)
 {
 	if (!strncmp(buf, "1", count)) {
-			printk("%s: fingerprint down\n", __func__);
 			gf_debug(INFO_LOG, "finger down in authentication/enroll\n");
 			freq_hold(1);
 
@@ -1270,11 +1253,6 @@ static ssize_t gf_debug_store(struct device *dev,
 		gf_irq_gpio_cfg(gf_dev);
 		retval = request_threaded_irq(gf_dev->irq, NULL, gf_irq,
 				IRQF_TRIGGER_RISING | IRQF_ONESHOT, dev_name(&(gf_dev->spi->dev)), gf_dev);
-		if (!retval)
-			gf_debug(INFO_LOG, "%s irq thread request success!\n", __func__);
-		else
-			gf_debug(ERR_LOG, "%s irq thread request failed, retval=%d\n", __func__, retval);
-
 		gf_dev->irq_count = 1;
 		gf_disable_irq(gf_dev);
 
@@ -1317,7 +1295,6 @@ static ssize_t gf_debug_store(struct device *dev,
 	} else if (!strncmp(buf, "-13", 3)) {
 		gf_debug(INFO_LOG, "%s: parameter is -13, Vendor ID test --> 0x%x\n", __func__, g_vendor_id);
 		gf_spi_read_bytes(gf_dev, 0x0000, 4, rx_test);
-		printk("%s rx_test chip id:0x%x 0x%x 0x%x 0x%x \n", __func__, rx_test[0], rx_test[1], rx_test[2], rx_test[3]);
 	} else {
 		gf_debug(ERR_LOG, "%s: wrong parameter!===============\n", __func__);
 	}
@@ -1442,8 +1419,9 @@ void gf_spi_setup_conf_ree(struct gf_device *gf_dev, u32 speed, enum spi_transfe
 		mcc->com_mod = FIFO_TRANSFER;
 	}
 
-	if (spi_setup(gf_dev->spi))
+	if (spi_setup(gf_dev->spi)) {
 		gf_debug(ERR_LOG, "%s, failed to setup spi conf\n", __func__);
+	}
 
 }
 #endif
@@ -2076,7 +2054,6 @@ static int gf_probe(struct spi_device *spi)
 	}
 
 	/* get gpio info from dts or defination */
-    // printk("goodix goto test switch miso pin mode\n");
 	gf_get_gpio_dts_info(gf_dev);
 
 	gf_get_sensor_dts_info();
