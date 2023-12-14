@@ -124,3 +124,6 @@ all.config
 
 # fetched Android config fragments
 kernel/configs/android-*.cfg
+
+# commonly used output directory for building
+out/
