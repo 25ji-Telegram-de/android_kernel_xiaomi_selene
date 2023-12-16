@@ -60,7 +60,7 @@ unsigned int pmic_ipi_to_sspm(void *buffer, void *retbuf, unsigned char lock)
 		if (ret_val) {
 			if (ret_val == IPI_BUSY || ret_val == IPI_TIMEOUT_ACK) {
 				if (ipi_ret != 0)
-					pr_notice_ratelimited("%s ap_ret_w = %d ipi_ret_w =%d\n"
+					pr_debug("%s ap_ret_w = %d ipi_ret_w =%d\n"
 							      , __func__
 							      , ret_val
 							      , ipi_ret);
@@ -68,13 +68,13 @@ unsigned int pmic_ipi_to_sspm(void *buffer, void *retbuf, unsigned char lock)
 				/* Real PMIC service execution result,
 				 * by each PMIC service
 				 */
-				pr_notice_ratelimited("%s ap_ret_w = %d ipi_ret_w =%d\n"
+				pr_debug("%s ap_ret_w = %d ipi_ret_w =%d\n"
 						      , __func__
 						      ,	ret_val
 						      , ipi_ret);
 		} else {
 			if (ipi_ret != 0)
-				pr_notice_ratelimited("%s ap_ret_w = %d ipi_ret_w =%d\n"
+				pr_debug("%s ap_ret_w = %d ipi_ret_w =%d\n"
 						      , __func__
 						      ,	ret_val
 						      , ipi_ret);
@@ -87,7 +87,7 @@ unsigned int pmic_ipi_to_sspm(void *buffer, void *retbuf, unsigned char lock)
 		if (ret_val) {
 			if (ret_val == IPI_BUSY || ret_val == IPI_TIMEOUT_ACK) {
 				if (ipi_ret != 0)
-					pr_notice_ratelimited("%s ap_ret_r = %d ipi_ret_r =%d\n"
+					pr_debug("%s ap_ret_r = %d ipi_ret_r =%d\n"
 							      , __func__
 							      ,	ret_val
 							      , ipi_ret);
@@ -95,13 +95,13 @@ unsigned int pmic_ipi_to_sspm(void *buffer, void *retbuf, unsigned char lock)
 				/* Real PMIC service execution result,
 				 * by each PMIC service
 				 */
-				pr_notice_ratelimited("%s ap_ret_r = %d ipi_ret_r =%d\n"
+				pr_debug("%s ap_ret_r = %d ipi_ret_r =%d\n"
 						      , __func__
 						      ,	ret_val
 						      , ipi_ret);
 		} else {
 			if (ipi_ret != 0)
-				pr_notice_ratelimited("%s ap_ret_r = %d ipi_ret_r =%d\n"
+				pr_debug("%s ap_ret_r = %d ipi_ret_r =%d\n"
 						      , __func__
 						      ,	ret_val
 						      , ipi_ret);
@@ -115,7 +115,7 @@ unsigned int pmic_ipi_to_sspm(void *buffer, void *retbuf, unsigned char lock)
 	case SUB_PMIC_CTRL:
 		break;
 	default:
-		pr_notice_ratelimited("%s(%d) cmd(%d) wrong!!!\n"
+		pr_debug("%s(%d) cmd(%d) wrong!!!\n"
 				      , __func__, __LINE__, cmd);
 
 		break;
