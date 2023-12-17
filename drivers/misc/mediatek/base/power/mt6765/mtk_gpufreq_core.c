@@ -401,7 +401,7 @@ unsigned int mt_gpufreq_voltage_enable_set(unsigned int enable)
 		__func__, enable, g_volt_enable_state);
 
 	if (g_DVFS_is_paused_by_ptpod && enable == 0) {
-		gpufreq_pr_info("@%s: DVFS is paused by PTPOD\n", __func__);
+		gpufreq_pr_debug("@%s: DVFS is paused by PTPOD\n", __func__);
 		mutex_unlock(&mt_gpufreq_lock);
 		return -1;
 	}
@@ -2390,7 +2390,7 @@ static int __mt_gpufreq_pdrv_probe(struct platform_device *pdev)
 	struct device_node *node;
 	int i;
 
-	gpufreq_pr_info("@%s: gpufreq driver probe, clock is %d KHz\n",
+	gpufreq_pr_debug("@%s: gpufreq driver probe, clock is %d KHz\n",
 			__func__, mt_get_ckgen_freq(9));
 
 	g_opp_stress_test_state = false;
@@ -2480,7 +2480,7 @@ static int __mt_gpufreq_pdrv_probe(struct platform_device *pdev)
 		/* Other Version, set default segment */
 		g_segment_id = MT6765_SEGMENT;
 	}
-	gpufreq_pr_info("@%s: g_efuse_id = 0x%08X, g_segment_id = %d\n",
+	gpufreq_pr_debug("@%s: g_efuse_id = 0x%08X, g_segment_id = %d\n",
 		__func__, g_efuse_id, g_segment_id);
 
 	/* alloc PMIC regulator */
