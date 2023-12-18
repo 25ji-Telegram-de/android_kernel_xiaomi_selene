@@ -117,7 +117,7 @@ u32 mmc_select_voltage(struct mmc_host *host, u32 ocr)
 		host->ios.vdd = bit;
 		mmc_set_ios(host);
 	} else {
-		pr_info("%s: host doesn't support card's voltages\n",
+		pr_debug("%s: host doesn't support card's voltages\n",
 				mmc_hostname(host));
 		ocr = 0;
 	}
@@ -365,7 +365,7 @@ static int sdio_enable_wide(struct mmc_card *card)
 
 
 	if ((ctrl & SDIO_BUS_WIDTH_MASK) == SDIO_BUS_WIDTH_RESERVED)
-		pr_info("%s: SDIO_CCCR_IF is invalid: 0x%02x\n",
+		pr_debug("%s: SDIO_CCCR_IF is invalid: 0x%02x\n",
 			mmc_hostname(card->host), ctrl);
 
 	/* set as 4-bit bus width */

@@ -106,9 +106,9 @@ enum ENUM_MEM_ID {
 *                                 M A C R O S
 ********************************************************************************
 */
-#define MP_Dbg(_Fmt...)  pr_info("[wlan][MemPrealloc] " _Fmt)
-#define MP_Info(_Fmt...)  pr_info("[wlan][MemPrealloc] " _Fmt)
-#define MP_Err(_Fmt...) pr_info("[wlan][MemPrealloc] " _Fmt)
+#define MP_Dbg(_Fmt...)  pr_debug("[wlan][MemPrealloc] " _Fmt)
+#define MP_Info(_Fmt...)  pr_debug("[wlan][MemPrealloc] " _Fmt)
+#define MP_Err(_Fmt...) pr_debug("[wlan][MemPrealloc] " _Fmt)
 
 
 /*******************************************************************************

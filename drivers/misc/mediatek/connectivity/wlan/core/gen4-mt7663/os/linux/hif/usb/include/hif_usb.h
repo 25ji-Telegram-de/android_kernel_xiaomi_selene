@@ -110,7 +110,7 @@
 #define ASSERT(expr) \
 	do { \
 		if (!(expr)) { \
-			pr_info("assertion failed! %s[%d]: %s\n", \
+			pr_debug("assertion failed! %s[%d]: %s\n", \
 			       __func__, __LINE__, #expr); \
 			WARN_ON(!(expr)); \
 		} \
