@@ -239,7 +239,7 @@ static int usbpd_pm_set_swchg_cap(struct usbpd_pm *pdpm, u32 aicr)
 		return ret;
 	}
 
-	pr_info("AICR = %dmA, ICHG = %dmA\n", aicr, ichg);
+	pr_debug("AICR = %dmA, ICHG = %dmA\n", aicr, ichg);
 	return 0;
 
 }
@@ -254,7 +254,7 @@ static int usbpd_pm_enable_sw(struct usbpd_pm *pdpm, bool en)
 {
 	int ret;
 
-	pr_info("en = %d\n", en);
+	pr_debug("en = %d\n", en);
 	if (en) {
 		ret = charger_dev_enable(pdpm->sw_chg, true);
 		if (ret < 0) {

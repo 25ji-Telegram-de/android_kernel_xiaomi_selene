@@ -455,7 +455,7 @@ int charger_manager_enable_high_voltage_charging(
 	else if (en && consumer->hv_charging_disabled == true)
 		consumer->hv_charging_disabled = false;
 	else {
-		pr_info("[%s] already set: %d %d\n", __func__,
+		pr_debug("[%s] already set: %d %d\n", __func__,
 			consumer->hv_charging_disabled, en);
 		return 0;
 	}
@@ -472,7 +472,7 @@ int charger_manager_enable_high_voltage_charging(
 	}
 	mutex_unlock(&consumer_mutex);
 
-	pr_info("%s: user: %s, en = %d\n", __func__, dev_name(consumer->dev),
+	pr_debug("%s: user: %s, en = %d\n", __func__, dev_name(consumer->dev),
 		info->enable_hv_charging);
 	_wake_up_charger(info);
 
@@ -513,7 +513,7 @@ int charger_manager_enable_power_path(struct charger_consumer *consumer,
 		return 0;
 	}
 
-	pr_info("%s: enable power path = %d\n", __func__, en);
+	pr_debug("%s: enable power path = %d\n", __func__, en);
 	return charger_dev_enable_powerpath(chg_dev, en);
 }
 
@@ -900,7 +900,7 @@ int charger_manager_get_ibus(int *ibus)
 
 int charger_manager_set_input_suspend(int suspend)
 {
-	pr_info("%s suspend: %d.\n", __func__, suspend);
+	pr_debug("%s suspend: %d.\n", __func__, suspend);
 
 	if (pinfo == NULL)
 		return false;
@@ -928,7 +928,7 @@ int charger_manager_set_input_suspend(int suspend)
 /*K19A-75 charge by wangchao at 2021/4/15 start*/
 int charger_manager_set_hiz_enable(int hiz_enable)
 {
-	pr_info("%s : %d.\n", __func__, hiz_enable);
+	pr_debug("%s : %d.\n", __func__, hiz_enable);
 
 	if (pinfo == NULL)
 		return false;
@@ -991,7 +991,7 @@ void charger_manager_set_prop_system_temp_level(int temp_level)
 	if (pcba_to_thermal == PCBA_J15S_MP_CN)
 		is_cn = true;
 #endif
-	pr_err("thermal_pcba is %d, is_cn:%d\n", pcba_to_thermal, is_cn);
+	pr_debug("thermal_pcba is %d, is_cn:%d\n", pcba_to_thermal, is_cn);
 	if (temp_level > pinfo->system_temp_level_max)
 		pinfo->system_temp_level = pinfo->system_temp_level_max;
 	else
@@ -1033,7 +1033,7 @@ void charger_manager_set_prop_system_temp_level(int temp_level)
 		thermal_is_500 = false;
 	}
   	/*K19A HQ-124114 K19A charger enable jeita by wangqi at 2021/4/27 start*/
-	pr_err("%s, battery_temp: %d system_temp_level:%d thermal_icl_ua:%d usb_type:%d\n", __func__,pinfo->battery_temp,
+	pr_debug("%s, battery_temp: %d system_temp_level:%d thermal_icl_ua:%d usb_type:%d\n", __func__,pinfo->battery_temp,
 			pinfo->system_temp_level, thermal_icl_ua, pinfo->usb_psy->desc->type);
 	/*K19A HQ-124114 K19A charger enable jeita by wangqi at 2021/4/27 end*/
 	// pr_err("%s, system_temp_level:%d thermal_icl_ua:%d \n", __func__,
@@ -1251,7 +1251,7 @@ void mtk_charger_get_atm_mode(struct charger_manager *info)
 	} else
 		info->atm_enabled = false;
 
-	pr_info("%s: atm_enabled = %d\n", __func__, info->atm_enabled);
+	pr_debug("%s: atm_enabled = %d\n", __func__, info->atm_enabled);
 }
 
 /* internal algorithm common function */
@@ -1727,7 +1727,7 @@ void mtk_charger_int_handler(void)
 		charger_manager_notifier(pinfo, CHARGER_NOTIFY_STOP_CHARGING);
 	} else {
 		temp = battery_get_bat_temperature();
-		pr_err("dhx---temp:%d\n", temp);
+		pr_debug("dhx---temp:%d\n", temp);
 		/*K19A HQ-133625 K19A charger of status by wangqi at 2021/4/29 start*/
 		if (temp >= -10 && temp <= 60)
 		/*K19A HQ-133625 K19A charger of status by wangqi at 2021/4/29 end*/
