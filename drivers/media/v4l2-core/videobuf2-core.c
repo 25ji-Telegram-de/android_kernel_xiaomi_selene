@@ -32,11 +32,9 @@
 static int debug=0;
 module_param(debug, int, 0644);
 
-#define dprintk(level, fmt, arg...)					      \
-	do {								      \
-		if (debug >= level)					      \
-			pr_info("vb2-core: %s: " fmt, __func__, ## arg); \
-	} while (0)
+static inline void dprintk(uint32_t level, const char *fmt, ...)
+{
+}
 
 #ifdef CONFIG_VIDEO_ADV_DEBUG
 
