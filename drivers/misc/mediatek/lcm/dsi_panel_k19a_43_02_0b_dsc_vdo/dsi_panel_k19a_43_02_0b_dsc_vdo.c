@@ -526,7 +526,9 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	/* if mipi clock solution */
 	/* dfps_params[1].PLL_CLOCK = 380; */
 	/* dfps_params[1].data_rate = xx; */
-	dfps_params[1].vertical_frontporch = 54;
+	/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+	dfps_params[1].vertical_frontporch = 46;
+	/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 	dfps_params[1].vertical_frontporch_for_low_power = 2524;
 	/* Huaqin modify for HQ-124150 by caogaojie at 2021/06/07 end */
 	dsi->dfps_num = 2;

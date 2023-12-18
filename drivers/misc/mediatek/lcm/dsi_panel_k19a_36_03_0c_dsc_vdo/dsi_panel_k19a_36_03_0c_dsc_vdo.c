@@ -251,6 +251,10 @@ static struct LCM_setting_table init_setting_vdo[] = {
 	{0xFF,3,{0x87,0x20,0x01}},
 	{0x00,1,{0x80}},
 	{0xFF,2,{0x87,0x20}},
+/* Huaqin add for HQ-179522 by jiangyue at 2022/03/18 start */
+	{0x00,1,{0xAE}},
+	{0xC1,2,{0xFF,0xFF}},
+/* Huaqin add for HQ-179522 by jiangyue at 2022/03/18 end */
 	{0x00,1,{0xB0}},
 	{0xB4,14,{0x00,0x08,0x00,0xAA,0x00,0x2B,0x00,0x07,0x0D,0xB7,0x0C,0xB7,0x1B,0xA0}},
 /* Huaqin add for HQ-167526 by jiangyue at 2021/11/23 start */
@@ -379,9 +383,9 @@ static void lcm_dfps_int(struct LCM_DSI_PARAMS *dsi)
 	/* dfps_params[1].PLL_CLOCK = 380; */
 	/* dfps_params[1].data_rate = xx; */
 	dfps_params[1].vertical_frontporch = 54;
-	/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 start */
-	dfps_params[1].vertical_frontporch_for_low_power = 2510;
-	/* Huaqin add for HQ-148570 by jiangyue at 2021/10/15 end */
+	/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+	dfps_params[1].vertical_frontporch_for_low_power = 2430;
+	/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
   
 	dsi->dfps_num = 2;
 }
@@ -426,9 +430,9 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 
 	params->dsi.vertical_sync_active = 4;
 	params->dsi.vertical_backporch = 20;
-	/* Huaqin add for HQ-148591 by jiangyue at 2021/10/27 start */
-	params->dsi.vertical_frontporch = 1250;
-	/* Huaqin add for HQ-148591 by jiangyue at 2021/10/27 end */
+	/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+	params->dsi.vertical_frontporch = 54;
+	/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 	//params->dsi.vertical_frontporch_for_low_power = 750;
 	params->dsi.vertical_active_line = FRAME_HEIGHT;
 
