@@ -291,7 +291,7 @@ int mt6768_dai_hostless_register(struct mtk_base_afe *afe)
 {
 	struct mtk_base_afe_dai *dai = NULL;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	dai = devm_kzalloc(afe->dev, sizeof(*dai), GFP_KERNEL);
 	if (!dai)

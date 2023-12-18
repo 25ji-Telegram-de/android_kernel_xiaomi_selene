@@ -81,7 +81,7 @@ static int aw87559_mode_get(struct snd_kcontrol *kcontrol,
 	unsigned char current_mode;
 	current_mode = aw87xxx_show_current_mode(AW87XXX_LEFT_CHANNEL);
 	ucontrol->value.integer.value[0] = current_mode;
-	pr_info("%s: get mode:%d\n", __func__, current_mode);
+	pr_debug("%s: get mode:%d\n", __func__, current_mode);
 	return 0;
 }
 
@@ -96,7 +96,7 @@ static int aw87559_mode_set(struct snd_kcontrol *kcontrol,
 		pr_err("%s: mode:%d set failed\n", __func__, set_mode);
 		return -EPERM;
 	}
-	pr_info("%s: set mode:%d success", __func__, set_mode);
+	pr_debug("%s: set mode:%d success", __func__, set_mode);
 	return 0;
 }
 
@@ -106,7 +106,7 @@ static int aw87389_mode_get(struct snd_kcontrol *kcontrol,
 	unsigned char current_mode;
 	current_mode = aw87xxx_show_current_mode(AW87XXX_RIGHT_CHANNEL);
 	ucontrol->value.integer.value[0] = current_mode;
-	pr_info("%s: get mode:%d\n", __func__, current_mode);
+	pr_debug("%s: get mode:%d\n", __func__, current_mode);
 	return 0;
 }
 
@@ -121,7 +121,7 @@ static int aw87389_mode_set(struct snd_kcontrol *kcontrol,
 		pr_err("%s: mode:%d set failed\n", __func__, set_mode);
 		return -EPERM;
 	}
-	pr_info("%s: set mode:%d success", __func__, set_mode);
+	pr_debug("%s: set mode:%d success", __func__, set_mode);
 	return 0;
 }
 #endif
@@ -134,7 +134,7 @@ static const struct soc_enum rcv_amp_type_enum =
 static int mt6768_rcv_amp_mode_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
-	pr_info("%s() = %d\n", __func__, rcv_amp_mode);
+	pr_debug("%s() = %d\n", __func__, rcv_amp_mode);
 	ucontrol->value.integer.value[0] = rcv_amp_mode;
 	return 0;
 }
@@ -148,7 +148,7 @@ static int mt6768_rcv_amp_mode_set(struct snd_kcontrol *kcontrol,
 		return -EINVAL;
 
 	rcv_amp_mode = ucontrol->value.integer.value[0];
-	pr_info("%s() = %d\n", __func__, rcv_amp_mode);
+	pr_debug("%s() = %d\n", __func__, rcv_amp_mode);
 	return 0;
 }
 /*K19A code for HQ-123483 by zhangpeng at 2021.3.22 end*/
@@ -189,7 +189,7 @@ static int mt6768_mt6358_spk_amp_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_dapm_context *dapm = w->dapm;
 	struct snd_soc_card *card = dapm->card;
 
-	dev_info(card->dev, "%s(), event %d\n", __func__, event);
+	dev_dbg(card->dev, "%s(), event %d\n", __func__, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -197,12 +197,12 @@ static int mt6768_mt6358_spk_amp_event(struct snd_soc_dapm_widget *w,
 /*K19A code for HQ-123483 by zhangpeng at 2021.3.22 start*/
 		if (strcmp((const char *)get_audio_pa_vendor(), awinic) == 0) {
 #if defined(CONFIG_SND_SOC_AW87559)
-			pr_info("%s(), aw87559_audio_kspk()\n", __func__);
+			pr_debug("%s(), aw87559_audio_kspk()\n", __func__);
 			aw87xxx_audio_scene_load(AW87XXX_MUSIC_MODE, AW87XXX_LEFT_CHANNEL);
 #endif
 		} else if (strcmp((const char *)get_audio_pa_vendor(), foursemi) == 0) {
 #ifdef CONFIG_SND_SOC_FS16XX
-			pr_info("%s(), fsm audio spk:music\n", __func__);
+			pr_debug("%s(), fsm audio spk:music\n", __func__);
 			fsm_speaker_onn(FSM_SCENE_MUSIC);
 #endif
 		} else {
@@ -215,12 +215,12 @@ static int mt6768_mt6358_spk_amp_event(struct snd_soc_dapm_widget *w,
 /*K19A code for HQ-123483 by zhangpeng at 2021.3.22 start*/
 		if (strcmp((const char *)get_audio_pa_vendor(), awinic) == 0) {
 			#if defined(CONFIG_SND_SOC_AW87559)
-			pr_info("%s(), aw87559_audio_off()\n", __func__);
+			pr_debug("%s(), aw87559_audio_off()\n", __func__);
 			aw87xxx_audio_scene_load(AW87XXX_OFF_MODE, AW87XXX_LEFT_CHANNEL);
 			#endif
 		} else if (strcmp((const char *)get_audio_pa_vendor(), foursemi) == 0) {
 #ifdef CONFIG_SND_SOC_FS16XX
-			pr_info("%s(), fsm_audio_off\n", __func__);
+			pr_debug("%s(), fsm_audio_off\n", __func__);
 			fsm_speaker_off();
 #endif
 		} else {
@@ -243,7 +243,7 @@ static int mt6768_mt6358_rcv_amp_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_dapm_context *dapm = w->dapm;
 	struct snd_soc_card *card = dapm->card;
 
-	dev_info(card->dev, "%s(), event %d\n", __func__, event);
+	dev_dbg(card->dev, "%s(), event %d\n", __func__, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -252,10 +252,10 @@ static int mt6768_mt6358_rcv_amp_event(struct snd_soc_dapm_widget *w,
 		if (strcmp((const char *)get_audio_pa_vendor(), awinic) == 0) {
 #ifdef CONFIG_SND_SOC_AW87559
 			if (rcv_amp_mode) {
-				pr_info("%s(), aw87xxx_audio_rcv \n", __func__);
+				pr_debug("%s(), aw87xxx_audio_rcv \n", __func__);
 				aw87xxx_audio_scene_load(AW87XXX_RCV_MODE, AW87XXX_RIGHT_CHANNEL);
 			} else {
-				pr_info("%s(), aw87xxx_audio_spk \n", __func__);
+				pr_debug("%s(), aw87xxx_audio_spk \n", __func__);
 				aw87xxx_audio_scene_load(AW87XXX_MUSIC_MODE, AW87XXX_RIGHT_CHANNEL);
 			};
 #endif
@@ -279,12 +279,12 @@ static int mt6768_mt6358_rcv_amp_event(struct snd_soc_dapm_widget *w,
 /*K19A code for WXYFB-1001 by zhangpeng at 2021.3.19 start*/
 		if (strcmp((const char *)get_audio_pa_vendor(), awinic) == 0) {
 #ifdef CONFIG_SND_SOC_AW87559
-			pr_info("%s(), aw87xxx_audio_off \n", __func__);
+			pr_debug("%s(), aw87xxx_audio_off \n", __func__);
 			aw87xxx_audio_scene_load(AW87XXX_OFF_MODE, AW87XXX_RIGHT_CHANNEL);
 #endif
 		} else if (strcmp((const char *)get_audio_pa_vendor(), foursemi) == 0) {
 #ifdef CONFIG_SND_SOC_FS16XX
-			pr_info("%s(), fsm audio off()\n", __func__);
+			pr_debug("%s(), fsm audio off()\n", __func__);
 			fsm_speaker_off();
 #endif
 		} else {
@@ -349,7 +349,7 @@ static int cs35l41_dailink_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_codec *spk_cdc = rtd->codec_dais[0]->codec;
 	struct snd_soc_dapm_context *cs35l41_dapm = snd_soc_codec_get_dapm(spk_cdc);
-	//dev_info(card->dev, "%s: found codec[%s]\n", __func__, dev_name(spk_cdc->dev));
+	//dev_dbg(card->dev, "%s: found codec[%s]\n", __func__, dev_name(spk_cdc->dev));
 	snd_soc_dapm_ignore_suspend(cs35l41_dapm, "AMP Playback");
 	snd_soc_dapm_ignore_suspend(cs35l41_dapm, "AMP Capture");
 	snd_soc_dapm_ignore_suspend(cs35l41_dapm, "DSP1");
@@ -360,7 +360,7 @@ static int cs35l41_dailink_init(struct snd_soc_pcm_runtime *rtd)
 	snd_soc_dapm_ignore_suspend(cs35l41_dapm, "ASPTX2");
 	snd_soc_dapm_ignore_suspend(cs35l41_dapm, "SPK");
 	snd_soc_dapm_sync(cs35l41_dapm);
-	dev_info(card->dev, "%s: dapm ignore suspend[%s]\n", __func__, dev_name(spk_cdc->dev));
+	dev_dbg(card->dev, "%s: dapm ignore suspend[%s]\n", __func__, dev_name(spk_cdc->dev));
 	return 0;
 }
 #endif
@@ -395,7 +395,7 @@ static int mt6768_mt6358_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 	int cycle_1, cycle_2, prev_cycle_1, prev_cycle_2 = 0;
 	int counter = 0;
 
-	dev_info(afe->dev, "%s(), start\n", __func__);
+	dev_dbg(afe->dev, "%s(), start\n", __func__);
 
 	pm_runtime_get_sync(afe->dev);
 	mt6768_afe_gpio_request(afe, true, MT6768_DAI_ADDA, 1);
@@ -495,7 +495,7 @@ static int mt6768_mt6358_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 	mt6768_afe_gpio_request(afe, false, MT6768_DAI_ADDA, 0);
 	pm_runtime_put(afe->dev);
 
-	dev_info(afe->dev, "%s(), end, calibration ok %d\n",
+	dev_dbg(afe->dev, "%s(), end, calibration ok %d\n",
 		 __func__,
 		 afe_priv->mtkaif_calibration_ok);
 
@@ -535,7 +535,7 @@ static int mt6768_mt6358_init(struct snd_soc_pcm_runtime *rtd)
 static int mt6768_i2s_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 				      struct snd_pcm_hw_params *params)
 {
-	dev_info(rtd->dev, "%s(), fix format to 32bit\n", __func__);
+	dev_dbg(rtd->dev, "%s(), fix format to 32bit\n", __func__);
 
 	/* fix BE i2s format to 32bit, clean param mask first */
 	snd_mask_reset_range(hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT),
@@ -563,7 +563,7 @@ static int mt6768_mt6358_vow_startup(struct snd_pcm_substream *substream)
 	struct snd_soc_component *component = NULL;
 	struct snd_soc_rtdcom_list *rtdcom = NULL;
 
-	dev_info(afe->dev, "%s(), start\n", __func__);
+	dev_dbg(afe->dev, "%s(), start\n", __func__);
 	snd_soc_set_runtime_hwparams(substream, &mt6768_mt6358_vow_hardware);
 
 	mt6768_afe_gpio_request(afe, true, MT6768_DAI_VOW, 0);
@@ -583,7 +583,7 @@ static void mt6768_mt6358_vow_shutdown(struct snd_pcm_substream *substream)
 	struct snd_soc_component *component = NULL;
 	struct snd_soc_rtdcom_list *rtdcom = NULL;
 
-	dev_info(afe->dev, "%s(), end\n", __func__);
+	dev_dbg(afe->dev, "%s(), end\n", __func__);
 	mt6768_afe_gpio_request(afe, false, MT6768_DAI_VOW, 0);
 
 	/* restore to fool ASoC */

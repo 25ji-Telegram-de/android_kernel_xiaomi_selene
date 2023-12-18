@@ -32,7 +32,7 @@ static int mtk_hw_gain_event(struct snd_soc_dapm_widget *w,
 	unsigned int gain_cur;
 	unsigned int gain_con1;
 
-	dev_info(cmpnt->dev, "%s(), name %s, event 0x%x\n",
+	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
 		 __func__, w->name, event);
 
 	switch (event) {
@@ -120,7 +120,7 @@ static int mtk_dai_gain_hw_params(struct snd_pcm_substream *substream,
 	unsigned int rate = params_rate(params);
 	unsigned int rate_reg = mt6768_rate_transform(afe->dev, rate, dai->id);
 
-	dev_info(afe->dev, "%s(), id %d, stream %d, rate %d\n",
+	dev_dbg(afe->dev, "%s(), id %d, stream %d, rate %d\n",
 		 __func__,
 		 dai->id,
 		 substream->stream,
@@ -210,7 +210,7 @@ int mt6768_dai_hw_gain_register(struct mtk_base_afe *afe)
 {
 	struct mtk_base_afe_dai *dai = NULL;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	dai = devm_kzalloc(afe->dev, sizeof(*dai), GFP_KERNEL);
 	if (!dai)

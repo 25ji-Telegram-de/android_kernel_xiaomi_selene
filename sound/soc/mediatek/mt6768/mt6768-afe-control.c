@@ -224,7 +224,7 @@ int mt6768_adda_dl_gain_control(bool mute)
 			   DL_2_GAIN_CTL_PRE_MASK_SFT,
 			   dl_2_gain_ctl << DL_2_GAIN_CTL_PRE_SFT);
 
-	dev_info(local_afe->dev, "%s(), adda_dl_gain = 0x%x\n",
+	dev_dbg(local_afe->dev, "%s(), adda_dl_gain = 0x%x\n",
 		 __func__, dl_2_gain_ctl);
 
 	pm_runtime_put(local_afe->dev);
@@ -240,7 +240,7 @@ int mtk_audio_request_sram(dma_addr_t *phys_addr,
 {
 	int ret;
 
-	dev_info(local_afe->dev, "%s(), user = %p, length = %d, count = %d\n",
+	dev_dbg(local_afe->dev, "%s(), user = %p, length = %d, count = %d\n",
 		 __func__, user, length, request_sram_count);
 
 	pm_runtime_get_sync(local_afe->dev);
@@ -258,7 +258,7 @@ int mtk_audio_request_sram(dma_addr_t *phys_addr,
 	request_sram_count++;
 
 
-	dev_info(local_afe->dev, "%s(), return 0, count = %d\n",
+	dev_dbg(local_afe->dev, "%s(), return 0, count = %d\n",
 		 __func__, request_sram_count);
 	return 0;
 }
@@ -266,14 +266,14 @@ EXPORT_SYMBOL(mtk_audio_request_sram);
 
 void mtk_audio_free_sram(void *user)
 {
-	dev_info(local_afe->dev, "%s(), user = %p, count = %d\n",
+	dev_dbg(local_afe->dev, "%s(), user = %p, count = %d\n",
 		 __func__, user, request_sram_count);
 
 	mtk_audio_sram_free(local_afe->sram, user);
 	pm_runtime_put(local_afe->dev);
 	request_sram_count--;
 
-	dev_info(local_afe->dev, "%s(), return, count = %d\n",
+	dev_dbg(local_afe->dev, "%s(), return, count = %d\n",
 		 __func__, request_sram_count);
 }
 EXPORT_SYMBOL(mtk_audio_free_sram);

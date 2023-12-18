@@ -68,7 +68,7 @@ static bool mtk_audio_sram_avail(struct mtk_audio_sram *sram,
 	}
 
 	if (max_avail_size < size)
-		dev_info(sram->dev,
+		dev_dbg(sram->dev,
 			 "%s(), max_avail_size = %d, size = %d, blk_idx = %d, blk_num = %d\n",
 			 __func__, max_avail_size, size, *blk_idx, *blk_num);
 
@@ -153,11 +153,11 @@ int mtk_audio_sram_init(struct device *dev,
 
 	of_node_put(sram_node);
 
-	dev_info(sram->dev, "%s(), size %d, block_size %d, block_num %d, virt_addr %p, phys_addr %pad\n",
+	dev_dbg(sram->dev, "%s(), size %d, block_size %d, block_num %d, virt_addr %p, phys_addr %pad\n",
 		 __func__,
 		 sram->size, sram->block_size, sram->block_num,
 		 sram->virt_addr, &sram->phys_addr);
-	dev_info(sram->dev, "%s(), prefer_mode %d, mode_size[0] 0x%x, mode_size[1] 0x%x\n",
+	dev_dbg(sram->dev, "%s(), prefer_mode %d, mode_size[0] 0x%x, mode_size[1] 0x%x\n",
 		 __func__,
 		 sram->prefer_mode, sram->mode_size[0], sram->mode_size[1]);
 
@@ -203,7 +203,7 @@ int mtk_audio_sram_allocate(struct mtk_audio_sram *sram,
 
 	spin_lock(&sram->lock);
 
-	dev_info(sram->dev, "%s(), size %d, user %p, format %d, force_normal %d, sram mode %d\n",
+	dev_dbg(sram->dev, "%s(), size %d, user %p, format %d, force_normal %d, sram mode %d\n",
 		 __func__, size, user, format, force_normal, sram->sram_mode);
 
 	/* check if sram has user */
@@ -232,7 +232,7 @@ int mtk_audio_sram_allocate(struct mtk_audio_sram *sram,
 	/* change sram mode if needed */
 	if (sram->sram_mode != request_sram_mode) {
 		if (has_user) {
-			dev_info(sram->dev, "%s(), cannot change mode to %d\n",
+			dev_dbg(sram->dev, "%s(), cannot change mode to %d\n",
 				 __func__,
 				 request_sram_mode);
 			spin_unlock(&sram->lock);
