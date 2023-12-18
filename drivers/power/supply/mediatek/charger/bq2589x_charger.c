@@ -565,7 +565,7 @@ int bq2589x_force_dpdm(struct bq2589x *bq)
 	ret = bq2589x_update_bits(bq, BQ2589X_REG_02,
 						BQ2589X_FORCE_DPDM_MASK, val);
 
-	pr_info("Force DPDM %s\n", !ret ?
+	pr_debug("Force DPDM %s\n", !ret ?
 "successfully" : "failed");
 
 	return ret;
@@ -1239,7 +1239,7 @@ static int bq2589x_init_device(struct bq2589x *bq)
 	u8 reg_val = 0;
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/27 end */
 /* Huaqin add for K19A-312 by wangchao at 2021/6/3 start */
-	pr_err("bq2589x_dump_regs before init: \n");
+	pr_debug("bq2589x_dump_regs before init: \n");
 	bq2589x_dump_regs(bq);
 /* Huaqin add for K19A-312 by wangchao at 2021/6/3 end */
 	/* Huaqin add for HQHW-963 by zhixueyin at 2021/6/29 start */
@@ -1289,16 +1289,16 @@ static int bq2589x_init_device(struct bq2589x *bq)
 		if (hq_config() == 4 ||hq_config() == 5 ||
 			 hq_config() == 6 || hq_config() == 7) {
 			ret = bq2589x_set_term_current(bq, 200);
-			pr_err("only K19S set 200ma ieoc wlc\n");
+			pr_debug("only K19S set 200ma ieoc wlc\n");
 		}
 		ret = bq2589x_disable_hvdcp(bq);
-		pr_err("disable hvdcp,ret = %d\n",ret);
+		pr_debug("disable hvdcp,ret = %d\n",ret);
 	}else{
 		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 start */
 		ret = bq2589x_set_term_current(bq, 200);
 		/* Huaqin add for HQ-134273 by wangqi at 2021/6/1 end */
 		ret = bq2589x_enable_hvdcp(bq);
-		pr_err("enable hvdcp,ret = %d\n",ret);
+		pr_debug("enable hvdcp,ret = %d\n",ret);
 	}
 /* Huaqin add for HQ-132657 by miaozhichao at 2021/5/27 end */
 /* Huaqin add for HQ-135953 by wangchao at 2021/6/11 start */
@@ -1316,7 +1316,7 @@ static int bq2589x_init_device(struct bq2589x *bq)
 	bq2589x_enable_auto_dpdm(bq, true);
 	ret = bq2589x_force_dpdm(bq);
 /* Huaqin add for HQHW-963 by zhixueyin at 2021/6/29 end */
-	pr_err("bq2589x_dump_regs after init: \n");
+	pr_debug("bq2589x_dump_regs after init: \n");
 	bq2589x_dump_regs(bq);
 /* Huaqin add for K19A-312 by wangchao at 2021/6/3 end */
 
@@ -1345,15 +1345,6 @@ static int bq2589x_detect_device(struct bq2589x *bq)
 
 static void bq2589x_dump_regs(struct bq2589x *bq)
 {
-	int addr;
-	u8 val;
-	int ret;
-
-	for (addr = 0x0; addr <= 0x14; addr++) {
-		ret = bq2589x_read_byte(bq, addr, &val);
-		if (ret == 0)
-			pr_err("Reg[%.2x] = 0x%.2x\n", addr, val);
-	}
 }
 
 static ssize_t
@@ -1424,9 +1415,6 @@ static int bq2589x_charging(struct charger_device *chg_dev, bool enable)
 		ret = bq2589x_enable_charger(bq);
 	else
 		ret = bq2589x_disable_charger(bq);
-
-	pr_err("%s charger %s\n", enable ? "enable" : "disable",
-	       !ret ? "successfully" : "failed");
 
 	ret = bq2589x_read_byte(bq, BQ2589X_REG_03, &val);
 
@@ -1518,7 +1506,7 @@ static int bq2589x_set_ichg(struct charger_device *chg_dev, u32 curr)
 {
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
 
-	pr_err("charge curr = %d\n", curr);
+	pr_debug("charge curr = %d\n", curr);
 
 	return bq2589x_set_chargecurrent(bq, curr / 1000);
 }
@@ -1551,7 +1539,7 @@ static int bq2589x_set_vchg(struct charger_device *chg_dev, u32 volt)
 {
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
 
-	pr_err("charge volt = %d\n", volt);
+	pr_debug("charge volt = %d\n", volt);
 
 	return bq2589x_set_chargevolt(bq, volt / 1000);
 }
@@ -1577,7 +1565,7 @@ static int bq2589x_set_ivl(struct charger_device *chg_dev, u32 volt)
 {
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
 
-	pr_err("vindpm volt = %d\n", volt);
+	pr_debug("vindpm volt = %d\n", volt);
 
 	return bq2589x_set_input_volt_limit(bq, volt / 1000);
 
@@ -1589,7 +1577,7 @@ static int bq2589x_set_icl(struct charger_device *chg_dev, u32 curr)
 	if(curr == 0) {
 		curr = 2000000;
     }
-	pr_err("indpm curr = %d\n", curr);
+	pr_debug("indpm curr = %d\n", curr);
 
 	return bq2589x_set_input_current_limit(bq, curr / 1000);
 }
@@ -1635,7 +1623,7 @@ static int bq2589x_set_otg(struct charger_device *chg_dev, bool en)
 	else
 		ret = bq2589x_disable_otg(bq);
 
-	pr_err("%s OTG %s\n", en ? "enable" : "disable",
+	pr_debug("%s OTG %s\n", en ? "enable" : "disable",
 	       !ret ? "successfully" : "failed");
 
 	return ret;
@@ -1688,7 +1676,7 @@ static int bq2589x_do_event(struct charger_device *chg_dev, u32 event,
 	if (chg_dev == NULL)
 		return -EINVAL;
 
-	pr_info("%s: event = %d\n", __func__, event);
+	pr_debug("%s: event = %d\n", __func__, event);
 	switch (event) {
 	case EVENT_EOC:
 		charger_dev_notify(chg_dev, CHARGER_DEV_NOTIFY_EOC);
@@ -1842,7 +1830,7 @@ static int bq2589x_charger_probe(struct i2c_client *client,
 
 	determine_initial_status(bq);
 
-	pr_err("bq2589x probe successfully, Part Num:%d, Revision:%d\n!",
+	pr_debug("bq2589x probe successfully, Part Num:%d, Revision:%d\n!",
 	       bq->part_no, bq->revision);
 
 	return 0;
@@ -1868,7 +1856,7 @@ static void bq2589x_charger_shutdown(struct i2c_client *client)
 	int ichg = 0;
 	/*HQ-138863 charge by zhixueyin at 2021/7/13 end*/
 	bq2589x_disable_otg(bq);
-	pr_err("bq2589x_disable_otg for shutdown\n");
+	pr_debug("bq2589x_disable_otg for shutdown\n");
 	/*K19A-185 charge by wangchao at 2021/4/26 end*/
 	/*HQ-138863 charge by zhixueyin at 2021/7/13 start*/
 	if (chip_num(bq) != 3) {
@@ -1882,7 +1870,7 @@ static void bq2589x_charger_shutdown(struct i2c_client *client)
 	/*HQ-138863 charge by zhixueyin at 2021/7/13 end*/
 	/*K19A HQ-138863 K19A  cdp by zhixueyin at 2021/7/10 start*/
 	bq2589x_disable_maxcen(bq);
-	pr_err("bq2589x_disable_maxcen for shutdown\n");
+	pr_debug("bq2589x_disable_maxcen for shutdown\n");
 	/*K19A HQ-138863 K19A  cdp by zhixueyin at 2021/7/10 start*/
 }
 

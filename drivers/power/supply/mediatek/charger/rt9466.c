@@ -34,7 +34,7 @@
 #define rt_info(fmt, args...)   \
 do {\
 	if (RTLOG_LEVEL >= LOGLEVEL_INFO) {\
-		pr_info(fmt, ##args); \
+		pr_debug(fmt, ##args); \
 	} \
 } while (0)
 
