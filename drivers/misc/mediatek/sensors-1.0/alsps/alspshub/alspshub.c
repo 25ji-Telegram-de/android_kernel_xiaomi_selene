@@ -422,14 +422,14 @@ static int alshub_factory_enable_sensor(bool enable_disable,
 	}
     android_enable = READ_ONCE(obj->als_android_enable);
     if(android_enable == false){
-    pr_err("%s: android_enable[%u] execute power request[%s]\n", __func__, android_enable, (enable_disable == true)?("on"):("off"));
+    pr_debug("%s: android_enable[%u] execute power request[%s]\n", __func__, android_enable, (enable_disable == true)?("on"):("off"));
 	err = sensor_enable_to_hub(ID_LIGHT, enable_disable);
 	if (err) {
 		pr_err("sensor_enable_to_hub failed!\n");
 		return -1;
 	}
     }else{
-        pr_err("%s: android_enable[%u] ignore power request[%s]\n", __func__, android_enable, (enable_disable == true)?("on"):("off"));
+        pr_debug("%s: android_enable[%u] ignore power request[%s]\n", __func__, android_enable, (enable_disable == true)?("on"):("off"));
         }
     /*Huaqin modify for HQ-123670 by luozeng at 2021.4.26 end*/
 	mutex_lock(&alspshub_mutex);
@@ -541,32 +541,32 @@ static int ps_sensor_enable_request(const char *called_func, int en, int force)
     ps_android_enable_tmp = READ_ONCE(obj->ps_android_enable);
     ps_power_status_tmp = READ_ONCE(obj->ps_power_status);
 
-    pr_info("%s: ps_android_enable_tmp[%d] ps_factory_enable_tmp[%d] ps_power_status_tmp[%d], called by: %s, force[%d] en[%d]\n", __func__, ps_android_enable_tmp, 
+    pr_debug("%s: ps_android_enable_tmp[%d] ps_factory_enable_tmp[%d] ps_power_status_tmp[%d], called by: %s, force[%d] en[%d]\n", __func__, ps_android_enable_tmp, 
             ps_factory_enable_tmp, ps_power_status_tmp, called_func, force, en);
 
     if (en){
-        pr_info("%s: Psensor power on request\n", __func__);
+        pr_debug("%s: Psensor power on request\n", __func__);
         if (!(((true == ps_android_enable_tmp) || (true == ps_factory_enable_tmp)) && (false == ps_power_status_tmp)) && (0 == force)){
-            pr_info("%s: Psensor is powered on, ignore power on again request\n", __func__);
+            pr_debug("%s: Psensor is powered on, ignore power on again request\n", __func__);
             mutex_unlock(&alspshub_ps_power_mutex);
             return ret;
         }
     }else {
-        pr_info("%s: Psensor power down request\n", __func__);
+        pr_debug("%s: Psensor power down request\n", __func__);
         if (!(((false == ps_android_enable_tmp) && (false == ps_factory_enable_tmp)) && (true == ps_power_status_tmp)) && (0 == force)){
-            pr_info("%s: Psensor is powered down, ignore power down again request\n", __func__);
+            pr_debug("%s: Psensor is powered down, ignore power down again request\n", __func__);
             mutex_unlock(&alspshub_ps_power_mutex);
             return ret;
         }
     }
 
-    pr_info("%s: Psensor power request[%d] exec, force[%d] \n", __func__, en_bool, force);
+    pr_debug("%s: Psensor power request[%d] exec, force[%d] \n", __func__, en_bool, force);
     err = sensor_enable_to_hub(ID_PROXIMITY, en);
     if (err) {
         pr_err("sensor_enable_to_hub failed!\n");
         ret = -1;
     }else {
-        pr_info("%s: Psensor power request[%d] exec done!\n", __func__, en_bool);
+        pr_debug("%s: Psensor power request[%d] exec done!\n", __func__, en_bool);
         WRITE_ONCE(obj->ps_power_status, en_bool);
     }
 	mutex_unlock(&alspshub_ps_power_mutex);
@@ -654,10 +654,10 @@ static int pshub_factory_enable_calibration(int32_t type)
     ps_power_status_tmp = READ_ONCE(obj->ps_power_status);
 	mutex_unlock(&alspshub_ps_power_mutex);
 
-    pr_info("%s: ps_android_enable_tmp[%d] ps_factory_enable_tmp[%d] ps_power_status_tmp[%d]\n", __func__, ps_android_enable_tmp, 
+    pr_debug("%s: ps_android_enable_tmp[%d] ps_factory_enable_tmp[%d] ps_power_status_tmp[%d]\n", __func__, ps_android_enable_tmp, 
             ps_factory_enable_tmp, ps_power_status_tmp);
     if (PSENSOR_CALI_NORMAL == type){
-        pr_info("%s: ps enable cali: normal!\n", __func__);
+        pr_debug("%s: ps enable cali: normal!\n", __func__);
         if ((ps_android_enable_tmp) && (ps_factory_enable_tmp)){
             pr_err("%s: psensor enabled by android and factory! cali failed! PS calibration must be performed in the disabled state\n", __func__);
             return -EACCES;
@@ -669,12 +669,12 @@ static int pshub_factory_enable_calibration(int32_t type)
             return -EBUSY;
         }
     }else if (PSENSOR_CALI_FORCE_POWER_DOWN == type){
-        pr_info("%s: ps enable cali: force power down!\n", __func__);
+        pr_debug("%s: ps enable cali: force power down!\n", __func__);
         WRITE_ONCE(obj->ps_factory_enable, false);
         /* WRITE_ONCE(obj->ps_power_status, false); */
-        pr_info("%s: After ps_android_enable_tmp[%d] ps_factory_enable_tmp[%d] ps_power_status_tmp[%d]\n", __func__, ps_android_enable_tmp, 
+        pr_debug("%s: After ps_android_enable_tmp[%d] ps_factory_enable_tmp[%d] ps_power_status_tmp[%d]\n", __func__, ps_android_enable_tmp, 
             ps_factory_enable_tmp, ps_power_status_tmp);
-        pr_info("%s: ps enable cali: sensor power down!\n", __func__);
+        pr_debug("%s: ps enable cali: sensor power down!\n", __func__);
         
         ret = ps_sensor_enable_request(__func__, 0, 1);
         if (ret < 0) {
@@ -682,7 +682,7 @@ static int pshub_factory_enable_calibration(int32_t type)
             return -1;
         }
     }else {
-        pr_info("%s: ps enable cali: type invalid, please check!\n", __func__);
+        pr_debug("%s: ps enable cali: type invalid, please check!\n", __func__);
         return -EINVAL;
     }
 /*Huaqin modify for HQ-123670 by baoguangxiu at 2021.5.7 end*/
