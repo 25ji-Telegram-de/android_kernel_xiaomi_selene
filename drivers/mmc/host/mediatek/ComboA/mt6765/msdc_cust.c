@@ -120,13 +120,13 @@ void msdc_ldo_power(u32 on, struct regulator *reg, int voltage_mv, u32 *status)
 	if (on) { /* want to power on */
 		if (*status == 0) {  /* can power on */
 			/*Comment out to reduce log */
-			/* pr_notice("msdc power on<%d>\n", voltage_uv); */
+			/* pr_debug("msdc power on<%d>\n", voltage_uv); */
 			(void)msdc_regulator_set_and_enable(reg, voltage_uv);
 			*status = voltage_uv;
 		} else if (*status == voltage_uv) {
-			pr_notice("msdc power on <%d> again!\n", voltage_uv);
+			pr_debug("msdc power on <%d> again!\n", voltage_uv);
 		} else {
-			pr_notice("msdc change<%d> to <%d>\n",
+			pr_debug("msdc change<%d> to <%d>\n",
 				*status, voltage_uv);
 			regulator_disable(reg);
 			(void)msdc_regulator_set_and_enable(reg, voltage_uv);
@@ -134,11 +134,11 @@ void msdc_ldo_power(u32 on, struct regulator *reg, int voltage_mv, u32 *status)
 		}
 	} else {  /* want to power off */
 		if (*status != 0) {  /* has been powerred on */
-			pr_notice("msdc power off\n");
+			pr_debug("msdc power off\n");
 			(void)regulator_disable(reg);
 			*status = 0;
 		} else {
-			pr_notice("msdc not power on\n");
+			pr_debug("msdc not power on\n");
 		}
 	}
 #endif
@@ -248,7 +248,7 @@ int msdc_oc_check(struct msdc_host *host, u32 en)
 			MASK_VMCH_OC_STATUS, SHIFT_VMCH_OC_STATUS);
 
 		if (val) {
-			pr_notice("msdc1 OC status = %x\n", val);
+			pr_debug("msdc1 OC status = %x\n", val);
 			host->power_control(host, 0);
 			msdc_set_bad_card_and_remove(host);
 			return -1;
@@ -333,7 +333,7 @@ void msdc_sd_power_off(void)
 	struct msdc_host *host = mtk_msdc_host[1];
 
 	if (host) {
-		pr_notice("Power Off, SD card\n");
+		pr_debug("Power Off, SD card\n");
 
 		/* power must be on */
 		host->power_io = VOL_3000 * 1000;
@@ -352,7 +352,7 @@ void msdc_pmic_force_vcore_pwm(bool enable)
 {
 #if !defined(FPGA_PLATFORM) && !defined(CONFIG_MTK_MSDC_BRING_UP_BYPASS)
 	if (vcore_pmic_set_mode(enable))
-		pr_notice("[msdc]error: vcore_pmic_set_mode fail\n");
+		pr_debug("[msdc]error: vcore_pmic_set_mode fail\n");
 #endif
 }
 
@@ -412,7 +412,7 @@ void msdc_HQA_set_voltage(struct msdc_host *host)
 	if (vio18_cal_orig < 0)
 		pmic_read_interface(REG_VIO_VOCAL_SW, &vio18_cal,
 			VIO_VOCAL_SW_MASK, VIO_VOCAL_SW_SHIFT);
-	pr_info("[MSDC%d HQA] orig Vcore 0x%x, Vio18_cal 0x%x\n",
+	pr_debug("[MSDC%d HQA] orig Vcore 0x%x, Vio18_cal 0x%x\n",
 		host->id, vcore_orig, vio18_cal_orig);
 
 #if defined(MSDC_HQA_HV) || defined(MSDC_HQA_LV)
@@ -435,7 +435,7 @@ void msdc_HQA_set_voltage(struct msdc_host *host)
 		pmic_config_interface(REG_VIO_VOCAL_SW, vio18_cal,
 			VIO_VOCAL_SW_MASK, VIO_VOCAL_SW_SHIFT);
 
-	pr_info("[MSDC%d HQA] adj Vcore 0x%x, Vio18_cal 0x%x\n",
+	pr_debug("[MSDC%d HQA] adj Vcore 0x%x, Vio18_cal 0x%x\n",
 		host->id, vcore, vio18_cal);
 #endif
 }
@@ -475,20 +475,20 @@ int msdc_get_ccf_clk_pointer(struct platform_device *pdev,
 		host->hclk_ctl = devm_clk_get(&pdev->dev, hclk_names[pdev->id]);
 
 	if (IS_ERR(host->clk_ctl)) {
-		pr_notice("[msdc%d] can not get clock control\n", pdev->id);
+		pr_debug("[msdc%d] can not get clock control\n", pdev->id);
 		return 1;
 	}
 	if (clk_prepare(host->clk_ctl)) {
-		pr_notice("[msdc%d] can not prepare clock control\n", pdev->id);
+		pr_debug("[msdc%d] can not prepare clock control\n", pdev->id);
 		return 1;
 	}
 
 	if (hclk_names[pdev->id] && IS_ERR(host->hclk_ctl)) {
-		pr_notice("[msdc%d] can not get clock control\n", pdev->id);
+		pr_debug("[msdc%d] can not get clock control\n", pdev->id);
 		return 1;
 	}
 	if (hclk_names[pdev->id] && clk_prepare(host->hclk_ctl)) {
-		pr_notice("[msdc%d] can not prepare hclock control\n",
+		pr_debug("[msdc%d] can not prepare hclock control\n",
 			pdev->id);
 		return 1;
 	}
@@ -498,13 +498,13 @@ int msdc_get_ccf_clk_pointer(struct platform_device *pdev,
 		host->aes_clk_ctl = devm_clk_get(&pdev->dev,
 			MSDC0_AES_CLK_NAME);
 		if (IS_ERR(host->aes_clk_ctl)) {
-			pr_notice("[msdc%d] can not get aes clock control\n",
+			pr_debug("[msdc%d] can not get aes clock control\n",
 				pdev->id);
 			WARN_ON(1);
 			return 1;
 		}
 		if (clk_prepare(host->aes_clk_ctl)) {
-			pr_notice(
+			pr_debug(
 				"[msdc%d] can not prepare aes clock control\n",
 				pdev->id);
 			WARN_ON(1);
@@ -519,7 +519,7 @@ int msdc_get_ccf_clk_pointer(struct platform_device *pdev,
 void msdc_select_clksrc(struct msdc_host *host, int clksrc)
 {
 	if (host->id != 0) {
-		pr_notice("[msdc%d] NOT Support switch pll souce[%s]%d\n",
+		pr_debug("[msdc%d] NOT Support switch pll souce[%s]%d\n",
 			host->id, __func__, __LINE__);
 		return;
 	}
@@ -527,7 +527,7 @@ void msdc_select_clksrc(struct msdc_host *host, int clksrc)
 	host->hclk = msdc_get_hclk(host->id, clksrc);
 	host->hw->clk_src = clksrc;
 
-	pr_notice("[%s]: msdc%d select clk_src as %d(%dKHz)\n", __func__,
+	pr_debug("[%s]: msdc%d select clk_src as %d(%dKHz)\n", __func__,
 		host->id, clksrc, host->hclk/1000);
 }
 
@@ -653,7 +653,7 @@ int msdc_io_check(struct msdc_host *host)
 			 */
 			if ((MSDC_READ32(MSDC_PS) & 0xF0000) == 0xF0000)
 				break;
-			pr_notice("msdc%d DAT0 pin get wrong, ps = 0x%x!\n",
+			pr_debug("msdc%d DAT0 pin get wrong, ps = 0x%x!\n",
 					host->id, MSDC_READ32(MSDC_PS));
 			/* restore */
 			MSDC_SET_FIELD(MSDC1_GPIO_PUPD, 0x3F << 0, orig_pupd);
@@ -676,7 +676,7 @@ int msdc_io_check(struct msdc_host *host)
 		if (time_after(jiffies, polling_tmo)) {
 			if ((MSDC_READ32(MSDC_PS) & 0xF0000) == 0xF0000)
 				break;
-			pr_notice("msdc%d DAT1 pin get wrong, ps = 0x%x!\n",
+			pr_debug("msdc%d DAT1 pin get wrong, ps = 0x%x!\n",
 				host->id, MSDC_READ32(MSDC_PS));
 			/* restore */
 			MSDC_SET_FIELD(MSDC1_GPIO_PUPD, 0x3F << 0, orig_pupd);
@@ -699,7 +699,7 @@ int msdc_io_check(struct msdc_host *host)
 		if (time_after(jiffies, polling_tmo)) {
 			if ((MSDC_READ32(MSDC_PS) & 0xF0000) == 0xF0000)
 				break;
-			pr_notice("msdc%d DAT2 pin get wrong, ps = 0x%x!\n",
+			pr_debug("msdc%d DAT2 pin get wrong, ps = 0x%x!\n",
 				host->id, MSDC_READ32(MSDC_PS));
 			/* restore */
 			MSDC_SET_FIELD(MSDC1_GPIO_PUPD, 0x3F << 0, orig_pupd);
@@ -1149,7 +1149,7 @@ static int msdc_get_register_settings(struct msdc_host *host,
 		of_property_read_u8(register_setting_node, "wdata_edge",
 				&host->hw->wdata_edge);
 	} else {
-		pr_notice("[msdc%d] register_setting is not found in DT\n",
+		pr_debug("[msdc%d] register_setting is not found in DT\n",
 			host->id);
 	}
 
@@ -1173,18 +1173,18 @@ int msdc_of_parse(struct platform_device *pdev, struct mmc_host *mmc)
 	np = mmc->parent->of_node; /* mmcx node in project dts */
 
 	if (of_property_read_u8(np, "index", &id)) {
-		pr_notice("[%s] host index not specified in device tree\n",
+		pr_debug("[%s] host index not specified in device tree\n",
 			pdev->dev.of_node->name);
 		return -1;
 	}
 	host->id = id;
 	pdev->id = id;
 
-	pr_notice("DT probe %s%d!\n", pdev->dev.of_node->name, id);
+	pr_debug("DT probe %s%d!\n", pdev->dev.of_node->name, id);
 
 	ret = mmc_of_parse(mmc);
 	if (ret) {
-		pr_notice("%s: mmc of parse error!!: %d\n", __func__, ret);
+		pr_debug("%s: mmc of parse error!!: %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -1194,19 +1194,19 @@ int msdc_of_parse(struct platform_device *pdev, struct mmc_host *mmc)
 	/* iomap register */
 	host->base = of_iomap(np, 0);
 	if (!host->base) {
-		pr_notice("[msdc%d] of_iomap failed\n", mmc->index);
+		pr_debug("[msdc%d] of_iomap failed\n", mmc->index);
 		return -ENOMEM;
 	}
 
 	/* get irq # */
 	host->irq = irq_of_parse_and_map(np, 0);
-	pr_notice("[msdc%d] get irq # %d\n", host->id, host->irq);
+	pr_debug("[msdc%d] get irq # %d\n", host->id, host->irq);
 	WARN_ON(host->irq < 0);
 
 #if !defined(FPGA_PLATFORM)
 	/* get clk_src */
 	if (of_property_read_u8(np, "clk_src", &host->hw->clk_src)) {
-		pr_notice("[msdc%d] error: clk_src isn't found in device tree.\n",
+		pr_debug("[msdc%d] error: clk_src isn't found in device tree.\n",
 			host->id);
 		WARN_ON(1);
 	}
@@ -1220,13 +1220,13 @@ int msdc_of_parse(struct platform_device *pdev, struct mmc_host *mmc)
 	 * property data isn't large enough.
 	 */
 	if (of_property_read_u8(np, "host_function", &host->hw->host_function))
-		pr_notice("[msdc%d] host_function isn't found in device tree\n",
+		pr_debug("[msdc%d] host_function isn't found in device tree\n",
 			host->id);
 
 	/* get cd_gpio and cd_level */
 	cd_gpio = of_get_named_gpio(np, "cd-gpios", 0);
 	if (of_property_read_u8(np, "cd_level", &host->hw->cd_level))
-		pr_notice("[msdc%d] cd_level isn't found in device tree\n",
+		pr_debug("[msdc%d] cd_level isn't found in device tree\n",
 			host->id);
 
 	msdc_get_register_settings(host, np);
@@ -1269,12 +1269,12 @@ int msdc_of_parse(struct platform_device *pdev, struct mmc_host *mmc)
 	pdev->name = kstrdup(pdev->name, GFP_KERNEL);
 	/* device rename */
 	if ((host->id == 0) && !device_rename(mmc->parent, "bootdevice"))
-		pr_notice("[msdc%d] device renamed to bootdevice.\n", host->id);
+		pr_debug("[msdc%d] device renamed to bootdevice.\n", host->id);
 	else if ((host->id == 1) && !device_rename(mmc->parent, "externdevice"))
-		pr_notice("[msdc%d] device renamed to externdevice.\n",
+		pr_debug("[msdc%d] device renamed to externdevice.\n",
 			host->id);
 	else if ((host->id == 0) || (host->id == 1))
-		pr_notice("[msdc%d] error: device renamed failed.\n", host->id);
+		pr_debug("[msdc%d] error: device renamed failed.\n", host->id);
 
 	dup_name = pdev->name;
 	pdev->name = pdev->dev.kobj.name;
@@ -1300,7 +1300,7 @@ int msdc_dt_init(struct platform_device *pdev, struct mmc_host *mmc)
 
 	id = msdc_of_parse(pdev, mmc);
 	if (id < 0) {
-		pr_notice("%s: msdc_of_parse error!!: %d\n", __func__, id);
+		pr_debug("%s: msdc_of_parse error!!: %d\n", __func__, id);
 		return id;
 	}
 

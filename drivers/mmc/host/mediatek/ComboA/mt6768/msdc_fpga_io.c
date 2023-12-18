@@ -54,11 +54,11 @@ void msdc_fpga_pwr_init(void)
 	if (fpga_pwr_gpio == NULL) {
 		fpga_pwr_gpio = ioremap(FPGA_PWR_GPIO, 8);
 		if (fpga_pwr_gpio == NULL) {
-			pr_notice("[%s] msdc ioremap error\n", __func__);
+			pr_debug("[%s] msdc ioremap error\n", __func__);
 			WARN_ON(1);
 		}
 		fpga_pwr_gpio_eo = fpga_pwr_gpio + 0x4;
-		pr_notice("FPGA PWR_GPIO, PWR_GPIO_EO address 0x%p, 0x%p\n",
+		pr_debug("FPGA PWR_GPIO, PWR_GPIO_EO address 0x%p, 0x%p\n",
 			fpga_pwr_gpio, fpga_pwr_gpio_eo);
 	}
 	msdc_set_pwr_gpio_dir(fpga_pwr_gpio, fpga_pwr_gpio_eo);
@@ -134,7 +134,7 @@ void msdc_select_clksrc(struct msdc_host *host, int clksrc)
 	host->hclk = msdc_get_hclk(host->id, clksrc);
 	host->hw->clk_src = clksrc;
 
-	pr_notice("[%s]: msdc%d select clk_src as %d(%dKHz)\n", __func__,
+	pr_debug("[%s]: msdc%d select clk_src as %d(%dKHz)\n", __func__,
 		host->id, clksrc, host->hclk/1000);
 }
 
