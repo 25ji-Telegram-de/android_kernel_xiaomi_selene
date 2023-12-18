@@ -179,7 +179,7 @@ static void mt6358_irq_sp_handler(struct mt6358_chip *chip,
 				continue;
 			hwirq = sp_top_ints[sp].hwirq_base + 16 * i + j;
 			virq = irq_find_mapping(chip->irq_domain, hwirq);
-			dev_info(chip->dev,
+			dev_dbg(chip->dev,
 				"Reg[0x%x]=0x%x,name=%s,hwirq=%d,type=%d\n",
 				sta_reg, sp_int_status,
 				pmic_irqs[hwirq].name, hwirq,
@@ -360,7 +360,7 @@ static int mt6358_irq_init(struct mt6358_chip *chip)
 		else if (hwirq - pmic_irq->sp_top->hwirq_base >= num_int_bits)
 			pmic_irq->sp_top->num_int_regs++;
 #if 0
-		dev_info(chip->dev,
+		dev_dbg(chip->dev,
 			"name:%s, hwirq:%d, sp_top:%d, hwirq_base:%d, num_int_regs:%d, ret:%d\n"
 			, pmic_irq->name, pmic_irq->hwirq,
 			sp, pmic_irq->sp_top->hwirq_base,
@@ -439,7 +439,7 @@ static int mt6358_probe(struct platform_device *pdev)
 		dev_notice(chip->dev, "Failed to read chip id: %d\n", ret);
 		return ret;
 	}
-	dev_info(chip->dev, "PMIC irq=%d, PMIC HWCID=0x%x, ret=%d\n",
+	dev_dbg(chip->dev, "PMIC irq=%d, PMIC HWCID=0x%x, ret=%d\n",
 		 chip->irq, id, ret);
 
 	mt6358_pm_off = chip;
