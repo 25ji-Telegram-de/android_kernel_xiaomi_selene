@@ -225,7 +225,7 @@ static void mmc_discard_cmdq(struct mmc_host *host)
 		host->deq_mrq.cmd->error = 0;
 	};
 
-	pr_notice("%s: CMDQ send distard (CMD48)\n", __func__);
+	pr_debug("%s: CMDQ send distard (CMD48)\n", __func__);
 }
 
 static void mmc_post_req(struct mmc_host *host, struct mmc_request *mrq,
@@ -292,7 +292,7 @@ void mmc_do_check(struct mmc_host *host)
 	/* wait data irq handle done otherwice timing issue will happen  */
 			msleep(2000);
 			if (mmc_reset_for_cmdq(host)) {
-				pr_notice("[CQ] reinit fail\n");
+				pr_debug("[CQ] reinit fail\n");
 				BUG_ON(1);
 			}
 			mmc_clr_dat_list(host);
@@ -403,7 +403,7 @@ static int mmc_wait_tran(struct mmc_host *host)
 	do {
 		err = mmc_blk_status_check(host->card, &status);
 		if (err) {
-			pr_notice("[CQ] check card status error = %d\n", err);
+			pr_debug("[CQ] check card status error = %d\n", err);
 			return 1;
 		}
 
@@ -442,7 +442,7 @@ static int mmc_check_write(struct mmc_host *host, struct mmc_request *mrq)
 				host->areq_que[(mrq->cmd->arg >> 16) & 0x1f];
 			mq_rq = container_of(areq_active, struct mmc_queue_req,
 					areq);
-			pr_notice(
+			pr_debug(
 	"[%s]: data error = %d, status=0x%x, line:%d, block addr:0x%x\n",
 				__func__, mrq->data->error, status,
 				__LINE__, mq_rq->brq.que.arg);
@@ -476,7 +476,7 @@ int mmc_run_queue_thread(void *data)
 	scheduler_params.sched_priority = 1;
 	sched_setscheduler(current, SCHED_FIFO, &scheduler_params);
 
-	pr_notice("[CQ] start cmdq thread\n");
+	pr_debug("[CQ] start cmdq thread\n");
 	mt_bio_queue_alloc(current, NULL);
 
 	mtk_iobst_register_tid(current->pid);
@@ -506,10 +506,10 @@ int mmc_run_queue_thread(void *data)
 					err = host->ops->execute_tuning(host,
 				MMC_SEND_TUNING_BLOCK_HS200);
 					if (err && mmc_reset_for_cmdq(host)) {
-						pr_notice("[CQ] reinit fail\n");
+						pr_debug("[CQ] reinit fail\n");
 						BUG_ON(1);
 					} else
-						pr_notice("[CQ] tuning pass\n");
+						pr_debug("[CQ] tuning pass\n");
 				}
 
 				host->cur_rw_task = CQ_TASK_IDLE;
@@ -558,7 +558,7 @@ int mmc_run_queue_thread(void *data)
 				err = mmc_swcq_prepare_mqr_crypto(host,
 					dat_mrq);
 				if (err) {
-					pr_info("eMMC crypto fail %d\n", err);
+					pr_debug("eMMC crypto fail %d\n", err);
 					WARN_ON(1);
 				}
 				host->ops->request(host, dat_mrq);
@@ -611,7 +611,7 @@ int mmc_run_queue_thread(void *data)
 		/* wait data irq handle done otherwise timing issue happen*/
 					msleep(2000);
 					if (mmc_reset_for_cmdq(host)) {
-						pr_notice("[CQ] reinit fail\n");
+						pr_debug("[CQ] reinit fail\n");
 						BUG_ON(1);
 					}
 					mmc_clr_dat_list(host);
@@ -636,12 +636,12 @@ int mmc_run_queue_thread(void *data)
 				(atomic_read(&host->areq_cnt) > areq_cnt_chk),
 				10 * HZ);
 			if (!tmo) {
-				pr_info("%s:tmo,mrq(%p),chk(%d),cnt(%d)\n",
+				pr_debug("%s:tmo,mrq(%p),chk(%d),cnt(%d)\n",
 					__func__,
 					host->done_mrq,
 					areq_cnt_chk,
 					atomic_read(&host->areq_cnt));
-				pr_info("%s:tmo,rw(%d),wait(%d),rdy(%d)\n",
+				pr_debug("%s:tmo,rw(%d),wait(%d),rdy(%d)\n",
 					__func__,
 					atomic_read(&host->cq_rw),
 					atomic_read(&host->cq_wait_rdy),
@@ -699,7 +699,7 @@ void mmc_wait_cmdq_done(struct mmc_request *mrq)
 
 	/* error - request done */
 	if (cmd->error) {
-		pr_notice("%s: cmd%d arg:%x error:%d\n",
+		pr_debug("%s: cmd%d arg:%x error:%d\n",
 			mmc_hostname(host),
 			cmd->opcode, cmd->arg,
 			cmd->error);
@@ -713,7 +713,7 @@ void mmc_wait_cmdq_done(struct mmc_request *mrq)
 
 	/* data error */
 	if (mrq->data && mrq->data->error) {
-		pr_notice("%s: cmd%d arg:%x data error:%d\n",
+		pr_debug("%s: cmd%d arg:%x data error:%d\n",
 			mmc_hostname(host),
 			cmd->opcode, cmd->arg,
 			mrq->data->error);
@@ -741,10 +741,10 @@ void mmc_wait_cmdq_done(struct mmc_request *mrq)
 				not_ready_time = jiffies;
 			else if (time_after(jiffies, not_ready_time
 			+ msecs_to_jiffies(30 * 1000))) {
-				pr_notice("mmc0: error: task not ready over 30s\n");
+				pr_debug("mmc0: error: task not ready over 30s\n");
 				msleep(2000);
 				if (mmc_reset_for_cmdq(host)) {
-					pr_notice("[CQ] reinit fail\n");
+					pr_debug("[CQ] reinit fail\n");
 					BUG_ON(1);
 				}
 				mmc_clr_dat_list(host);
@@ -768,12 +768,12 @@ void mmc_wait_cmdq_done(struct mmc_request *mrq)
 				}
 
 				if (!host->areq_que[i]) {
-					pr_notice("%s: task %d not exist!,QSR:%x\n",
+					pr_debug("%s: task %d not exist!,QSR:%x\n",
 				mmc_hostname(host), i, cmd->resp[0]);
-					pr_notice("%s: task_idx:%08lx\n",
+					pr_debug("%s: task_idx:%08lx\n",
 						mmc_hostname(host),
 						host->task_id_index);
-					pr_notice("%s: cnt:%d,wait:%d,rdy:%d\n",
+					pr_debug("%s: cnt:%d,wait:%d,rdy:%d\n",
 						mmc_hostname(host),
 						atomic_read(&host->areq_cnt),
 						atomic_read(&host->cq_wait_rdy),
@@ -851,7 +851,7 @@ int mmc_blk_cmdq_switch(struct mmc_card *card, int enable)
 		/* host support cqe */
 		ret = mmc_cmdq_halt_on_empty_queue(host);
 		if (ret) {
-			pr_notice("%s: halt: failed: %d\n",
+			pr_debug("%s: halt: failed: %d\n",
 				mmc_hostname(host), ret);
 			goto out;
 		}
@@ -871,7 +871,7 @@ int mmc_blk_cmdq_switch(struct mmc_card *card, int enable)
 		card->ext_csd.generic_cmd6_time);
 
 	if (ret) {
-		pr_notice("%s: cmdq %s error %d\n",
+		pr_debug("%s: cmdq %s error %d\n",
 				mmc_hostname(host),
 				enable ? "on" : "off",
 				ret);
@@ -880,7 +880,7 @@ int mmc_blk_cmdq_switch(struct mmc_card *card, int enable)
 
 	card->ext_csd.cmdq_en = enable;
 
-	pr_notice("%s: device cq %s\n",
+	pr_debug("%s: device cq %s\n",
 		mmc_hostname(host),
 		card->ext_csd.cmdq_en ? "on":"off");
 
@@ -893,7 +893,7 @@ int mmc_blk_cmdq_switch(struct mmc_card *card, int enable)
 			/* un-halt when enable */
 			if (mmc_host_halt(host) &&
 				mmc_cmdq_halt(host, false))
-				pr_notice("%s: %s: cmdq unhalt failed\n",
+				pr_debug("%s: %s: cmdq unhalt failed\n",
 					mmc_hostname(host), __func__);
 		}
 #endif
@@ -1250,7 +1250,7 @@ static void mmc_start_cmdq_request(struct mmc_host *host,
 	if (likely(host->cmdq_ops->request))
 		host->cmdq_ops->request(host, mrq);
 	else
-		pr_notice("%s: %s: issue request failed\n", mmc_hostname(host),
+		pr_debug("%s: %s: issue request failed\n", mmc_hostname(host),
 				__func__);
 }
 #endif
@@ -1447,7 +1447,7 @@ static void mmc_post_req(struct mmc_host *host, struct mmc_request *mrq,
  */
 int mmc_cmdq_discard_queue(struct mmc_host *host, u32 tasks)
 {
-	pr_notice("%s: discard tasks = %d (0: all)\n",
+	pr_debug("%s: discard tasks = %d (0: all)\n",
 			mmc_hostname(host),
 			tasks);
 	return mmc_discard_queue(host, tasks);
@@ -1483,14 +1483,14 @@ int mmc_cmdq_halt(struct mmc_host *host, bool halt)
 	int err = 0;
 
 	if (mmc_host_cq_disable(host)) {
-		pr_notice("%s: %s: CQE is already disabled\n",
+		pr_debug("%s: %s: CQE is already disabled\n",
 				mmc_hostname(host), __func__);
 		return 0;
 	}
 
 	if ((halt && mmc_host_halt(host)) ||
 	    (!halt && !mmc_host_halt(host))) {
-		pr_notice("%s: %s: CQE is already %s\n", mmc_hostname(host),
+		pr_debug("%s: %s: CQE is already %s\n", mmc_hostname(host),
 				__func__, halt ? "halted" : "un-halted");
 		return 0;
 	}
@@ -1552,7 +1552,7 @@ int mmc_cmdq_wait_for_dcmd(struct mmc_host *host,
 	wait_for_completion_io(&mrq->completion);
 	err = mmc_cmdq_down_rwsem(host, mrq->req);
 	if (err || cmd->error) {
-		pr_notice("%s: dcmd %d failed with err %d\n",
+		pr_debug("%s: dcmd %d failed with err %d\n",
 				mmc_hostname(host), cmd->opcode,
 				cmd->error);
 		err = cmd->error;
@@ -1610,7 +1610,7 @@ static enum mmc_blk_status mmc_finalize_areq(struct mmc_host *host)
 				break; /* return status */
 			} else {
 				mmc_retune_recheck(host);
-				pr_info("%s: req failed (CMD%u): %d, retrying...\n",
+				pr_debug("%s: req failed (CMD%u): %d, retrying...\n",
 					mmc_hostname(host),
 					cmd->opcode, cmd->error);
 				cmd->retries--;
@@ -3108,7 +3108,7 @@ static int mmc_cmdq_send_erase_cmd(struct mmc_cmdq_req *cmdq_req,
 
 	err = mmc_cmdq_wait_for_dcmd(card->host, cmdq_req);
 	if (err) {
-		pr_notice("%s: group start error %d, status %#x\n",
+		pr_debug("%s: group start error %d, status %#x\n",
 				__func__, err, cmd->resp[0]);
 		return -EIO;
 	}
@@ -3159,7 +3159,7 @@ static int mmc_cmdq_do_erase(struct mmc_cmdq_req *cmdq_req,
 		/* Do not retry else we can't see errors */
 		err = mmc_cmdq_wait_for_dcmd(card->host, cmdq_req);
 		if (err || (cmd->resp[0] & 0xFDF92000)) {
-			pr_notice("error %d requesting status %#x\n",
+			pr_debug("error %d requesting status %#x\n",
 				err, cmd->resp[0]);
 			err = -EIO;
 			goto out;
@@ -3168,7 +3168,7 @@ static int mmc_cmdq_do_erase(struct mmc_cmdq_req *cmdq_req,
 		 * never leaves the program state.
 		 */
 		if (time_after(jiffies, timeout)) {
-			pr_notice("%s: %s Card stuck in programming state!\n",
+			pr_debug("%s: %s Card stuck in programming state!\n",
 				mmc_hostname(card->host), __func__);
 			err =  -EIO;
 			goto out;
@@ -3764,7 +3764,7 @@ int mmc_cmdq_halt_on_empty_queue(struct mmc_host *host)
 	err = wait_event_interruptible(host->cmdq_ctx.queue_empty_wq,
 				(!host->cmdq_ctx.active_reqs));
 	if (host->cmdq_ctx.active_reqs) {
-		pr_notice("%s: %s: unexpected active requests (%lu)\n",
+		pr_debug("%s: %s: unexpected active requests (%lu)\n",
 			mmc_hostname(host), __func__,
 			host->cmdq_ctx.active_reqs);
 		return -EPERM;
@@ -3772,7 +3772,7 @@ int mmc_cmdq_halt_on_empty_queue(struct mmc_host *host)
 
 	err = mmc_cmdq_halt(host, true);
 	if (err) {
-		pr_notice("%s: %s: mmc_cmdq_halt failed (%d)\n",
+		pr_debug("%s: %s: mmc_cmdq_halt failed (%d)\n",
 		       mmc_hostname(host), __func__, err);
 		goto out;
 	}

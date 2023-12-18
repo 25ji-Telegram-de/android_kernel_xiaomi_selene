@@ -78,7 +78,7 @@ void msdc_set_bad_card_and_remove(struct msdc_host *host)
 	unsigned long flags;
 
 	if (host == NULL) {
-		pr_info("WARN: host is NULL");
+		pr_debug("WARN: host is NULL");
 		return;
 	}
 	if (host->card_inserted) {
@@ -169,7 +169,7 @@ int emmc_reinit_tuning(struct mmc_host *mmc)
 	unsigned int caps_hw_reset = 0;
 
 	if (!mmc->card) {
-		pr_notice("mmc card = NULL, skip reset tuning\n");
+		pr_debug("mmc card = NULL, skip reset tuning\n");
 		return -1;
 	}
 
@@ -178,7 +178,7 @@ int emmc_reinit_tuning(struct mmc_host *mmc)
 	  & (EXT_CSD_CARD_TYPE_HS200 | EXT_CSD_CARD_TYPE_HS400)) {
 		mmc->card->mmc_avail_type &=
 			~(EXT_CSD_CARD_TYPE_HS200|EXT_CSD_CARD_TYPE_HS400);
-		pr_notice("msdc%d: switch to DDR/HS mode, reinit card\n",
+		pr_debug("msdc%d: switch to DDR/HS mode, reinit card\n",
 			host->id);
 		if (mmc->caps & MMC_CAP_HW_RESET) {
 			caps_hw_reset = 1;
@@ -191,7 +191,7 @@ int emmc_reinit_tuning(struct mmc_host *mmc)
 		msdc_ops_set_ios(mmc, &mmc->ios);
 		host->hs400_mode = false;
 		if (mmc_hw_reset(mmc))
-			pr_notice("msdc%d fail to switch to DDR/HS mode\n",
+			pr_debug("msdc%d fail to switch to DDR/HS mode\n",
 				host->id);
 		/* restore MMC_CAP_HW_RESET */
 		if (!caps_hw_reset)
@@ -204,12 +204,12 @@ int emmc_reinit_tuning(struct mmc_host *mmc)
 	MSDC_GET_FIELD(MSDC_CFG, MSDC_CFG_CKMOD, mode);
 	div += 1;
 	if (div > EMMC_MAX_FREQ_DIV) {
-		pr_notice("msdc%d: max lower freq: %d\n", host->id, div);
+		pr_debug("msdc%d: max lower freq: %d\n", host->id, div);
 		return 1;
 	}
 	msdc_clk_stable(host, mode, div, 0);
 	host->sclk = (div == 0) ? host->hclk / 4 : host->hclk / (4 * div);
-	pr_notice("msdc%d: reduce frequence to %dMhz\n",
+	pr_debug("msdc%d: reduce frequence to %dMhz\n",
 		host->id, host->sclk / 1000000);
 
 done:
@@ -230,7 +230,7 @@ int sdcard_hw_reset(struct mmc_host *mmc)
 	host->card_inserted = (host->hw->cd_level == level) ? 1 : 0;
 
 	if (!(host->card_inserted)) {
-		pr_notice("card is not inserted!\n");
+		pr_debug("card is not inserted!\n");
 		msdc_set_bad_card_and_remove(host);
 		ret = -1;
 		return ret;
@@ -248,12 +248,12 @@ int sdcard_hw_reset(struct mmc_host *mmc)
 		if (++host->power_cycle_cnt
 			> MSDC_MAX_POWER_CYCLE_FAIL_CONTINUOUS)
 			msdc_set_bad_card_and_remove(host);
-		pr_notice(
+		pr_debug(
 			"msdc%d power reset (%d) failed, block_bad_card = %d\n",
 			host->id, host->power_cycle_cnt, host->block_bad_card);
 	} else {
 		host->power_cycle_cnt = 0;
-		pr_notice("msdc%d power reset success\n", host->id);
+		pr_debug("msdc%d power reset success\n", host->id);
 	}
 
 	return ret;
@@ -272,7 +272,7 @@ int sdcard_reset_tuning(struct mmc_host *mmc)
 	int ret = 0;
 
 	if (!mmc->card) {
-		pr_notice("mmc card = NULL, skip reset tuning\n");
+		pr_debug("mmc card = NULL, skip reset tuning\n");
 		return -1;
 	}
 
@@ -295,15 +295,15 @@ int sdcard_reset_tuning(struct mmc_host *mmc)
 		} else {
 			remove_cap = "none";
 		}
-		pr_notice("msdc%d: remove %s mode then reinit card\n", host->id,
+		pr_debug("msdc%d: remove %s mode then reinit card\n", host->id,
 			remove_cap);
 	} else if (mmc_card_hs(mmc->card)) {
 		if (mmc->card->sw_caps.hs_max_dtr >= HIGH_SPEED_MAX_DTR / 4)
 			mmc->card->sw_caps.hs_max_dtr /= 2;
-		pr_notice("msdc%d: set hs speed %dhz then reinit card\n",
+		pr_debug("msdc%d: set hs speed %dhz then reinit card\n",
 			host->id, mmc->card->sw_caps.hs_max_dtr);
 	} else {
-		pr_notice("msdc%d: ds card just reinit card\n", host->id);
+		pr_debug("msdc%d: ds card just reinit card\n", host->id);
 	}
 
 	/* force remove card for continuous data timeout */

@@ -102,7 +102,7 @@ int sdio_autok_res_exist(struct msdc_host *host)
 	for (i = 0; i < AUTOK_VCORE_NUM; i++) {
 		filp = msdc_file_open(sdio_autok_res_path[i], O_RDONLY, 0644);
 		if (filp == NULL) {
-			pr_notice("autok result not exist\n");
+			pr_debug("autok result not exist\n");
 			return 0;
 		}
 		filp_close(filp, NULL);
@@ -127,7 +127,7 @@ int sdio_autok_res_apply(struct msdc_host *host, int vcore)
 
 	filp = msdc_file_open(sdio_autok_res_path[vcore], O_RDONLY, 0644);
 	if (filp == NULL) {
-		pr_notice("autok result open fail\n");
+		pr_debug("autok result open fail\n");
 		return ret;
 	}
 
@@ -136,7 +136,7 @@ int sdio_autok_res_apply(struct msdc_host *host, int vcore)
 		autok_tuning_parameter_init(host, res);
 
 		for (i = 1; i < TUNING_PARA_SCAN_COUNT; i++)
-			pr_notice("autok result exist!, result[%d] = %d\n",
+			pr_debug("autok result exist!, result[%d] = %d\n",
 				i, res[i]);
 		ret = 0;
 	}
@@ -164,7 +164,7 @@ int sdio_autok_res_save(struct msdc_host *host, int vcore, u8 *res)
 	filp = msdc_file_open(sdio_autok_res_path[vcore],
 		O_CREAT | O_WRONLY, 0644);
 	if (filp == NULL) {
-		pr_notice("autok result open fail\n");
+		pr_debug("autok result open fail\n");
 		return ret;
 	}
 
@@ -207,7 +207,7 @@ int autok_res_check(u8 *res_h, u8 *res_l)
 #ifndef SDIO_HW_DVFS_CONDITIONAL
 	ret = -1;
 #endif
-	pr_notice("%s %d!\n", __func__, ret);
+	pr_debug("%s %d!\n", __func__, ret);
 
 	return ret;
 }
@@ -411,16 +411,16 @@ void sdio_autok_wait_dvfs_ready(void)
 
 	/* DVFS not ready, just wait */
 	while (dvfs == 0) {
-		pr_notice("DVFS not ready\n");
+		pr_debug("DVFS not ready\n");
 		msleep(100);
 		dvfs = is_vcorefs_can_work();
 	}
 
 	if (dvfs == -1)
-		pr_notice("DVFS feature not enable\n");
+		pr_debug("DVFS feature not enable\n");
 
 	if (dvfs == 1)
-		pr_notice("DVFS ready\n");
+		pr_debug("DVFS ready\n");
 #endif
 }
 
@@ -435,7 +435,7 @@ int sd_execute_dvfs_autok(struct msdc_host *host, u32 opcode)
 	if (host->mmc->ios.timing == MMC_TIMING_UHS_SDR104 ||
 	    host->mmc->ios.timing == MMC_TIMING_UHS_SDR50) {
 		if (host->is_autok_done == 0) {
-			pr_notice("[AUTOK]SDcard autok\n");
+			pr_debug("[AUTOK]SDcard autok\n");
 			ret = autok_execute_tuning(host, res);
 			host->is_autok_done = 1;
 		} else {
@@ -472,10 +472,10 @@ int emmc_execute_dvfs_autok(struct msdc_host *host, u32 opcode)
 #endif
 
 		if (opcode == MMC_SEND_STATUS) {
-			pr_notice("[AUTOK]eMMC HS200 Tune CMD only\n");
+			pr_debug("[AUTOK]eMMC HS200 Tune CMD only\n");
 			ret = hs200_execute_tuning_cmd(host, res);
 		} else {
-			pr_notice("[AUTOK]eMMC HS200 Tune\n");
+			pr_debug("[AUTOK]eMMC HS200 Tune\n");
 			ret = hs200_execute_tuning(host, res);
 		}
 
@@ -489,10 +489,10 @@ int emmc_execute_dvfs_autok(struct msdc_host *host, u32 opcode)
 #endif
 
 		if (opcode == MMC_SEND_STATUS) {
-			pr_notice("[AUTOK]eMMC HS400 Tune CMD only\n");
+			pr_debug("[AUTOK]eMMC HS400 Tune CMD only\n");
 			ret = hs400_execute_tuning_cmd(host, res);
 		} else {
-			pr_notice("[AUTOK]eMMC HS400 Tune\n");
+			pr_debug("[AUTOK]eMMC HS400 Tune\n");
 			ret = hs400_execute_tuning(host, res);
 		}
 		host->is_autok_done = 1;
@@ -536,11 +536,11 @@ void sdio_execute_dvfs_autok_mode(struct msdc_host *host, bool ddr208)
 	if (ddr208) {
 		autok_init = autok_init_ddr208;
 		autok_execute = autok_sdio30_plus_tuning;
-		pr_notice("[AUTOK]SDIO DDR208 Tune\n");
+		pr_debug("[AUTOK]SDIO DDR208 Tune\n");
 	} else {
 		autok_init = autok_init_sdr104;
 		autok_execute = autok_execute_tuning;
-		pr_notice("[AUTOK]SDIO SDR104 Tune\n");
+		pr_debug("[AUTOK]SDIO SDR104 Tune\n");
 	}
 
 	if (host->is_autok_done) {
@@ -548,13 +548,13 @@ void sdio_execute_dvfs_autok_mode(struct msdc_host *host, bool ddr208)
 
 		/* Check which vcore setting to apply */
 		vcore = vcorefs_get_hw_opp();
-		pr_notice("[AUTOK]Apply first tune para vcore = %d\n", vcore);
+		pr_debug("[AUTOK]Apply first tune para vcore = %d\n", vcore);
 		autok_tuning_parameter_init(host, host->autok_res[vcore]);
 
 		if (host->use_hw_dvfs == 0) {
-			pr_notice("[AUTOK]No need change para when dvfs\n");
+			pr_debug("[AUTOK]No need change para when dvfs\n");
 		} else {
-			pr_notice("[AUTOK]Need change para when dvfs\n");
+			pr_debug("[AUTOK]Need change para when dvfs\n");
 
 			/* Use HW DVFS */
 			msdc_dvfs_reg_restore(host);
@@ -570,7 +570,7 @@ void sdio_execute_dvfs_autok_mode(struct msdc_host *host, bool ddr208)
 
 	for (i = 0; i < AUTOK_VCORE_NUM; i++) {
 		if (vcorefs_request_dvfs_opp(KIR_AUTOK_SDIO, i) != 0)
-			pr_notice(
+			pr_debug(
 				"vcorefs_request_dvfs_opp@LEVEL%d fail!\n", i);
 
 		if (sdio_res_exist)
@@ -586,9 +586,9 @@ void sdio_execute_dvfs_autok_mode(struct msdc_host *host, bool ddr208)
 
 	if (autok_res_check(host->autok_res[AUTOK_VCORE_LEVEL3],
 			host->autok_res[AUTOK_VCORE_LEVEL0]) == 0) {
-		pr_notice("[AUTOK]No need change para when dvfs\n");
+		pr_debug("[AUTOK]No need change para when dvfs\n");
 	} else {
-		pr_notice("[AUTOK]Need change para when dvfs\n");
+		pr_debug("[AUTOK]Need change para when dvfs\n");
 
 		/* Use HW DVFS */
 		host->use_hw_dvfs = 1;
@@ -605,7 +605,7 @@ void sdio_execute_dvfs_autok_mode(struct msdc_host *host, bool ddr208)
 
 	/* Un-request, return 0 pass */
 	if (vcorefs_request_dvfs_opp(KIR_AUTOK_SDIO, OPP_UNREQ) != 0)
-		pr_notice("vcorefs_request_dvfs_opp@OPP_UNREQ fail!\n");
+		pr_debug("vcorefs_request_dvfs_opp@OPP_UNREQ fail!\n");
 
 	/* Tell DVFS can start now because AUTOK done */
 	spm_msdc_dvfs_setting(host->dvfs_id, 1);
@@ -685,30 +685,30 @@ void sdio_plus_set_device_rx(struct msdc_host *host)
 		retry, cnt, host->id);
 
 #ifdef DEVICE_RX_READ_DEBUG
-	pr_notice("%s +++++++++++++++++++++++++=\n", __func__);
+	pr_debug("%s +++++++++++++++++++++++++=\n", __func__);
 	ret = msdc_io_rw_direct_host(mmc, 0, 0, 0x2, 0, &data);
-	pr_notice("0x2 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x2 data: %x , ret: %x\n", data, ret);
 #endif
 	ret = msdc_io_rw_direct_host(mmc, 1, 0, 0x2, 0x2, 0);
 
 #ifdef DEVICE_RX_READ_DEBUG
 	ret = msdc_io_rw_direct_host(mmc, 0, 0, 0x2, 0, &data);
-	pr_notice("0x2 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x2 data: %x , ret: %x\n", data, ret);
 
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x11C, 0, &data);
-	pr_notice("0x11C data: %x , ret: %x\n", data, ret);
+	pr_debug("0x11C data: %x , ret: %x\n", data, ret);
 
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x124, 0, &data);
-	pr_notice("0x124 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x124 data: %x , ret: %x\n", data, ret);
 
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x125, 0, &data);
-	pr_notice("0x125 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x125 data: %x , ret: %x\n", data, ret);
 
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x126, 0, &data);
-	pr_notice("0x126 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x126 data: %x , ret: %x\n", data, ret);
 
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x127, 0, &data);
-	pr_notice("0x127 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x127 data: %x , ret: %x\n", data, ret);
 #endif
 
 	ret = msdc_io_rw_direct_host(mmc, 1, 1, 0x11C, 0x90, 0);
@@ -726,19 +726,19 @@ void sdio_plus_set_device_rx(struct msdc_host *host)
 
 #ifdef DEVICE_RX_READ_DEBUG
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x11C, 0, &data);
-	pr_notice("0x11C data: %x , ret: %x\n", data, ret);
+	pr_debug("0x11C data: %x , ret: %x\n", data, ret);
 
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x124, 0, &data);
-	pr_notice("0x124 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x124 data: %x , ret: %x\n", data, ret);
 
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x125, 0, &data);
-	pr_notice("0x125 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x125 data: %x , ret: %x\n", data, ret);
 
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x126, 0, &data);
-	pr_notice("0x126 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x126 data: %x , ret: %x\n", data, ret);
 
 	ret = msdc_io_rw_direct_host(mmc, 0, 1, 0x127, 0, &data);
-	pr_notice("0x127 data: %x , ret: %x\n", data, ret);
+	pr_debug("0x127 data: %x , ret: %x\n", data, ret);
 #endif
 
 	MSDC_WRITE32(MSDC_CFG, msdc_cfg);
@@ -781,11 +781,11 @@ int sdio_plus_set_device_ddr208(struct msdc_host *host)
 	}
 
 	if (err) {
-		pr_notice("Read SDIO_CCCR_MTK_DDR208 fail\n");
+		pr_debug("Read SDIO_CCCR_MTK_DDR208 fail\n");
 		goto end;
 	}
 	if ((data & SDIO_MTK_DDR208_SUPPORT) == 0) {
-		pr_notice("Device not support SDIO_MTK_DDR208\n");
+		pr_debug("Device not support SDIO_MTK_DDR208\n");
 		err = -1;
 		goto end;
 	}
@@ -796,21 +796,21 @@ int sdio_plus_set_device_ddr208(struct msdc_host *host)
 	 */
 	err = msdc_io_rw_direct_host(mmc, 0, 0, SDIO_CCCR_SPEED, 0, &data);
 	if (err) {
-		pr_notice("Read SDIO_CCCR_SPEED fail\n");
+		pr_debug("Read SDIO_CCCR_SPEED fail\n");
 		goto end;
 	}
 
 	data = (data & (~SDIO_SPEED_BSS_MASK)) | SDIO_SPEED_DDR50;
 	err = msdc_io_rw_direct_host(mmc, 1, 0, SDIO_CCCR_SPEED, data, NULL);
 	if (err) {
-		pr_notice("Set SDIO_CCCR_SPEED to DDR fail\n");
+		pr_debug("Set SDIO_CCCR_SPEED to DDR fail\n");
 		goto end;
 	}
 
 	err = msdc_io_rw_direct_host(mmc, 1, 0, SDIO_CCCR_MTK_DDR208,
 		SDIO_MTK_DDR208, NULL);
 	if (err) {
-		pr_notice("Set SDIO_MTK_DDR208 fail\n");
+		pr_debug("Set SDIO_MTK_DDR208 fail\n");
 		goto end;
 	}
 
@@ -864,7 +864,7 @@ static int emmc_autok_switch_cqe(struct msdc_host *host, bool enable)
 		if (cmdq_mode && !enable) {
 			err = host->mmc->cmdq_ops->halt(host->mmc, 1);
 			if (err) {
-				pr_notice("%s: halt:failed: %d\n",
+				pr_debug("%s: halt:failed: %d\n",
 					__func__, err);
 				return err;
 			}
@@ -875,7 +875,7 @@ static int emmc_autok_switch_cqe(struct msdc_host *host, bool enable)
 			host->mmc->cmdq_ops->enable(host->mmc);
 			err = host->mmc->cmdq_ops->halt(host->mmc, 0);
 			if (err) {
-				pr_notice("%s: unhalt:failed: %d\n",
+				pr_debug("%s: unhalt:failed: %d\n",
 					__func__, err);
 				return err;
 			}
@@ -906,7 +906,7 @@ int emmc_autok(void)
 	static struct pm_qos_request autok_force;
 
 	if (!host || !host->mmc) {
-		pr_notice("eMMC device not ready\n");
+		pr_debug("eMMC device not ready\n");
 		return -1;
 	}
 
@@ -916,11 +916,11 @@ int emmc_autok(void)
 
 	/* Wait completion of AUTOK triggered by eMMC initialization */
 	if (!wait_for_completion_timeout(&host->autok_done, 10 * HZ)) {
-		pr_notice("eMMC 1st autok not done\n");
+		pr_debug("eMMC 1st autok not done\n");
 		return -1;
 	}
 
-	pr_info("emmc autok\n");
+	pr_debug("emmc autok\n");
 	base = host->base;
 	mmc_claim_host(host->mmc);
 
@@ -936,11 +936,11 @@ int emmc_autok(void)
 		pm_qos_update_request(&autok_force, autok_opp[i]);
 		/* vcore = 0.51875V + 6.25mV * vcore_step2 */
 		vcore_step2 = pmic_get_register_value(PMIC_RG_BUCK_VCORE_VOSEL);
-		pr_notice("msdc fix vcore, PMIC_RG_BUCK_VCORE_VOSEL: %d\n",
+		pr_debug("msdc fix vcore, PMIC_RG_BUCK_VCORE_VOSEL: %d\n",
 			vcore_step2);
 
 		if (vcore_step2 == vcore_step1) {
-			pr_info("skip duplicated vcore autok\n");
+			pr_debug("skip duplicated vcore autok\n");
 			memcpy(host->autok_res[i], host->autok_res[i-1],
 				TUNING_PARA_SCAN_COUNT);
 		} else {
@@ -965,19 +965,19 @@ int emmc_autok(void)
 		if (merge_window < AUTOK_MERGE_MIN_WIN)
 			merge_result = -1;
 		if (merge_window != 0xFF)
-			pr_info("[AUTOK]merge_value = %d\n", merge_window);
+			pr_debug("[AUTOK]merge_value = %d\n", merge_window);
 	}
 
 	if (merge_result == 0) {
 		autok_tuning_parameter_init(host,
 			host->autok_res[AUTOK_VCORE_MERGE]);
-		pr_info("[AUTOK]No need change para when dvfs\n");
+		pr_debug("[AUTOK]No need change para when dvfs\n");
 	} else if (host->use_hw_dvfs == 1) {
-		pr_info("[AUTOK]Need change para when dvfs\n");
+		pr_debug("[AUTOK]Need change para when dvfs\n");
 	} else if (host->use_hw_dvfs == 0) {
 		autok_tuning_parameter_init(host,
 			host->autok_res[AUTOK_VCORE_LEVEL0]);
-		pr_info("[AUTOK]Need lock vcore\n");
+		pr_debug("[AUTOK]Need lock vcore\n");
 		host->lock_vcore = 1;
 	}
 
@@ -1002,11 +1002,11 @@ int sd_autok(void)
 	struct msdc_host *host = mtk_msdc_host[1];
 
 	if (!host || !host->mmc) {
-		pr_notice("SD card not ready\n");
+		pr_debug("SD card not ready\n");
 		return -1;
 	}
 
-	pr_notice("sd autok\n");
+	pr_debug("sd autok\n");
 
 	return 0;
 }
@@ -1019,32 +1019,32 @@ int sdio_autok(void)
 	int timeout = 0;
 
 	while (!host || !host->hw) {
-		pr_notice("SDIO host not ready\n");
+		pr_debug("SDIO host not ready\n");
 		msleep(1000);
 		timeout++;
 		if (timeout == 20) {
-			pr_notice("SDIO host not exist\n");
+			pr_debug("SDIO host not exist\n");
 			return -1;
 		}
 	}
 
 	if (host->hw->host_function != MSDC_SDIO) {
-		pr_notice("SDIO device not in this host\n");
+		pr_debug("SDIO device not in this host\n");
 		return -1;
 	}
 
-	pr_notice("sdio autok\n");
+	pr_debug("sdio autok\n");
 
 	/* Device never ready in moudle_init.
 	 * Call spm_msdc_dvfs_setting if device autok done.
 	 */
 #if 0
 	if (!wait_for_completion_timeout(&host->autok_done, 30 * HZ)) {
-		pr_notice("SDIO wait device autok ready timeout");
+		pr_debug("SDIO wait device autok ready timeout");
 		return -1;
 	}
 
-	pr_notice("sdio autok done!");
+	pr_debug("sdio autok done!");
 #endif
 #endif
 	return 0;

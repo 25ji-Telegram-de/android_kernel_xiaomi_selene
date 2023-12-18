@@ -38,7 +38,7 @@ static int set_crypto(struct msdc_host *host,
 		break;
 	}
 	default:
-		pr_notice("msdc unknown aes mode 0x%x\n", aes_mode_current);
+		pr_debug("msdc unknown aes mode 0x%x\n", aes_mode_current);
 		msdc_dump_info(NULL, 0, NULL, host->id);
 		WARN_ON(1);
 		return -EINVAL;
@@ -61,7 +61,7 @@ static int set_crypto(struct msdc_host *host,
 		while (readl(host->base + MSDC_AES_SWST)
 			& MSDC_AES_SWITCH_START_ENC) {
 			if (time_after(jiffies, polling_tmo)) {
-				pr_notice(
+				pr_debug(
 				"msdc error: trigger AES ENC timeout!\n");
 				WARN_ON(1);
 				return -EINVAL;
@@ -74,7 +74,7 @@ static int set_crypto(struct msdc_host *host,
 		while (readl(host->base + MSDC_AES_SWST)
 			& MSDC_AES_SWITCH_START_DEC) {
 			if (time_after(jiffies, polling_tmo)) {
-				pr_notice(
+				pr_debug(
 				"msdc error: trigger AES DEC timeout!\n");
 				WARN_ON(1);
 				return -EINVAL;
@@ -111,7 +111,7 @@ static void msdc_crypto_program_key(struct mmc_host *host,
 	MSDC_SET_BIT32(ll_host->base + MSDC_AES_CFG_GP1, config);
 
 	if (!(readl(ll_host->base + MSDC_AES_CFG_GP1)))
-		pr_notice("%s write config fail %d!!\n", __func__, config);
+		pr_debug("%s write config fail %d!!\n", __func__, config);
 
 	/* IV */
 	for (i = 0; i < 4; i++)
