@@ -1676,7 +1676,7 @@ static int bq2589x_set_boost_ilmt(struct charger_device *chg_dev, u32 curr)
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
 	int ret;
 
-	pr_err("otg curr = %d\n", curr);
+	pr_debug("otg curr = %d\n", curr);
 
 	ret = bq2589x_set_boost_current(bq, curr / 1000);
 
