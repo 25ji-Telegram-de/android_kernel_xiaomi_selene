@@ -1643,7 +1643,7 @@ struct regulator *_regulator_get(struct device *dev, const char *id,
 			 * enabled, even if it isn't hooked up, and just
 			 * provide a dummy.
 			 */
-			dev_warn(dev,
+			dev_dbg(dev,
 				 "%s supply %s not found, using dummy regulator\n",
 				 devname, id);
 			rdev = dummy_regulator_rdev;
