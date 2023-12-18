@@ -33,7 +33,7 @@ static int __led_set_brightness(struct led_classdev *led_cdev,
 	if (!led_cdev->brightness_set)
 		return -ENOTSUPP;
 	thermal_current_brightness = value;
-	printk("[%s]: --lyd_thmal, value = %d\n", __func__, value);
+	//printk("[%s]: --lyd_thmal, value = %d\n", __func__, value);
 	led_cdev->brightness_set(led_cdev, value);
 
 	return 0;
