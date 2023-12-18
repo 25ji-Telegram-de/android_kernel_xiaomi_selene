@@ -947,6 +947,9 @@ static void DSI_Get_Porch_Addr(enum DISP_MODULE_ENUM module,
 	}
 }
 
+/* Huaqin add for K19S-31 by jiangyue at 2022/01/14 start */
+extern int mtk_rxtx_ratio;
+/* Huaqin add for K19S-31 by jiangyue at 2022/01/14 end */
 void DSI_Config_VDO_Timing_with_DSC(enum DISP_MODULE_ENUM module,
 	struct cmdqRecStruct *cmdq, struct LCM_DSI_PARAMS *dsi_params)
 {
@@ -1022,7 +1025,9 @@ void DSI_Config_VDO_Timing_with_DSC(enum DISP_MODULE_ENUM module,
 		t_hbp = 4;
 		ps_wc = dsi_params->horizontal_active_pixel * dsiTmpBufBpp / 8;
 		t_hbllp = 16 * dsi_params->LANE_NUM;
-		ap_tx_total_word_cnt = (get_bdg_line_cycle() * lanes * RXTX_RATIO + 99) / 100;
+/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 start */
+		ap_tx_total_word_cnt = (get_bdg_line_cycle() * lanes * mtk_rxtx_ratio + 99) / 100;
+/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 end */
 
 		switch (dsi_params->mode) {
 		case DSI_CMD_MODE:
