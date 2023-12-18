@@ -173,27 +173,27 @@ int mtk_afe_fe_hw_params(struct snd_pcm_substream *substream,
 		substream->runtime->dma_bytes = params_buffer_bytes(params);
 		if (memif->use_mmap_share_mem == 1) {
 			mtk_get_mmap_dl_buffer(&phy_addr, &vir_addr);
-			dev_info(afe->dev, "%s, DL assign area %p, addr %ld\n",
+			dev_dbg(afe->dev, "%s, DL assign area %p, addr %ld\n",
 				__func__, vir_addr, phy_addr);
 			substream->runtime->dma_area = vir_addr;
 			substream->runtime->dma_addr = phy_addr;
 		} else if (memif->use_mmap_share_mem == 2) {
 			mtk_get_mmap_ul_buffer(&phy_addr, &vir_addr);
-			dev_info(afe->dev, "%s, UL assign area %p, addr %ld\n",
+			dev_dbg(afe->dev, "%s, UL assign area %p, addr %ld\n",
 					__func__, vir_addr, phy_addr);
 			substream->runtime->dma_area = vir_addr;
 			substream->runtime->dma_addr = phy_addr;
 		} else {
-			dev_info(afe->dev, "mmap share mem %d not support\n",
+			dev_dbg(afe->dev, "mmap share mem %d not support\n",
 					memif->use_mmap_share_mem);
 		}
 
-		//dev_info(afe->dev, "%s(), dir %d area %p addr %ld size %d\n",
+		//dev_dbg(afe->dev, "%s(), dir %d area %p addr %ld size %d\n",
 		//__func__, memif->use_mmap_share_mem, vir_addr, phy_addr,
 		//substream->runtime->dma_bytes);
 		if (substream->runtime->dma_bytes > MMAP_BUFFER_SIZE) {
 			substream->runtime->dma_bytes = MMAP_BUFFER_SIZE;
-			dev_info(afe->dev, "%s(), It has error buffer size\n",
+			dev_dbg(afe->dev, "%s(), It has error buffer size\n",
 				__func__);
 		}
 		goto END;
@@ -264,7 +264,7 @@ int mtk_afe_fe_hw_params(struct snd_pcm_substream *substream,
 			return ret;
 		memif->using_sram = 0;
 	}
-	dev_info(afe->dev, "%s(), %s, using_sram %d, use_dram_only %d, ch %d, rate %d, fmt %d, dma_addr %pad, dma_area %p, dma_bytes 0x%zx\n",
+	dev_dbg(afe->dev, "%s(), %s, using_sram %d, use_dram_only %d, ch %d, rate %d, fmt %d, dma_addr %pad, dma_area %p, dma_bytes 0x%zx\n",
 		 __func__, memif->data->name,
 		 memif->using_sram, memif->use_dram_only,
 		 channels, rate, format,
@@ -633,7 +633,7 @@ int mtk_dsp_memif_set_enable(struct mtk_base_afe *afe, int id)
 		release_adsp_semaphore(SEMA_AUDIOREG);
 	} else {
 		if (adsp_sem_ret == ADSP_SEMAPHORE_BUSY)
-			pr_info("%s adsp_sem_ret[%d]\n",
+			pr_debug("%s adsp_sem_ret[%d]\n",
 				__func__, adsp_sem_ret);
 		ret = mtk_memif_set_enable(afe, id);
 	}
@@ -652,7 +652,7 @@ int mtk_dsp_memif_set_disable(struct mtk_base_afe *afe, int id)
 		release_adsp_semaphore(SEMA_AUDIOREG);
 	} else {
 		if (adsp_sem_ret == ADSP_SEMAPHORE_BUSY)
-			pr_info("%s adsp_sem_ret[%d]\n",
+			pr_debug("%s adsp_sem_ret[%d]\n",
 				__func__, adsp_sem_ret);
 		ret = mtk_memif_set_disable(afe, id);
 	}
@@ -680,7 +680,7 @@ int mtk_dsp_irq_set_enable(struct mtk_base_afe *afe,
 		release_adsp_semaphore(SEMA_AUDIOREG);
 	} else {
 		if (adsp_sem_ret == ADSP_SEMAPHORE_BUSY)
-			pr_info("%s adsp_sem_ret[%d]\n",
+			pr_debug("%s adsp_sem_ret[%d]\n",
 				__func__, adsp_sem_ret);
 		regmap_update_bits(afe->regmap, irq_data->irq_en_reg,
 				   1 << irq_data->irq_en_shift,
@@ -710,7 +710,7 @@ int mtk_dsp_irq_set_disable(struct mtk_base_afe *afe,
 		release_adsp_semaphore(SEMA_AUDIOREG);
 	} else {
 		if (adsp_sem_ret == ADSP_SEMAPHORE_BUSY)
-			pr_info("%s adsp_sem_ret[%d]\n",
+			pr_debug("%s adsp_sem_ret[%d]\n",
 				__func__, adsp_sem_ret);
 		regmap_update_bits(afe->regmap, irq_data->irq_en_reg,
 				   1 << irq_data->irq_en_shift,

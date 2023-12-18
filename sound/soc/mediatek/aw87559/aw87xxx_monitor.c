@@ -52,7 +52,7 @@ int aw87xxx_get_battery_capacity(struct aw87xxx *aw87xxx,
 	union power_supply_propval prop = { 0 };
 	struct power_supply *psy = NULL;
 
-	aw_dev_info(aw87xxx->dev, "%s:enter\n", __func__);
+	aw_dev_dbg(aw87xxx->dev, "%s:enter\n", __func__);
 	psy = power_supply_get_by_name(name);
 	if (psy) {
 		ret = power_supply_get_property(psy,
@@ -64,7 +64,7 @@ int aw87xxx_get_battery_capacity(struct aw87xxx *aw87xxx,
 			return -EINVAL;
 		}
 		*vbat_capacity = prop.intval;
-		aw_dev_info(aw87xxx->dev, "The percentage is %d\n",
+		aw_dev_dbg(aw87xxx->dev, "The percentage is %d\n",
 			    *vbat_capacity);
 	} else {
 		aw_dev_err(aw87xxx->dev, "no struct power supply name :%s",
@@ -82,7 +82,7 @@ void aw87xxx_monitor_stop(struct aw87xxx_monitor *monitor)
 	struct aw87xxx *aw87xxx = container_of(monitor,
 						struct aw87xxx, monitor);
 
-	aw_dev_info(aw87xxx->dev, "%s enter, dev_i2c%d@0x%02X\n", __func__,
+	aw_dev_dbg(aw87xxx->dev, "%s enter, dev_i2c%d@0x%02X\n", __func__,
 			aw87xxx->i2c_seq, aw87xxx->i2c_addr);
 
 	if (delayed_work_pending(&aw87xxx->monitor.work))
@@ -129,7 +129,7 @@ static int aw87xxx_vbat_monitor_update_vmax(struct aw87xxx *aw87xxx,
 			break;
 		}
 	}
-	pr_info("%s:vmax_flag=%d\n", __func__, vmax_flag);
+	pr_debug("%s:vmax_flag=%d\n", __func__, vmax_flag);
 	if (vmax_flag) {
 		if (monitor->pre_vmax != vmax_set) {
 			ret = aw_set_vmax_to_dsp(vmax_set, aw87xxx->pa_channel);
@@ -139,13 +139,13 @@ static int aw87xxx_vbat_monitor_update_vmax(struct aw87xxx *aw87xxx,
 					   __func__, ret);
 				return ret;
 			} else {
-				aw_dev_info(aw87xxx->dev,
+				aw_dev_dbg(aw87xxx->dev,
 					    "%s: set dsp vmax=0x%x sucess\n",
 					    __func__, vmax_set);
 				monitor->pre_vmax = vmax_set;
 			}
 		} else {
-			aw_dev_info(aw87xxx->dev, "%s:vmax=0x%x no change\n",
+			aw_dev_dbg(aw87xxx->dev, "%s:vmax=0x%x no change\n",
 				    __func__, vmax_set);
 		}
 	}
@@ -160,7 +160,7 @@ static void aw87xxx_monitor_work_func(struct work_struct *work)
 	struct aw87xxx *aw87xxx = container_of(work,
 					       struct aw87xxx, monitor.work.work);
 
-	aw_dev_info(aw87xxx->dev, "%s: enter\n", __func__);
+	aw_dev_dbg(aw87xxx->dev, "%s: enter\n", __func__);
 
 	ret = aw87xxx_get_battery_capacity(aw87xxx, &vbat_capacity);
 	if (ret < 0)
@@ -182,7 +182,7 @@ static void aw87xxx_monitor_work_func(struct work_struct *work)
 		if (aw87xxx->monitor.custom_capacity)
 			ave_capacity = aw87xxx->monitor.custom_capacity;
 
-		aw_dev_info(aw87xxx->dev, "%s: get average capacity = %d\n",
+		aw_dev_dbg(aw87xxx->dev, "%s: get average capacity = %d\n",
 			    __func__, ave_capacity);
 
 		aw87xxx_vbat_monitor_update_vmax(aw87xxx, ave_capacity);
@@ -204,13 +204,13 @@ static int aw87xxx_nodsp_get_vmax(struct aw87xxx *aw87xxx,
 	ret = aw87xxx_get_battery_capacity(aw87xxx, &vbat_capacity);
 	if (ret < 0)
 		return ret;
-	aw_dev_info(aw87xxx->dev, "%s: get_battery_capacity is [%d]\n",
+	aw_dev_dbg(aw87xxx->dev, "%s: get_battery_capacity is [%d]\n",
 		__func__, vbat_capacity);
 
 	for (i = 0; i < vmax_cfg->vmax_cfg_num; i++) {
 		if (vbat_capacity > vmax_cfg->vmax_cfg_total[i].min_thr) {
 			*vmax_get = vmax_cfg->vmax_cfg_total[i].vmax;
-			aw_dev_info(aw87xxx->dev, "%s: read setting vmax=0x%x, step[%d]: min_thr=%d\n",
+			aw_dev_dbg(aw87xxx->dev, "%s: read setting vmax=0x%x, step[%d]: min_thr=%d\n",
 				__func__, *vmax_get, i,
 				vmax_cfg->vmax_cfg_total[i].min_thr);
 			return ret;
@@ -249,7 +249,7 @@ static ssize_t aw87xxx_set_vbat(struct device *dev,
 	ret = kstrtouint(buf, 0, &capacity);
 	if (ret < 0)
 		return ret;
-	aw_dev_info(aw87xxx->dev, "%s: set capacity = %d\n",
+	aw_dev_dbg(aw87xxx->dev, "%s: set capacity = %d\n",
 		    __func__, capacity);
 	if (capacity >= AW87XXX_VBAT_CAPACITY_MIN &&
 	    capacity <= AW87XXX_VBAT_CAPACITY_MAX)
@@ -266,7 +266,7 @@ static ssize_t aw87xxx_get_vmax(struct device *dev,
 	int ret = -1;
 	struct aw87xxx *aw87xxx = dev_get_drvdata(dev);
 
-	aw_dev_info(aw87xxx->dev, "%s: enter", __func__);
+	aw_dev_dbg(aw87xxx->dev, "%s: enter", __func__);
 
 	if (aw87xxx->open_dsp_en) {
 		ret = aw_get_vmax_from_dsp(&vmax_get, aw87xxx->pa_channel);
@@ -276,7 +276,7 @@ static ssize_t aw87xxx_get_vmax(struct device *dev,
 		} else {
 			len += snprintf(buf + len, PAGE_SIZE - len,
 				"get_vmax=0x%x\n", vmax_get);
-			aw_dev_info(aw87xxx->dev, "%s: get vmax=[%08x] from dsp\n",
+			aw_dev_dbg(aw87xxx->dev, "%s: get vmax=[%08x] from dsp\n",
 				   __func__, vmax_get);
 		}
 	} else {
@@ -294,7 +294,7 @@ static ssize_t aw87xxx_get_vmax(struct device *dev,
 		} else {
 			len += snprintf(buf + len, PAGE_SIZE - len,
 					"%x\n", vmax_get);
-			aw_dev_info(aw87xxx->dev, "%s: set vmax=[%08x] to hal\n",
+			aw_dev_dbg(aw87xxx->dev, "%s: set vmax=[%08x] to hal\n",
 				   __func__, vmax_get);
 		}
 	}
@@ -317,7 +317,7 @@ static ssize_t aw87xxx_set_vmax(struct device *dev,
 	if (ret < 0)
 		return ret;
 
-	aw_dev_info(aw87xxx->dev, "%s: vmax_set=%d\n", __func__, vmax_set);
+	aw_dev_dbg(aw87xxx->dev, "%s: vmax_set=%d\n", __func__, vmax_set);
 
 	if (aw87xxx->open_dsp_en) {
 		ret = aw_set_vmax_to_dsp(vmax_set, aw87xxx->pa_channel);
@@ -359,7 +359,7 @@ static ssize_t aw87xxx_set_monitor(struct device *dev,
 	if (ret < 0)
 		return ret;
 
-	aw_dev_info(aw87xxx->dev, "%s:monitor enable set =%d\n",
+	aw_dev_dbg(aw87xxx->dev, "%s:monitor enable set =%d\n",
 		    __func__, enable);
 	aw87xxx->monitor.monitor_flag = enable;
 
@@ -397,7 +397,7 @@ static ssize_t aw87xxx_set_vmax_time(struct device *dev,
 	ret = kstrtouint(buf, 0, &timer_val);
 	if (ret < 0)
 		return ret;
-	pr_info("%s:timer_val =%d\n", __func__, timer_val);
+	pr_debug("%s:timer_val =%d\n", __func__, timer_val);
 
 	aw87xxx->monitor.timer_val = timer_val;
 
@@ -432,7 +432,7 @@ void aw87xxx_monitor_init(struct aw87xxx_monitor *monitor)
 	struct aw87xxx *aw87xxx = container_of(monitor,
 					       struct aw87xxx, monitor);
 
-	aw_dev_info(aw87xxx->dev, "%s: enter\n", __func__);
+	aw_dev_dbg(aw87xxx->dev, "%s: enter\n", __func__);
 	INIT_DELAYED_WORK(&monitor->work, aw87xxx_monitor_work_func);
 
 	ret = sysfs_create_group(&aw87xxx->dev->kobj,
@@ -458,7 +458,7 @@ void aw87xxx_parse_monitor_dt(struct aw87xxx_monitor *monitor)
 			   "%s: monitor-flag get failed ,user default value!\n",
 			   __func__);
 	} else {
-		aw_dev_info(aw87xxx->dev, "%s: monitor-flag = %d\n",
+		aw_dev_dbg(aw87xxx->dev, "%s: monitor-flag = %d\n",
 			    __func__, monitor->monitor_flag);
 	}
 
@@ -470,7 +470,7 @@ void aw87xxx_parse_monitor_dt(struct aw87xxx_monitor *monitor)
 			   "%s: monitor-timer-val get failed,user default value!\n",
 			   __func__);
 	} else {
-		aw_dev_info(aw87xxx->dev, "%s: monitor-timer-val = %d\n",
+		aw_dev_dbg(aw87xxx->dev, "%s: monitor-timer-val = %d\n",
 			    __func__, monitor->timer_val);
 	}
 
@@ -482,7 +482,7 @@ void aw87xxx_parse_monitor_dt(struct aw87xxx_monitor *monitor)
 			   "%s: monitor-timer-count-max get failed,user default config!\n",
 			   __func__);
 	} else {
-		aw_dev_info(aw87xxx->dev, "%s: monitor-timer-count-max = %d\n",
+		aw_dev_dbg(aw87xxx->dev, "%s: monitor-timer-count-max = %d\n",
 			    __func__, monitor->timer_cnt_max);
 	}
 }

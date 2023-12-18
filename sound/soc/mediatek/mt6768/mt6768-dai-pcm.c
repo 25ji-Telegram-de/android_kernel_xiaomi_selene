@@ -113,7 +113,7 @@ static int mtk_pcm_en_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
 	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
 
-	dev_info(afe->dev, "%s(), name %s, event 0x%x\n",
+	dev_dbg(afe->dev, "%s(), name %s, event 0x%x\n",
 		 __func__, w->name, event);
 	return 0;
 }
@@ -165,7 +165,7 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 	unsigned int rate_reg = mt6768_rate_transform(afe->dev, rate, dai->id);
 	unsigned int pcm_con = 0;
 
-	dev_info(afe->dev, "%s(), id %d, stream %d, rate %d, rate_reg %d, widget active p %d, c %d\n",
+	dev_dbg(afe->dev, "%s(), id %d, stream %d, rate %d, rate_reg %d, widget active p %d, c %d\n",
 		 __func__,
 		 dai->id,
 		 substream->stream,
@@ -242,7 +242,7 @@ int mt6768_dai_pcm_register(struct mtk_base_afe *afe)
 {
 	struct mtk_base_afe_dai *dai = NULL;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	dai = devm_kzalloc(afe->dev, sizeof(*dai), GFP_KERNEL);
 	if (!dai)
