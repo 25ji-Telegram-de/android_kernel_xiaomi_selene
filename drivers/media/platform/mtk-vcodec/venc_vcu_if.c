@@ -111,7 +111,7 @@ int vcu_enc_ipi_handler(void *data, unsigned int len, void *priv)
 
 	vcu = (struct venc_vcu_inst *)(unsigned long)msg->venc_inst;
 	if ((vcu != priv) && (msg->msg_id < VCU_IPIMSG_VENC_SEND_BASE)) {
-		pr_info("%s, vcu:%p != priv:%p\n", __func__, vcu, priv);
+		pr_debug("%s, vcu:%p != priv:%p\n", __func__, vcu, priv);
 		return 1;
 	}
 

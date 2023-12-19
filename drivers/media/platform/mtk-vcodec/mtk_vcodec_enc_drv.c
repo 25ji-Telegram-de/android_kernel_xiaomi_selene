@@ -272,7 +272,7 @@ static int mtk_vcodec_enc_probe(struct platform_device *pdev)
 	for (i = VENC_SYS; i < NUM_MAX_VENC_REG_BASE; i++) {
 		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
 		if (i == VENC_SYS && res == NULL) {
-			dev_info(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"get memory resource failed. idx:%d", i);
 			ret = -ENXIO;
 			goto err_res;
@@ -379,7 +379,7 @@ static int mtk_vcodec_enc_probe(struct platform_device *pdev)
 	if (ret) {
 		ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
 		if (ret) {
-			dev_info(&pdev->dev, "64-bit DMA enable failed\n");
+			dev_dbg(&pdev->dev, "64-bit DMA enable failed\n");
 			return ret;
 		}
 	}

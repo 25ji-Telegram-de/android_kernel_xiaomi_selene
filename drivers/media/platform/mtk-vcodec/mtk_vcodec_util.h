@@ -63,7 +63,7 @@ extern bool mtk_vcodec_perf;
 #define mtk_v4l2_debug(level, fmt, args...)                              \
 	do {                                                             \
 		if ((mtk_v4l2_dbg_level & level) == level)           \
-			pr_info("[MTK_V4L2] level=%d %s(),%d: " fmt "\n",\
+			pr_debug("[MTK_V4L2] level=%d %s(),%d: " fmt "\n",\
 				level, __func__, __LINE__, ##args);      \
 	} while (0)
 
@@ -78,7 +78,7 @@ extern bool mtk_vcodec_perf;
 #define mtk_vcodec_debug(h, fmt, args...)                               \
 	do {                                                            \
 		if (mtk_vcodec_dbg)                                  \
-			pr_info("[MTK_VCODEC][%d]: %s() " fmt "\n",     \
+			pr_debug("[MTK_VCODEC][%d]: %s() " fmt "\n",     \
 				((struct mtk_vcodec_ctx *)h->ctx)->id,  \
 				__func__, ##args);                      \
 	} while (0)
@@ -86,12 +86,12 @@ extern bool mtk_vcodec_perf;
 #define mtk_vcodec_perf_log(fmt, args...)                               \
 	do {                                                            \
 		if (mtk_vcodec_perf)                          \
-			pr_info("[MTK_PERF] " fmt "\n", ##args);        \
+			pr_debug("[MTK_PERF] " fmt "\n", ##args);        \
 	} while (0)
 
 
 #define mtk_vcodec_err(h, fmt, args...)                                 \
-	pr_info("[MTK_VCODEC][ERROR][%d]: %s() " fmt "\n",               \
+	pr_debug("[MTK_VCODEC][ERROR][%d]: %s() " fmt "\n",               \
 		   ((struct mtk_vcodec_ctx *)h->ctx)->id, __func__, ##args)
 
 #define mtk_vcodec_debug_enter(h)  mtk_vcodec_debug(h, "+")
@@ -120,11 +120,11 @@ extern bool mtk_vcodec_perf;
 		aee_kernel_warning_api(__FILE__, __LINE__, \
 			DB_OPT_MMPROFILE_BUFFER | DB_OPT_NE_JBT_TRACES, \
 			vcu_name, "[MTK_V4L2] error:"string, ##args); \
-	pr_info("[MTK_V4L2] error:"string, ##args);  \
+	pr_debug("[MTK_V4L2] error:"string, ##args);  \
 	} while (0)
 #else
 #define v4l2_aee_print(string, args...) do {\
-		pr_info("[MTK_V4L2] error:"string, ##args);  \
+		pr_debug("[MTK_V4L2] error:"string, ##args);  \
 	} while (0)
 
 #endif
@@ -141,7 +141,7 @@ static __attribute__((used)) unsigned int time_ms_s[2][2], time_ms_e[2][2];
 		if ((time_ms_e[is_enc][id] - time_ms_s[is_enc][id]) \
 			> timeout_ms || \
 			mtk_vcodec_perf) \
-			pr_info("[V4L2][Info] %s L:%d take %u timeout %u ms", \
+			pr_debug("[V4L2][Info] %s L:%d take %u timeout %u ms", \
 				__func__, __LINE__, \
 				time_ms_e[is_enc][id] - time_ms_s[is_enc][id], \
 				timeout_ms); \
