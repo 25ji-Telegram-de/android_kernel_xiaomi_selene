@@ -28,7 +28,7 @@ module_param(dbg_log_en, bool, 0644);
 #define mt_dbg(dev, fmt, ...) \
 	do { \
 		if (dbg_log_en) \
-			dev_info(dev, fmt, ##__VA_ARGS__); \
+			dev_dbg(dev, fmt, ##__VA_ARGS__); \
 	} while (0)
 
 /* Register Table */
@@ -473,10 +473,10 @@ static inline int mt6362_read_zcv(struct mt6362_chg_data *data)
 	ret = iio_read_channel_processed(&data->iio_ch[MT6362_CHG_ADCCH_ZCV],
 					 &data->zcv);
 	if (ret < 0) {
-		dev_info(data->dev, "%s: fail(%d)\n", __func__, ret);
+		dev_dbg(data->dev, "%s: fail(%d)\n", __func__, ret);
 		return ret;
 	}
-	dev_info(data->dev, "%s: zcv = %d mV\n", __func__, data->zcv/1000);
+	dev_dbg(data->dev, "%s: zcv = %d mV\n", __func__, data->zcv/1000);
 	return ret;
 }
 
@@ -517,7 +517,7 @@ static int __mt6362_set_ichg(struct mt6362_chg_data *data, u32 uA)
 #ifdef CONFIG_MTK_EXTERNAL_CHARGER_TYPE_DETECT
 static int mt6362_set_usbsw_state(struct mt6362_chg_data *data, int state)
 {
-	dev_info(data->dev, "%s: state = %d\n", __func__, state);
+	dev_dbg(data->dev, "%s: state = %d\n", __func__, state);
 	/* Switch D+D- to AP/MT6362 */
 	if (state == MT6362_USBSW_CHG)
 		Charger_Detect_Init();
@@ -545,7 +545,7 @@ static int mt6362_chg_psy_changed(struct mt6362_chg_data *data)
 	if (ret < 0)
 		dev_err(data->dev, "%s: psy online fail(%d)\n", __func__, ret);
 	else
-		dev_info(data->dev,
+		dev_dbg(data->dev,
 			 "%s: pwr_rdy = %d\n",  __func__, data->attach);
 
 	propval.intval = data->chg_type;
@@ -556,7 +556,7 @@ static int mt6362_chg_psy_changed(struct mt6362_chg_data *data)
 		dev_err(data->dev,
 			"%s: psy type fail(%d)\n", __func__, ret);
 	else
-		dev_info(data->dev,
+		dev_dbg(data->dev,
 			 "%s: chg_type = %d\n", __func__, data->chg_type);
 	return ret;
 }
@@ -596,9 +596,9 @@ static int mt6362_enable_bc12(struct mt6362_chg_data *data, bool en)
 		for (i = 0; i < max_wait_cnt; i++) {
 			if (is_usb_rdy())
 				break;
-			dev_info(data->dev, "%s: CDP block\n", __func__);
+			dev_dbg(data->dev, "%s: CDP block\n", __func__);
 			if (!data->attach) {
-				dev_info(data->dev, "%s: plug out\n", __func__);
+				dev_dbg(data->dev, "%s: plug out\n", __func__);
 				return 0;
 			}
 			msleep(100);
@@ -606,7 +606,7 @@ static int mt6362_enable_bc12(struct mt6362_chg_data *data, bool en)
 		if (i == max_wait_cnt)
 			dev_err(data->dev, "%s: CDP timeout\n", __func__);
 		else
-			dev_info(data->dev, "%s: CDP free\n", __func__);
+			dev_dbg(data->dev, "%s: CDP free\n", __func__);
 	} else {
 		data->psy_desc.type = POWER_SUPPLY_TYPE_UNKNOWN;
 		data->chg_type = CHARGER_UNKNOWN;
@@ -643,13 +643,13 @@ static void mt6362_run_bc12_thread(struct mt6362_chg_data *data, bool en)
 	if (en == false &&
 		(boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT ||
 		boot_mode == LOW_POWER_OFF_CHARGING_BOOT)) {
-		pr_notice("%s: Unplug Charger/USB\n", __func__);
-		pr_notice("%s: system_state = %d\n", __func__, system_state);
+		pr_debug("%s: Unplug Charger/USB\n", __func__);
+		pr_debug("%s: system_state = %d\n", __func__, system_state);
 		if (system_state != SYSTEM_POWER_OFF)
 			kernel_power_off();
 	}
 	if (en == data->attach) {
-		dev_info(data->dev,
+		dev_dbg(data->dev,
 			 "%s: attach is the same, ignore\n", __func__);
 		return;
 	}
@@ -725,7 +725,7 @@ static int mt6362_chg_mivr_task_threadfn(void *data)
 	int ret;
 	bool mivr_stat;
 
-	dev_info(cdata->dev, "%s ++\n", __func__);
+	dev_dbg(cdata->dev, "%s ++\n", __func__);
 	while (!kthread_should_stop()) {
 		wait_event(cdata->waitq, atomic_read(&cdata->mivr_cnt) > 0);
 		mt_dbg(cdata->dev, "%s: enter mivr thread\n", __func__);
@@ -759,7 +759,7 @@ loop_cont:
 		mt6362_chg_irq_enable("chg_mivr_evt", 1);
 		msleep(200);
 	}
-	dev_info(cdata->dev, "%s --\n", __func__);
+	dev_dbg(cdata->dev, "%s --\n", __func__);
 	return 0;
 }
 
@@ -1047,7 +1047,7 @@ static int mt6362_charger_get_ieoc(struct mt6362_chg_data *data,
 static int mt6362_charger_set_online(struct mt6362_chg_data *data,
 				     const union power_supply_propval *val)
 {
-	dev_info(data->dev, "%s: en = %d\n", __func__, val->intval);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, val->intval);
 #ifdef CONFIG_MTK_EXTERNAL_CHARGER_TYPE_DETECT
 	mt6362_run_bc12_thread(data, val->intval);
 #endif /* CONFIG_MTK_EXTERNAL_CHARGER_TYPE_DETECT */
@@ -1264,7 +1264,7 @@ static int mt6362_enable_charging(struct charger_device *chg_dev, bool en)
 	/* Workaround for vsys overshoot */
 	mutex_lock(&data->ichg_lock);
 	if (data->ichg < 500000) {
-		dev_info(data->dev,
+		dev_dbg(data->dev,
 			 "%s: ichg < 500mA, bypass vsys wkard\n", __func__);
 		goto out;
 	}
@@ -1431,7 +1431,7 @@ static int mt6362_set_mivr(struct charger_device *chg_dev, u32 uV)
 
 	mutex_lock(&data->bd_lock);
 	if (data->bd_flag) {
-		dev_info(data->dev,
+		dev_dbg(data->dev,
 			 "%s: ignore until disable flash\n", __func__);
 		data->bd_mivr = uV;
 		mutex_unlock(&data->bd_lock);
@@ -1492,7 +1492,7 @@ static int mt6362_run_pump_express(struct mt6362_chg_data *data,
 	long timeout, pe_timeout = pe_sel ? 1400 : 2800;
 	int ret;
 
-	dev_info(data->dev, "%s\n", __func__);
+	dev_dbg(data->dev, "%s\n", __func__);
 	ret = mt6362_set_aicr(data->chg_dev, 800000);
 	if (ret < 0)
 		return ret;
@@ -1627,7 +1627,7 @@ static int mt6362_enable_cable_drop_comp(struct charger_device *chg_dev,
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 	int ret;
 
-	dev_info(data->dev, "%s: en = %d\n", __func__, en);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, en);
 	mutex_lock(&data->pe_lock);
 	if (en)
 		return 0;
@@ -1716,7 +1716,7 @@ static int mt6362_run_aicc(struct charger_device *chg_dev, u32 *uA)
 	/* Auto run AICC */
 	if (!pdata->aicc_oneshot) {
 		if (!try_wait_for_completion(&data->aicc_done)) {
-			dev_info(data->dev, "%s: aicc is not act\n", __func__);
+			dev_dbg(data->dev, "%s: aicc is not act\n", __func__);
 			return 0;
 		}
 
@@ -1764,7 +1764,7 @@ static int mt6362_run_aicc(struct charger_device *chg_dev, u32 *uA)
 	if (!pdata->post_aicc)
 		goto skip_post_aicc;
 
-	dev_info(data->dev, "%s: aicc pre val = %d\n", __func__, aicc_val);
+	dev_dbg(data->dev, "%s: aicc pre val = %d\n", __func__, aicc_val);
 	ret = mt6362_get_aicr(chg_dev, &aicr_val);
 	if (ret < 0) {
 		dev_err(data->dev, "%s: get aicr fail\n", __func__);
@@ -1791,7 +1791,7 @@ static int mt6362_run_aicc(struct charger_device *chg_dev, u32 *uA)
 		dev_err(data->dev, "%s: set aicr fail\n", __func__);
 		goto out;
 	}
-	dev_info(data->dev, "%s: aicc post val = %d\n", __func__, aicc_val);
+	dev_dbg(data->dev, "%s: aicc post val = %d\n", __func__, aicc_val);
 skip_post_aicc:
 	*uA = aicc_val;
 out:
@@ -1806,7 +1806,7 @@ static int mt6362_enable_power_path(struct charger_device *chg_dev, bool en)
 {
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 
-	dev_info(data->dev, "%s: en = %d\n", __func__, en);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, en);
 	return regmap_update_bits(data->regmap,
 				 MT6362_REG_CHG_TOP1,
 				 MT6362_MASK_CHG_BUCK_EN,
@@ -1824,7 +1824,7 @@ static int mt6362_is_power_path_enabled(struct charger_device *chg_dev,
 	if (ret < 0)
 		return ret;
 	*en = (regval & MT6362_MASK_CHG_BUCK_EN) ? true : false;
-	dev_info(data->dev, "%s: en = %d\n", __func__, *en);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, *en);
 	return 0;
 }
 
@@ -1832,7 +1832,7 @@ static int mt6362_enable_safety_timer(struct charger_device *chg_dev, bool en)
 {
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 
-	dev_info(data->dev, "%s: en = %d\n", __func__, en);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, en);
 	return regmap_update_bits(data->regmap,
 				  MT6362_REG_CHG_TMR,
 				  MT6362_MASK_CHG_TMR_EN,
@@ -1850,7 +1850,7 @@ static int mt6362_is_safety_timer_enabled(struct charger_device *chg_dev,
 	if (ret < 0)
 		return ret;
 	*en = (regval & MT6362_MASK_CHG_TMR_EN) ? true : false;
-	dev_info(data->dev, "%s: en = %d\n", __func__, *en);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, *en);
 	return 0;
 }
 
@@ -1866,7 +1866,7 @@ static int mt6362_set_otg_current_limit(struct charger_device *chg_dev, u32 uA)
 	}
 	if (i == ARRAY_SIZE(otg_cc_table))
 		i = ARRAY_SIZE(otg_cc_table) - 1;
-	dev_info(data->dev,
+	dev_dbg(data->dev,
 		"%s: select otg_cc = %d\n", __func__, otg_cc_table[i]);
 	return regmap_update_bits(data->regmap,
 				  MT6362_REG_OTG_C,
@@ -1879,7 +1879,7 @@ static int mt6362_enable_otg(struct charger_device *chg_dev, bool en)
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 	int ret;
 
-	dev_info(data->dev, "%s: en = %d\n", __func__, en);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, en);
 	ret = mt6362_enable_otg_parameter(data, en);
 	if (ret < 0)
 		return ret;
@@ -1897,7 +1897,7 @@ static int mt6362_enable_discharge(struct charger_device *chg_dev, bool en)
 	int i, ret = 0;
 	u32 regval;
 
-	dev_info(data->dev, "%s: en = %d\n", __func__, en);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, en);
 	ret = mt6362_enable_hidden_mode(chg_dev, true);
 	if (ret < 0)
 		return ret;
@@ -1937,7 +1937,7 @@ static int mt6362_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 {
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 
-	dev_info(data->dev, "%s: en = %d\n", __func__, en);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, en);
 #if defined(CONFIG_MTK_EXTERNAL_CHARGER_TYPE_DETECT)\
 && defined(CONFIG_TCPC_CLASS)
 	mt6362_run_bc12_thread(data, en);
@@ -1976,7 +1976,7 @@ static int mt6362_get_adc(struct charger_device *chg_dev, u32 chan,
 	mt_dbg(data->dev, "%s: read channel(%d)\n", __func__, channel);
 	ret = iio_read_channel_processed(&data->iio_ch[channel], min);
 	if (ret < 0) {
-		dev_info(data->dev, "%s: fail(%d)\n", __func__, ret);
+		dev_dbg(data->dev, "%s: fail(%d)\n", __func__, ret);
 		return ret;
 	}
 	*max = *min;
@@ -2033,7 +2033,7 @@ static int mt6362_get_tchg(struct charger_device *chg_dev,
 		data->tchg = temp_jc;
 	mutex_unlock(&data->tchg_lock);
 	*tchg_min = *tchg_max = temp_jc;
-	dev_info(data->dev, "%s: tchg = %d\n", __func__, temp_jc);
+	dev_dbg(data->dev, "%s: tchg = %d\n", __func__, temp_jc);
 	return 0;
 }
 
@@ -2065,7 +2065,7 @@ static int mt6362_safety_check(struct charger_device *chg_dev, u32 polling_ieoc)
 		eoc_cnt = 0;
 	/* If ibat is less than polling_ieoc for 3 times, trigger EOC event */
 	if (eoc_cnt == 3) {
-		dev_info(data->dev, "%s: polling_ieoc = %d, ibat = %d\n",
+		dev_dbg(data->dev, "%s: polling_ieoc = %d, ibat = %d\n",
 			 __func__, polling_ieoc, ibat);
 		charger_dev_notify(data->chg_dev, CHARGER_DEV_NOTIFY_EOC);
 		eoc_cnt = 0;
@@ -2077,7 +2077,7 @@ static int mt6362_reset_eoc_state(struct charger_device *chg_dev)
 {
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 
-	dev_info(data->dev, "%s\n", __func__);
+	dev_dbg(data->dev, "%s\n", __func__);
 	return regmap_update_bits(data->regmap,
 				  MT6362_REG_CHG_EOC,
 				  MT6362_MASK_EOC_RST,
@@ -2102,7 +2102,7 @@ static int mt6362_get_zcv(struct charger_device *chg_dev, u32 *uV)
 {
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 
-	dev_info(data->dev, "%s: zcv = %dmV\n", __func__, data->zcv / 1000);
+	dev_dbg(data->dev, "%s: zcv = %dmV\n", __func__, data->zcv / 1000);
 	*uV = data->zcv;
 	return 0;
 }
@@ -2156,11 +2156,11 @@ static int mt6362_dump_registers(struct charger_device *chg_dev)
 	if (ret < 0)
 		return ret;
 
-	dev_info(data->dev,
+	dev_dbg(data->dev,
 		 "%s: ICHG = %dmA, AICR = %dmA, MIVR = %dmV, IEOC = %dmA, CV = %dmV\n",
 		 __func__, ichg / 1000, aicr / 1000, mivr / 1000, ieoc / 1000,
 		 cv / 1000);
-	dev_info(data->dev,
+	dev_dbg(data->dev,
 		 "%s: VBUS = %dmV, IBUS = %dmA, VSYS = %dmV, VBAT = %dmV, IBAT = %dmA\n",
 		 __func__,
 		 adc_vals[MT6362_ADCCH_CHGVINDIV5] / 1000,
@@ -2168,10 +2168,10 @@ static int mt6362_dump_registers(struct charger_device *chg_dev)
 		 adc_vals[MT6362_ADCCH_VSYS] / 1000,
 		 adc_vals[MT6362_ADCCH_VBAT] / 1000,
 		 adc_vals[MT6362_ADCCH_IBAT] / 1000);
-	dev_info(data->dev, "%s: CHG_EN = %d, CHG_STATUS = %s, CHG_STAT0 = 0x%02X, CHG_STAT1 = 0x%02X\n",
+	dev_dbg(data->dev, "%s: CHG_EN = %d, CHG_STATUS = %s, CHG_STAT0 = 0x%02X, CHG_STAT1 = 0x%02X\n",
 		 __func__, chg_en, mt6362_ic_stat_list[ic_stat],
 		 chg_stat[0], chg_stat[1]);
-	dev_info(data->dev, "%s: CHG_TOP1 = 0x%02X, CHG_TOP2 = 0x%02X, CHG_EOC = 0x%02X\n",
+	dev_dbg(data->dev, "%s: CHG_TOP1 = 0x%02X, CHG_TOP2 = 0x%02X, CHG_EOC = 0x%02X\n",
 		 __func__, chg_top[0], chg_top[1], chg_eoc);
 	return 0;
 }
@@ -2180,7 +2180,7 @@ static int mt6362_do_event(struct charger_device *chg_dev, u32 event, u32 args)
 {
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 
-	dev_info(data->dev, "%s\n", __func__);
+	dev_dbg(data->dev, "%s\n", __func__);
 	switch (event) {
 	case EVENT_EOC:
 		charger_dev_notify(chg_dev, CHARGER_DEV_NOTIFY_EOC);
@@ -2223,7 +2223,7 @@ static int mt6362_enable_bleed_discharge(struct charger_device *chg_dev,
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 	int ret = 0;
 
-	dev_info(data->dev, "%s: en = %d\n", __func__, en);
+	dev_dbg(data->dev, "%s: en = %d\n", __func__, en);
 	mutex_lock(&data->bd_lock);
 	if (en == data->bd_flag)
 		goto out;
@@ -2258,7 +2258,7 @@ static int mt6362_plug_in(struct charger_device *chg_dev)
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 	int ret;
 
-	dev_info(data->dev, "%s\n", __func__);
+	dev_dbg(data->dev, "%s\n", __func__);
 	ret = mt6362_enable_wdt(data, true);
 	if (ret < 0) {
 		dev_err(data->dev, "%s: en wdt failed\n", __func__);
@@ -2275,7 +2275,7 @@ static int mt6362_plug_out(struct charger_device *chg_dev)
 	struct mt6362_chg_data *data = charger_get_data(chg_dev);
 	int ret;
 
-	dev_info(data->dev, "%s\n", __func__);
+	dev_dbg(data->dev, "%s\n", __func__);
 	ret = mt6362_enable_wdt(data, false);
 	if (ret < 0) {
 		dev_err(data->dev, "%s: disable wdt failed\n", __func__);
@@ -2405,7 +2405,7 @@ static int mt6362_chg_init_setting(struct mt6362_chg_data *data)
 						 MT6362_REG_CHG_AICR,
 						 MT6362_MASK_AICR,
 						 0x06 << MT6362_SHFT_AICR);
-		dev_info(data->dev, "%s: set aicr to 200mA in meta mode\n",
+		dev_dbg(data->dev, "%s: set aicr to 200mA in meta mode\n",
 			__func__);
 	}
 	/* disable wdt reduce 1mA power consumption */
@@ -2465,7 +2465,7 @@ static irqreturn_t mt6362_fl_pwr_rdy_evt_handler(int irq, void *data)
 {
 	struct mt6362_chg_data *cdata = data;
 
-	dev_info(cdata->dev, "%s\n", __func__);
+	dev_dbg(cdata->dev, "%s\n", __func__);
 	mutex_lock(&cdata->bd_lock);
 	cdata->pwr_rdy = true;
 	mt6362_handle_bleed_discharge(cdata);
@@ -2481,7 +2481,7 @@ static irqreturn_t mt6362_fl_detach_evt_handler(int irq, void *data)
 {
 	struct mt6362_chg_data *cdata = data;
 
-	dev_info(cdata->dev, "%s\n", __func__);
+	dev_dbg(cdata->dev, "%s\n", __func__);
 	mutex_lock(&cdata->bd_lock);
 	cdata->pwr_rdy = false;
 	mt6362_handle_bleed_discharge(cdata);
@@ -2551,7 +2551,7 @@ static irqreturn_t mt6362_fl_aicc_done_evt_handler(int irq, void *data)
 {
 	struct mt6362_chg_data *cdata = data;
 
-	dev_info(cdata->dev, "%s\n", __func__);
+	dev_dbg(cdata->dev, "%s\n", __func__);
 	complete(&cdata->aicc_done);
 	return IRQ_HANDLED;
 }
@@ -2560,7 +2560,7 @@ static irqreturn_t mt6362_fl_pe_done_evt_handler(int irq, void *data)
 {
 	struct mt6362_chg_data *cdata = data;
 
-	dev_info(cdata->dev, "%s\n", __func__);
+	dev_dbg(cdata->dev, "%s\n", __func__);
 	complete(&cdata->pe_done);
 	return IRQ_HANDLED;
 }
@@ -2570,7 +2570,7 @@ static irqreturn_t mt6362_fl_wdt_evt_handler(int irq, void *data)
 	struct mt6362_chg_data *cdata = data;
 	int ret;
 
-	dev_info(cdata->dev, "%s\n", __func__);
+	dev_dbg(cdata->dev, "%s\n", __func__);
 	ret = mt6362_kick_wdt(cdata->chg_dev);
 	if (ret < 0)
 		dev_err(cdata->dev, "%s: kick wdt failed\n", __func__);
@@ -2586,11 +2586,11 @@ static irqreturn_t mt6362_fl_bc12_dn_evt_handler(int irq, void *data)
 	enum mt6362_chg_type port_stat;
 #endif /* CONFIG_MTK_EXTERNAL_CHARGER_TYPE_DETECT */
 
-	dev_info(cdata->dev, "%s\n", __func__);
+	dev_dbg(cdata->dev, "%s\n", __func__);
 #ifdef CONFIG_MTK_EXTERNAL_CHARGER_TYPE_DETECT
 	mutex_lock(&cdata->bc12_lock);
 	if (!cdata->bc12_update) {
-		dev_info(cdata->dev, "%s: no need update bc12\n", __func__);
+		dev_dbg(cdata->dev, "%s: no need update bc12\n", __func__);
 		mutex_unlock(&cdata->bc12_lock);
 		return IRQ_HANDLED;
 	}
@@ -2603,7 +2603,7 @@ static irqreturn_t mt6362_fl_bc12_dn_evt_handler(int irq, void *data)
 	port_stat = (regval & MT6362_MASK_PORT_STAT) >> MT6362_SHFT_PORT_STAT;
 	switch (port_stat) {
 	case MT6362_CHG_TYPE_NO_INFO:
-		dev_info(cdata->dev, "%s: no information\n", __func__);
+		dev_dbg(cdata->dev, "%s: no information\n", __func__);
 		return IRQ_HANDLED;
 	case MT6362_CHG_TYPE_UNKNOWN_TA:
 		cdata->chg_type = NONSTANDARD_CHARGER;
@@ -2721,7 +2721,7 @@ static int mt6362_chg_parse_dt_data(struct device *dev,
 		{ "batoc_notify", &pdata->batoc_notify },
 	};
 
-	dev_info(dev, "%s: ++\n", __func__);
+	dev_dbg(dev, "%s: ++\n", __func__);
 	memcpy(pdata, &def_platform_data, sizeof(*pdata));
 
 	for (i = 0; i < ARRAY_SIZE(u32_opts); i++)
@@ -2858,14 +2858,14 @@ void mt6362_recv_batoc_callback(BATTERY_OC_LEVEL tag)
 					"%s: set shipping mode fail\n",
 					__func__);
 			else
-				dev_info(g_data->dev,
+				dev_dbg(g_data->dev,
 					 "%s: set shipping mode done\n",
 					 __func__);
 		}
 		mdelay(8);
 		cnt++;
 	}
-	dev_info(g_data->dev, "%s exit, cnt = %d, FG_CUR_H = %d\n",
+	dev_dbg(g_data->dev, "%s exit, cnt = %d, FG_CUR_H = %d\n",
 		 __func__, cnt,
 		 pmic_get_register_value(PMIC_RG_INT_STATUS_FG_CUR_H));
 }
@@ -3038,7 +3038,7 @@ static int mt6362_chg_probe(struct platform_device *pdev)
 #endif /* !CONFIG_TCPC_CLASS */
 #endif /* CONFIG_MTK_EXTERNAL_CHARGER_TYPE_DETECT */
 
-	dev_info(&pdev->dev, "%s: successful probe\n", __func__);
+	dev_dbg(&pdev->dev, "%s: successful probe\n", __func__);
 	return 0;
 out_chgdev:
 	charger_device_unregister(data->chg_dev);

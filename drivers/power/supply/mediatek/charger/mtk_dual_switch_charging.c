@@ -366,7 +366,7 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 	} else if (info->chr_type == POWER_SUPPLY_TYPE_USB_HVDCP) {
           pdata->input_current_limit = 2000000;
           pdata->charging_current_limit = 6000000;
-          pr_err("POWER_SUPPLY_TYPE_USB_HVDCP set icl\n");
+          pr_debug("POWER_SUPPLY_TYPE_USB_HVDCP set icl\n");
 	}
 /*K19A HQ-133296 K19A charger of low temperature by wangqi at 2021/4/27 start*/
 #if 0
@@ -483,7 +483,7 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 	if (call_mode >= 0) {
 		if (pdata->charging_current_limit >= (call_mode*1000)) {
 			pdata->charging_current_limit = (call_mode*1000);
-			pr_err("call mode is %d\n", call_mode*1000);
+			pr_debug("call mode is %d\n", call_mode*1000);
 		}
 	}
 	/*K19A HQ-129052 K19A charger of thermal current limit by wangqi at 2021/5/13 end*/
@@ -492,7 +492,7 @@ done:
 		pdata->input_current_limit = pdata->input_current_limit / 2;
 		pdata2->input_current_limit = pdata2->input_current_limit / 2;
 	}
-	pr_err("force:%d %d thermal:(%d %d,%d %d)(%d %d %d)setting:(%d %d)(%d %d)",
+	pr_debug("force:%d %d thermal:(%d %d,%d %d)(%d %d %d)setting:(%d %d)(%d %d)",
 		_uA_to_mA(pdata->force_charging_current),
 		_uA_to_mA(pdata2->force_charging_current),
 		_uA_to_mA(pdata->thermal_input_current_limit),
@@ -507,7 +507,7 @@ done:
 		_uA_to_mA(pdata2->input_current_limit),
 		_uA_to_mA(pdata2->charging_current_limit));
 
-	pr_err("type:%d usb_unlimited:%d usbif:%d usbsm:%d aicl:%d atm:%d parallel:%d\n",
+	pr_debug("type:%d usb_unlimited:%d usbif:%d usbsm:%d aicl:%d atm:%d parallel:%d\n",
 		info->chr_type, info->usb_unlimited,
 		IS_ENABLED(CONFIG_USBIF_COMPLIANCE), info->usb_state,
 		_uA_to_mA(pdata->input_current_limit_by_aicl),
@@ -586,7 +586,7 @@ static u32 get_charge_cycle_count_level(struct charger_manager *info)
 		pr_err("%s : power_supply_get_property error!\n", __func__);
 	}
 
-	pr_err("%s : charger cycle count  = %d\n", __func__, val.intval);
+	pr_debug("%s : charger cycle count  = %d\n", __func__, val.intval);
 
 	if ((val.intval >= info->chg_cycle_count_level1) && (val.intval <= (info->chg_cycle_count_level2 - 1)))
 		ffc_constant_voltage = info->ffc_cv_1;
@@ -699,13 +699,13 @@ static void dual_swchg_turn_on_charging(struct charger_manager *info)
 			}
 		}
 		if (chg1_enable) {
-			pr_err("dual_swchg_turn_on_charging swchg_select_cv\n");
+			pr_debug("dual_swchg_turn_on_charging swchg_select_cv\n");
 			swchg_select_cv(info);
 		}
 	}
 
 	charger_dev_enable(info->chg1_dev, chg1_enable);
-    pr_err("charger_dev_enable, chg1_enable %d chg2_enable %d\n",chg1_enable,chg2_enable);
+    pr_debug("charger_dev_enable, chg1_enable %d chg2_enable %d\n",chg1_enable,chg2_enable);
 
 	if (chg2_enable == true) {
 		if ((mtk_pe20_get_is_enable(info) &&
@@ -858,7 +858,7 @@ static int mtk_dual_switch_chr_cc(struct charger_manager *info)
 	/* check bif */
 	if (IS_ENABLED(CONFIG_MTK_BIF_SUPPORT)) {
 		if (pmic_is_bif_exist() != 1) {
-			pr_notice("No BIF battery, stop charging\n");
+			pr_debug("No BIF battery, stop charging\n");
 			swchgalg->state = CHR_ERROR;
 			charger_manager_notifier(info, CHARGER_NOTIFY_ERROR);
 		}
@@ -976,7 +976,7 @@ static int change_recharge_status(struct charger_manager *info)
 	}
 	battery_uisoc = val.intval;
 
-	pr_err("%s : battery_health = %d, battery_volt = %d, battery_uisoc = %d, recharger_uisoc_limit = %d\n", __func__,
+	pr_debug("%s : battery_health = %d, battery_volt = %d, battery_uisoc = %d, recharger_uisoc_limit = %d\n", __func__,
 						battery_health, battery_volt, battery_uisoc, recharger_uisoc_limit);
 
 	if (battery_health  == POWER_SUPPLY_HEALTH_OVERHEAT) {

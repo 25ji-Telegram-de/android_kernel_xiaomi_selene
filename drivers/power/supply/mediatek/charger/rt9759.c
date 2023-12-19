@@ -519,7 +519,7 @@ static int rt9759_register_regmap(struct rt9759_chip *chip)
 	struct i2c_client *client = chip->client;
 	struct rt_regmap_properties *prop = NULL;
 
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 
 	prop = devm_kzalloc(&client->dev, sizeof(*prop), GFP_KERNEL);
 	if (!prop)
@@ -821,7 +821,7 @@ static int __maybe_unused __rt9759_enter_hidden_mode(struct rt9759_chip *chip,
 		if (ret < 0)
 			goto err;
 	}
-	dev_info(chip->dev, "%s en = %d\n", __func__, en);
+	dev_dbg(chip->dev, "%s en = %d\n", __func__, en);
 	goto out;
 
 err:
@@ -881,7 +881,7 @@ static int __rt9759_get_adc(struct rt9759_chip *chip,
 		dev_notice(chip->dev, "%s %s fail(%d)\n", __func__,
 			rt9759_adc_name[chan], ret);
 	else
-		dev_info(chip->dev, "%s %s %d\n", __func__,
+		dev_dbg(chip->dev, "%s %s %d\n", __func__,
 			 rt9759_adc_name[chan], *val);
 out_dis:
 	if (!chip->force_adc_en)
@@ -908,7 +908,7 @@ static int rt9759_enable_chg(struct charger_device *chg_dev, bool en)
 	u32 stat_check = BIT(RT9759_IRQIDX_VACINSERT) |
 			 BIT(RT9759_IRQIDX_VOUTINSERT);
 
-	dev_info(chip->dev, "%s %d\n", __func__, en);
+	dev_dbg(chip->dev, "%s %d\n", __func__, en);
 	mutex_lock(&chip->adc_lock);
 	chip->force_adc_en = en;
 	if (!en) {
@@ -961,7 +961,7 @@ static int rt9759_is_chg_enabled(struct charger_device *chg_dev, bool *en)
 
 	ret = rt9759_i2c_test_bit(chip, RT9759_REG_CHGCTRL1, RT9759_CHGEN_SHFT,
 				   en);
-	dev_info(chip->dev, "%s %d, ret(%d)\n", __func__, *en, ret);
+	dev_dbg(chip->dev, "%s %d, ret(%d)\n", __func__, *en, ret);
 	return ret;
 }
 
@@ -1022,7 +1022,7 @@ static int rt9759_set_vbusovp(struct charger_device *chg_dev, u32 uV)
 	struct rt9759_chip *chip = charger_get_data(chg_dev);
 	u8 reg = rt9759_vbusovp_toreg(uV);
 
-	dev_info(chip->dev, "%s %d(0x%02X)\n", __func__, uV, reg);
+	dev_dbg(chip->dev, "%s %d(0x%02X)\n", __func__, uV, reg);
 	return rt9759_i2c_update_bits(chip, RT9759_REG_VBUSOVP, reg,
 				      RT9759_VBUSOVP_MASK);
 }
@@ -1032,7 +1032,7 @@ static int rt9759_set_ibusocp(struct charger_device *chg_dev, u32 uA)
 	struct rt9759_chip *chip = charger_get_data(chg_dev);
 	u8 reg = rt9759_ibusocp_toreg(uA);
 
-	dev_info(chip->dev, "%s %d(0x%02X)\n", __func__, uA, reg);
+	dev_dbg(chip->dev, "%s %d(0x%02X)\n", __func__, uA, reg);
 	return rt9759_i2c_update_bits(chip, RT9759_REG_IBUSOCUCP, reg,
 				      RT9759_IBUSOCP_MASK);
 }
@@ -1042,7 +1042,7 @@ static int rt9759_set_vbatovp(struct charger_device *chg_dev, u32 uV)
 	struct rt9759_chip *chip = charger_get_data(chg_dev);
 	u8 reg = rt9759_vbatovp_toreg(uV);
 
-	dev_info(chip->dev, "%s %d(0x%02X)\n", __func__, uV, reg);
+	dev_dbg(chip->dev, "%s %d(0x%02X)\n", __func__, uV, reg);
 	return rt9759_i2c_update_bits(chip, RT9759_REG_VBATOVP, reg,
 				      RT9759_VBATOVP_MASK);
 }
@@ -1052,7 +1052,7 @@ static int rt9759_set_vbatovp_alarm(struct charger_device *chg_dev, u32 uV)
 	struct rt9759_chip *chip = charger_get_data(chg_dev);
 	u8 reg = rt9759_vbatovp_toreg(uV);
 
-	dev_info(chip->dev, "%s %d\n", __func__, uV);
+	dev_dbg(chip->dev, "%s %d\n", __func__, uV);
 	return rt9759_i2c_update_bits(chip, RT9759_REG_VBATOVP_ALM, reg,
 				      RT9759_VBATOVP_ALM_MASK);
 }
@@ -1063,7 +1063,7 @@ static int rt9759_reset_vbatovp_alarm(struct charger_device *chg_dev)
 	struct rt9759_chip *chip = charger_get_data(chg_dev);
 	u8 data;
 
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	mutex_lock(&chip->io_lock);
 	ret = __rt9759_i2c_read8(chip, RT9759_REG_VBATOVP_ALM, &data);
 	if (ret < 0)
@@ -1084,7 +1084,7 @@ static int rt9759_set_vbusovp_alarm(struct charger_device *chg_dev, u32 uV)
 	struct rt9759_chip *chip = charger_get_data(chg_dev);
 	u8 reg = rt9759_vbusovp_toreg(uV);
 
-	dev_info(chip->dev, "%s %d\n", __func__, uV);
+	dev_dbg(chip->dev, "%s %d\n", __func__, uV);
 	return rt9759_i2c_update_bits(chip, RT9759_REG_VBUSOVP_ALM, reg,
 				      RT9759_VBUSOVP_ALM_MASK);
 }
@@ -1119,7 +1119,7 @@ static int rt9759_reset_vbusovp_alarm(struct charger_device *chg_dev)
 	struct rt9759_chip *chip = charger_get_data(chg_dev);
 	u8 data;
 
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	mutex_lock(&chip->io_lock);
 	ret = __rt9759_i2c_read8(chip, RT9759_REG_VBUSOVP_ALM, &data);
 	if (ret < 0)
@@ -1140,7 +1140,7 @@ static int rt9759_set_ibatocp(struct charger_device *chg_dev, u32 uA)
 	struct rt9759_chip *chip = charger_get_data(chg_dev);
 	u8 reg = rt9759_ibatocp_toreg(uA);
 
-	dev_info(chip->dev, "%s %d(0x%02X)\n", __func__, uA, reg);
+	dev_dbg(chip->dev, "%s %d(0x%02X)\n", __func__, uA, reg);
 	return rt9759_i2c_update_bits(chip, RT9759_REG_IBATOCP, reg,
 				      RT9759_IBATOCP_MASK);
 }
@@ -1158,7 +1158,7 @@ static int rt9759_init_chip(struct charger_device *chg_dev)
 		if (ret < 0)
 			return ret;
 		if ((val & reg_defval->mask) == reg_defval->value) {
-			dev_info(chip->dev,
+			dev_dbg(chip->dev,
 				"%s chip reset happened, reinit\n", __func__);
 			return __rt9759_init_chip(chip);
 		}
@@ -1168,7 +1168,7 @@ static int rt9759_init_chip(struct charger_device *chg_dev)
 
 static int rt9759_vacovp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
@@ -1184,7 +1184,7 @@ static int rt9759_ibusucpf_irq_handler(struct rt9759_chip *chip)
 {
 	bool ucpf = !!(chip->stat & BIT(RT9759_IRQIDX_IBUSUCPF));
 
-	dev_info(chip->dev, "%s %d\n", __func__, ucpf);
+	dev_dbg(chip->dev, "%s %d\n", __func__, ucpf);
 	if (ucpf)
 		rt9759_set_notify(chip, RT9759_NOTIFY_IBUSUCPF);
 	return 0;
@@ -1192,189 +1192,189 @@ static int rt9759_ibusucpf_irq_handler(struct rt9759_chip *chip)
 
 static int rt9759_ibusucpr_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s %d\n", __func__,
+	dev_dbg(chip->dev, "%s %d\n", __func__,
 		 !!(chip->stat & BIT(RT9759_IRQIDX_IBUSUCPR)));
 	return 0;
 }
 
 static int rt9759_cflydiag_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_conocp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_switching_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s %d\n", __func__,
+	dev_dbg(chip->dev, "%s %d\n", __func__,
 		 !!(chip->stat & BIT(RT9759_IRQIDX_SWITCHING)));
 	return 0;
 }
 
 static int rt9759_ibusucptout_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_vbushigherr_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s %d\n", __func__,
+	dev_dbg(chip->dev, "%s %d\n", __func__,
 		 !!(chip->stat & BIT(RT9759_IRQIDX_VBUSHERR)));
 	return 0;
 }
 
 static int rt9759_vbuslowerr_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s %d\n", __func__,
+	dev_dbg(chip->dev, "%s %d\n", __func__,
 		 !!(chip->stat & BIT(RT9759_IRQIDX_VBUSLERR)));
 	return 0;
 }
 
 static int rt9759_tdieotp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_wdt_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_adcdone_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_voutinsert_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s %d\n", __func__,
+	dev_dbg(chip->dev, "%s %d\n", __func__,
 		 !!(chip->stat & BIT(RT9759_IRQIDX_VOUTINSERT)));
 	return 0;
 }
 
 static int rt9759_vacinsert_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s %d\n", __func__,
+	dev_dbg(chip->dev, "%s %d\n", __func__,
 		 !!(chip->stat & BIT(RT9759_IRQIDX_VACINSERT)));
 	return 0;
 }
 
 static int rt9759_ibatucpalm_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_ibusocpalm_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_vbusovpalm_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	rt9759_set_notify(chip, RT9759_NOTIFY_VBUSOVPALM);
 	return 0;
 }
 
 static int rt9759_ibatocpalm_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_vbatovpalm_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	rt9759_set_notify(chip, RT9759_NOTIFY_VBATOVPALM);
 	return 0;
 }
 
 static int rt9759_tdieotpalm_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_tsbusotp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_tsbatotp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_tsbusbatotpalm_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_ibusocp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	rt9759_set_notify(chip, RT9759_NOTIFY_IBUSOCP);
 	return 0;
 }
 
 static int rt9759_vbusovp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	rt9759_set_notify(chip, RT9759_NOTIFY_VBUSOVP);
 	return 0;
 }
 
 static int rt9759_ibatocp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	rt9759_set_notify(chip, RT9759_NOTIFY_IBATOCP);
 	return 0;
 }
 
 static int rt9759_vbatovp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	rt9759_set_notify(chip, RT9759_NOTIFY_VBATOVP);
 	return 0;
 }
 
 static int rt9759_voutovp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	rt9759_set_notify(chip, RT9759_NOTIFY_VOUTOVP);
 	return 0;
 }
 
 static int rt9759_vdrovp_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	rt9759_set_notify(chip, RT9759_NOTIFY_VDROVP);
 	return 0;
 }
 
 static int rt9759_ibatreg_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9759_vbatreg_irq_handler(struct rt9759_chip *chip)
 {
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	return 0;
 }
 
@@ -1616,7 +1616,7 @@ static int rt9759_init_irq(struct rt9759_chip *chip)
 	int ret = 0, len = 0;
 	char *name = NULL;
 
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	ret = rt9759_clearall_irq(chip);
 	if (ret < 0) {
 		dev_notice(chip->dev, "%s clr all irq fail(%d)\n",
@@ -1633,7 +1633,7 @@ static int rt9759_init_irq(struct rt9759_chip *chip)
 			chip->irq);
 		return ret;
 	}
-	dev_info(chip->dev, "%s irq = %d\n", __func__, chip->irq);
+	dev_dbg(chip->dev, "%s irq = %d\n", __func__, chip->irq);
 
 	/* Request threaded IRQ */
 	name = devm_kzalloc(chip->dev, len + 5, GFP_KERNEL);
@@ -1792,9 +1792,9 @@ ignore_intr:
 		return -ENOMEM;
 	memcpy(desc, &rt9759_desc_defval, sizeof(*desc));
 	if (of_property_read_string(np, "rm_name", &desc->rm_name) < 0)
-		dev_info(chip->dev, "%s no rm name\n", __func__);
+		dev_dbg(chip->dev, "%s no rm name\n", __func__);
 	if (of_property_read_u8(np, "rm_slave_addr", &desc->rm_slave_addr) < 0)
-		dev_info(chip->dev, "%s no regmap slave addr\n", __func__);
+		dev_dbg(chip->dev, "%s no regmap slave addr\n", __func__);
 	child_np = of_get_child_by_name(np, rt9759_type_name[chip->type]);
 	if (!child_np) {
 		dev_notice(chip->dev, "%s no node(%s) found\n", __func__,
@@ -1802,7 +1802,7 @@ ignore_intr:
 		return -ENODEV;
 	}
 	if (of_property_read_string(child_np, "chg_name", &desc->chg_name) < 0)
-		dev_info(chip->dev, "%s no chg name\n", __func__);
+		dev_dbg(chip->dev, "%s no chg name\n", __func__);
 	rt9759_parse_dt_u32(child_np, (void *)desc, rt9759_dtprops_u32,
 			    ARRAY_SIZE(rt9759_dtprops_u32));
 	rt9759_parse_dt_bool(child_np, (void *)desc, rt9759_dtprops_bool,
@@ -1815,7 +1815,7 @@ static int __rt9759_init_chip(struct rt9759_chip *chip)
 {
 	int ret;
 
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 	ret = rt9759_apply_dt(chip, (void *)chip->desc, rt9759_dtprops_u32,
 			      ARRAY_SIZE(rt9759_dtprops_u32));
 	if (ret < 0)
@@ -1844,7 +1844,7 @@ static int rt9759_check_devinfo(struct i2c_client *client, u8 *chip_rev,
 	if (ret < 0)
 		return ret;
 	*type = (ret & 0x60) >> 5;
-	dev_info(&client->dev, "%s rev(0x%02X), type(%s)\n", __func__,
+	dev_dbg(&client->dev, "%s rev(0x%02X), type(%s)\n", __func__,
 		 *chip_rev, rt9759_type_name[*type]);
 	return 0;
 }
@@ -1857,7 +1857,7 @@ static int rt9759_i2c_probe(struct i2c_client *client,
 	u8 chip_rev;
 	enum rt9759_type type;
 
-	dev_info(&client->dev, "%s(%s)\n", __func__, RT9759_DRV_VERSION);
+	dev_dbg(&client->dev, "%s(%s)\n", __func__, RT9759_DRV_VERSION);
 
 	ret = rt9759_check_devinfo(client, &chip_rev, &type);
 	if (ret < 0)
@@ -1918,7 +1918,7 @@ static int rt9759_i2c_probe(struct i2c_client *client,
 		goto err_initirq;
 	}
 
-	dev_info(chip->dev, "%s successfully\n", __func__);
+	dev_dbg(chip->dev, "%s successfully\n", __func__);
 	return 0;
 err_initirq:
 	charger_device_unregister(chip->chg_dev);
@@ -1938,14 +1938,14 @@ err:
 
 static void rt9759_i2c_shutdown(struct i2c_client *client)
 {
-	dev_info(&client->dev, "%s\n", __func__);
+	dev_dbg(&client->dev, "%s\n", __func__);
 }
 
 static int rt9759_i2c_remove(struct i2c_client *client)
 {
 	struct rt9759_chip *chip = i2c_get_clientdata(client);
 
-	dev_info(&client->dev, "%s\n", __func__);
+	dev_dbg(&client->dev, "%s\n", __func__);
 	if (!chip)
 		return 0;
 	if (chip->notify_task)
@@ -1968,7 +1968,7 @@ static int __maybe_unused rt9759_i2c_suspend(struct device *dev)
 	struct i2c_client *i2c = to_i2c_client(dev);
 	struct rt9759_chip *chip = i2c_get_clientdata(i2c);
 
-	dev_info(dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 	mutex_lock(&chip->suspend_lock);
 	if (device_may_wakeup(dev))
 		enable_irq_wake(chip->irq);
@@ -1980,7 +1980,7 @@ static int __maybe_unused rt9759_i2c_resume(struct device *dev)
 	struct i2c_client *i2c = to_i2c_client(dev);
 	struct rt9759_chip *chip = i2c_get_clientdata(i2c);
 
-	dev_info(dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 	mutex_unlock(&chip->suspend_lock);
 	if (device_may_wakeup(dev))
 		disable_irq_wake(chip->irq);

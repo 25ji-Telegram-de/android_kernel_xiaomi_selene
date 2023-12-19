@@ -296,7 +296,7 @@ static int rt9750_register_rt_regmap(struct rt9750_info *info)
 	struct i2c_client *i2c = info->i2c;
 	struct rt_regmap_properties *prop = NULL;
 
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 
 	prop = devm_kzalloc(&i2c->dev, sizeof(struct rt_regmap_properties),
 		GFP_KERNEL);
@@ -605,7 +605,7 @@ static int rt9750_is_hw_exist(struct rt9750_info *info)
 		return false;
 	}
 
-	dev_info(info->dev, "%s: E%d(0x%02X)\n",
+	dev_dbg(info->dev, "%s: E%d(0x%02X)\n",
 		 __func__, chip_rev + 1, chip_rev);
 
 	info->chip_rev = chip_rev;
@@ -641,91 +641,91 @@ static inline void rt9750_irq_unmask(struct rt9750_info *info, int irqnum)
 
 static int rt9750_ibus_irev_flt_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_tbat_otp_flt_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_tbus_otp_flt_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_vout_reg_ldo_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_vbat_reg_ldo_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_ibus_reg_ldo_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_vbus_ovp_flt_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_ioc_flt_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_tshut_flt_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_bat_insert_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_vbus_insert_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_vdrop_ovp_flt_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_vdrop_alm_flt_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_adc_done_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
 static int rt9750_lowchg_alm_flt_irq_handler(struct rt9750_info *info)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return 0;
 }
 
@@ -756,7 +756,7 @@ static irqreturn_t rt9750_irq_handler(int irq, void *data)
 	u8 evt[RT9750_IRQIDX_MAX] = {0};
 	u8 mask[RT9750_IRQIDX_MAX] = {0};
 
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 
 	ret = rt9750_i2c_block_read(info, RT9750_REG_EVENT1, RT9750_IRQIDX_MAX,
 		evt);
@@ -807,7 +807,7 @@ static int rt9750_register_irq(struct rt9750_info *info)
 		goto err;
 	}
 	info->irq = ret;
-	dev_info(info->dev, "%s: irq = %d\n", __func__, info->irq);
+	dev_dbg(info->dev, "%s: irq = %d\n", __func__, info->irq);
 
 	/* Request threaded IRQ */
 	name = devm_kzalloc(info->dev, len + 5, GFP_KERNEL);
@@ -852,7 +852,7 @@ static int rt9750_parse_dt(struct rt9750_info *info, struct device *dev)
 	char *en_name = NULL;
 	const char *name = NULL;
 
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 
 	if (!np) {
 		dev_notice(info->dev, "%s: no device node\n", __func__);
@@ -887,7 +887,7 @@ static int rt9750_parse_dt(struct rt9750_info *info, struct device *dev)
 		return ret;
 #endif
 
-	dev_info(info->dev, "%s: intr/en gpio = %d, %d\n", __func__,
+	dev_dbg(info->dev, "%s: intr/en gpio = %d, %d\n", __func__,
 		info->intr_gpio, info->en_gpio);
 
 	len = strlen(desc->chg_dev_name);
@@ -933,7 +933,7 @@ static int rt9750_parse_dt(struct rt9750_info *info, struct device *dev)
 
 	info->desc = desc;
 	info->chg_props.alias_name = info->desc->alias_name;
-	dev_info(info->dev, "%s: chg_name:%s alias:%s\n", __func__,
+	dev_dbg(info->dev, "%s: chg_name:%s alias:%s\n", __func__,
 		info->desc->chg_dev_name, info->chg_props.alias_name);
 
 	return 0;
@@ -947,7 +947,7 @@ static int rt9750_set_wdt(struct rt9750_info *info, const u32 us)
 	wdt_reg = rt9750_find_closest_reg_value_via_table(rt9750_wdt,
 		ARRAY_SIZE(rt9750_wdt), us);
 
-	dev_info(info->dev, "%s: set wdt = %dms(0x%02X)\n",
+	dev_dbg(info->dev, "%s: set wdt = %dms(0x%02X)\n",
 		 __func__, us / 1000, wdt_reg);
 
 	ret = rt9750_i2c_update_bits(
@@ -989,7 +989,7 @@ static int rt9750_set_vout(struct rt9750_info *info, u32 uV)
 		uV
 	);
 
-	dev_info(info->dev, "%s: vout = %d (0x%02X)\n", __func__, uV, reg_vout);
+	dev_dbg(info->dev, "%s: vout = %d (0x%02X)\n", __func__, uV, reg_vout);
 
 	ret = rt9750_i2c_update_bits(
 		info,
@@ -1030,7 +1030,7 @@ static int rt9750_set_vbat(struct rt9750_info *info, u32 uV)
 		uV
 	);
 
-	dev_info(info->dev, "%s: vbat = %d (0x%02X)\n", __func__, uV, reg_vbat);
+	dev_dbg(info->dev, "%s: vbat = %d (0x%02X)\n", __func__, uV, reg_vbat);
 
 	ret = rt9750_i2c_update_bits(
 		info,
@@ -1050,7 +1050,7 @@ static int rt9750_set_iococp(struct rt9750_info *info, u32 uA)
 	reg_iococp = rt9750_find_closest_reg_value(RT9750_IOCOCP_MIN,
 		RT9750_IOCOCP_MAX, RT9750_IOCOCP_STEP, RT9750_IOCOCP_NUM, uA);
 
-	dev_info(info->dev, "%s: iococp = %d (0x%02X)\n",
+	dev_dbg(info->dev, "%s: iococp = %d (0x%02X)\n",
 		 __func__, uA, reg_iococp);
 
 	ret = rt9750_i2c_update_bits(
@@ -1067,7 +1067,7 @@ static int rt9750_maskall_irq(struct rt9750_info *info)
 {
 	int ret = 0;
 
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	ret = rt9750_i2c_block_write(info, RT9750_REG_EVENT1_MASK,
 		ARRAY_SIZE(rt9750_irq_maskall), rt9750_irq_maskall);
 
@@ -1078,7 +1078,7 @@ static int rt9750_init_irq(struct rt9750_info *info)
 {
 	int ret = 0;
 
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 
 	ret = rt9750_i2c_block_write(info, RT9750_REG_EVENT1_MASK,
 		ARRAY_SIZE(rt9750_irqmask), rt9750_irqmask);
@@ -1136,7 +1136,7 @@ static int rt9750_is_switch_enable(struct rt9750_info *info, bool *en)
 	}
 
 	*en = (ret == 0 ? false : true);
-	dev_info(info->dev, "%s: enable = %d\n", __func__, *en);
+	dev_dbg(info->dev, "%s: enable = %d\n", __func__, *en);
 
 	return ret;
 }
@@ -1155,7 +1155,7 @@ static int rt9750_get_vbus_adc(struct rt9750_info *info, u32 *vbus_adc)
 
 	*vbus_adc = ((data[0] & RT9750_MASK_VBUS_ADC2) << 8) + data[1];
 
-	dev_info(info->dev, "%s: vbus_adc = %dmV\n", __func__, *vbus_adc);
+	dev_dbg(info->dev, "%s: vbus_adc = %dmV\n", __func__, *vbus_adc);
 	return ret;
 }
 static int rt9750_get_vout_adc(struct rt9750_info *info, u32 *vout_adc)
@@ -1171,7 +1171,7 @@ static int rt9750_get_vout_adc(struct rt9750_info *info, u32 *vout_adc)
 
 	*vout_adc = ((data[0] & RT9750_MASK_VOUT_ADC2) << 8) + data[1];
 
-	dev_info(info->dev, "%s: vout_adc = %dmV\n", __func__, *vout_adc);
+	dev_dbg(info->dev, "%s: vout_adc = %dmV\n", __func__, *vout_adc);
 	return ret;
 }
 
@@ -1188,7 +1188,7 @@ static int rt9750_get_vdrop_adc(struct rt9750_info *info, u32 *vdrop_adc)
 
 	*vdrop_adc = ((data[0] & RT9750_MASK_VDROP_ADC2) << 8) + data[1];
 
-	dev_info(info->dev, "%s: vdrop_adc = %dmV\n", __func__, *vdrop_adc);
+	dev_dbg(info->dev, "%s: vdrop_adc = %dmV\n", __func__, *vdrop_adc);
 	return ret;
 }
 
@@ -1205,7 +1205,7 @@ static int rt9750_get_vbat_adc(struct rt9750_info *info, u32 *vbat_adc)
 
 	*vbat_adc = ((data[0] & RT9750_MASK_VBAT_ADC2) << 8) + data[1];
 
-	dev_info(info->dev, "%s: vbat_adc = %dmV\n", __func__, *vbat_adc);
+	dev_dbg(info->dev, "%s: vbat_adc = %dmV\n", __func__, *vbat_adc);
 	return ret;
 }
 
@@ -1223,7 +1223,7 @@ static int rt9750_get_tbat_adc(struct rt9750_info *info, u32 *tbat_adc)
 
 	*tbat_adc = ((data[0] & RT9750_MASK_TBAT_ADC2) << 8) + data[1];
 
-	dev_info(info->dev, "%s: tbat_adc = %ddegree\n", __func__, *tbat_adc);
+	dev_dbg(info->dev, "%s: tbat_adc = %ddegree\n", __func__, *tbat_adc);
 	return ret;
 }
 
@@ -1240,7 +1240,7 @@ static int rt9750_get_tbus_adc(struct rt9750_info *info, u32 *tbus_adc)
 
 	*tbus_adc = ((data[0] & RT9750_MASK_TBUS_ADC2) << 8) + data[1];
 
-	dev_info(info->dev, "%s: tbus_adc = %ddegree\n", __func__, *tbus_adc);
+	dev_dbg(info->dev, "%s: tbus_adc = %ddegree\n", __func__, *tbus_adc);
 	return ret;
 }
 #endif
@@ -1266,7 +1266,7 @@ static int rt9750_dump_register(struct charger_device *chg_dev)
 			return ret;
 	}
 
-	dev_info(info->dev, "%s: VOUT = %dmV, VBAT = %dmV, SWITCH_EN = %d\n",
+	dev_dbg(info->dev, "%s: VOUT = %dmV, VBAT = %dmV, SWITCH_EN = %d\n",
 		__func__, vout / 1000, vbat / 1000, en);
 
 	return ret;
@@ -1274,14 +1274,14 @@ static int rt9750_dump_register(struct charger_device *chg_dev)
 
 static int _rt9750_enable_chip(struct rt9750_info *info, bool en)
 {
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 
 	mutex_lock(&info->gpio_access_lock);
 	if (en) {
 		/* Lock I2C to solve I2C SDA drop problem */
 		i2c_lock_adapter(info->i2c->adapter);
 		gpio_set_value(info->en_gpio, 1);
-		dev_info(info->dev, "%s: set gpio high\n", __func__);
+		dev_dbg(info->dev, "%s: set gpio high\n", __func__);
 		udelay(10);
 		i2c_unlock_adapter(info->i2c->adapter);
 
@@ -1289,7 +1289,7 @@ static int _rt9750_enable_chip(struct rt9750_info *info, bool en)
 		mdelay(1);
 	} else {
 		gpio_set_value(info->en_gpio, 0);
-		dev_info(info->dev, "%s: set gpio low\n", __func__);
+		dev_dbg(info->dev, "%s: set gpio low\n", __func__);
 	}
 
 	info->is_chip_en = en;
@@ -1323,7 +1323,7 @@ static int rt9750_enable_switch(struct charger_device *chg_dev, bool en)
 	int ret = 0;
 	struct rt9750_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	dev_info(info->dev, "%s, enable = %d\n", __func__, en);
+	dev_dbg(info->dev, "%s, enable = %d\n", __func__, en);
 	ret = (en ? rt9750_set_bit : rt9750_clr_bit)
 		(info, RT9750_REG_CONTROL, RT9750_MASK_CHG_EN);
 
@@ -1339,7 +1339,7 @@ static int rt9750_set_ibusoc(struct charger_device *chg_dev, u32 uA)
 	reg_ibusoc = rt9750_find_closest_reg_value(RT9750_IBUSOC_MIN,
 		RT9750_IBUSOC_MAX, RT9750_IBUSOC_STEP, RT9750_IBUSOC_NUM, uA);
 
-	dev_info(info->dev, "%s: ibusoc = %d (0x%02X)\n", __func__, uA,
+	dev_dbg(info->dev, "%s: ibusoc = %d (0x%02X)\n", __func__, uA,
 		reg_ibusoc);
 
 	ret = rt9750_i2c_update_bits(
@@ -1363,7 +1363,7 @@ static int rt9750_set_vbusov(struct charger_device *chg_dev, u32 uV)
 		RT9750_VBUSOV_MAX, RT9750_VBUSOV_STEP, RT9750_VBUSOV_NUM,
 		uV);
 
-	dev_info(info->dev, "%s: vbusov = %d (0x%02X)\n",
+	dev_dbg(info->dev, "%s: vbusov = %d (0x%02X)\n",
 		 __func__, uV, reg_vbusov);
 
 	ret = rt9750_i2c_update_bits(
@@ -1384,7 +1384,7 @@ static int rt9750_kick_wdt(struct charger_device *chg_dev)
 	struct rt9750_info *info = dev_get_drvdata(&chg_dev->dev);
 
 	/* Any I2C operation can kick wdt */
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	ret = rt9750_get_vout(info, &vout);
 
 	return ret;
@@ -1405,7 +1405,7 @@ static int rt9750_get_ibus_adc(struct charger_device *chg_dev, u32 *ibus_adc)
 	*ibus_adc = ((data[0] & RT9750_MASK_IBUS_ADC2) << 8) + data[1];
 	*ibus_adc *= 1000; /* uA */
 
-	dev_info(info->dev, "%s: ibus_adc = %dmA\n", __func__, *ibus_adc);
+	dev_dbg(info->dev, "%s: ibus_adc = %dmA\n", __func__, *ibus_adc);
 	return ret;
 }
 
@@ -1424,7 +1424,7 @@ static int rt9750_get_tdie_adc(struct charger_device *chg_dev,
 	*tdie_adc_min = ret;
 	*tdie_adc_max = ret;
 
-	dev_info(info->dev, "%s: tdie_adc = %ddegree\n",
+	dev_dbg(info->dev, "%s: tdie_adc = %ddegree\n",
 		 __func__, *tdie_adc_min);
 	return ret;
 }
@@ -1454,7 +1454,7 @@ static int rt9750_dbg_thread(void *data)
 	bool en = false;
 	struct rt9750_info *info = (struct rt9750_info *)data;
 
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	ret = rt9750_enable_chip(info->chg_dev, true);
 	while (1) {
 		ret = rt9750_get_ibus_adc(info->chg_dev, &ibus_adc);
@@ -1548,7 +1548,7 @@ static int rt9750_probe(struct i2c_client *i2c,
 	wake_up_process(info->task);
 #endif
 
-	dev_info(info->dev, "%s: ends\n", __func__);
+	dev_dbg(info->dev, "%s: ends\n", __func__);
 	return ret;
 
 err_disable_chip:
@@ -1641,7 +1641,7 @@ static int __init rt9750_init(void)
 
 	ret = i2c_add_driver(&rt9750_i2c_driver);
 	if (ret < 0)
-		pr_notice("%s: register i2c driver failed\n", __func__);
+		pr_debug("%s: register i2c driver failed\n", __func__);
 
 	return ret;
 }

@@ -1854,7 +1854,7 @@ static int smb1351_parse_dt(struct smb1351_charger *chip)
 
 	chip->desc = desc;
 	chip->chg_props.alias_name = chip->desc->alias_name;
-	dev_info(chip->dev, "%s: chg_name:%s alias:%s\n", __func__,
+	dev_dbg(chip->dev, "%s: chg_name:%s alias:%s\n", __func__,
 			chip->desc->chg_dev_name, chip->chg_props.alias_name);
 
 	chip->bc12_supported = of_property_read_bool(np, "qcom,bc12_supported");

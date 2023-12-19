@@ -370,7 +370,7 @@ static int pca_mtk_chg_register(struct pca_mtk_chg_info *info)
 {
 	int i;
 
-	dev_info(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 
 	for (i = 0; i < MTK_CHGTYP_MAX; i++) {
 		if (!info->chgdev[i])
@@ -392,7 +392,7 @@ static int pca_mtk_chg_probe(struct platform_device *pdev)
 	int ret, i;
 	struct pca_mtk_chg_info *info;
 
-	dev_info(&pdev->dev, "%s(%s)\n", __func__, PCA_MTK_CHG_VERSION);
+	dev_dbg(&pdev->dev, "%s(%s)\n", __func__, PCA_MTK_CHG_VERSION);
 
 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
 	if (!info)
@@ -423,7 +423,7 @@ static int pca_mtk_chg_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	dev_info(info->dev, "%s successfully\n", __func__);
+	dev_dbg(info->dev, "%s successfully\n", __func__);
 	return 0;
 }
 

@@ -968,7 +968,7 @@ static int bq2589x_inform_charger_type_report(struct bq2589x *bq)
 					&propval);
 
 	if (ret < 0)
-		pr_notice("inform power supply online failed:%d\n", ret);
+		pr_debug("inform power supply online failed:%d\n", ret);
 
 	propval.intval = bq->chg_type;
 	if (propval.intval == HVDCP_CHARGER) {
@@ -980,7 +980,7 @@ static int bq2589x_inform_charger_type_report(struct bq2589x *bq)
 					&propval);
 
 	if (ret < 0)
-		pr_notice("inform power supply charge type failed:%d\n", ret);
+		pr_debug("inform power supply charge type failed:%d\n", ret);
 
 	return ret;
 }
