@@ -2889,10 +2889,10 @@ static int32_t nvt_ts_resume(struct device *dev)
 	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 start */
 	if (tp_charger_status == true) {
 		nvt_set_charger_switch(1);
-		NVT_ERR("charger_switch = 1\n");
+		NVT_LOG("charger_switch = 1\n");
 	} else {
 		nvt_set_charger_switch(0);
-		NVT_ERR("charger_switch = 0\n");
+		NVT_LOG("charger_switch = 0\n");
 	}
 	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 end */
 
@@ -2955,10 +2955,10 @@ int32_t nvt_ts_tp_resume(void)
 	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 start */
 	if (tp_charger_status == true) {
 		nvt_set_charger_switch(1);
-		NVT_ERR("charger_switch = 1\n");
+		NVT_LOG("charger_switch = 1\n");
 	} else {
 		nvt_set_charger_switch(0);
-		NVT_ERR("charger_switch = 0\n");
+		NVT_LOG("charger_switch = 0\n");
 	}
 	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 end */
 
