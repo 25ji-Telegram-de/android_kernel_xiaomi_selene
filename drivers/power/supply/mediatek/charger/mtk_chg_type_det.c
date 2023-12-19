@@ -72,7 +72,7 @@ uint8_t  typec_cc_orientation;
 
 void __attribute__((weak)) fg_charger_in_handler(void)
 {
-	pr_notice("%s not defined\n", __func__);
+	pr_debug("%s not defined\n", __func__);
 }
 
 #if 0
@@ -215,7 +215,7 @@ static int mt_charger_online(struct mt_charger *mtk_chg)
 		boot_mode = get_boot_mode();
 		if (boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT ||
 		    boot_mode == LOW_POWER_OFF_CHARGING_BOOT) {
-			pr_notice("%s: Unplug1 Charger/USB\n", __func__);
+			pr_debug("%s: Unplug1 Charger/USB\n", __func__);
 			msleep(4000);
 			vbus = battery_get_vbus();
 			if (vbus > 3000) {
@@ -223,7 +223,7 @@ static int mt_charger_online(struct mt_charger *mtk_chg)
 				return 0;
 			}
 			pr_err("vbus is hight return %d\n", vbus);
-			pr_notice("%s: system_state2=%d\n", __func__,
+			pr_debug("%s: system_state2=%d\n", __func__,
 				system_state);
 			machine_power_off();
 		}
@@ -270,7 +270,7 @@ static int mt_charger_set_property(struct power_supply *psy,
 	pr_debug("%s\n", __func__);
 
 	if (!mtk_chg) {
-		pr_notice("%s: no mtk chg data\n", __func__);
+		pr_debug("%s: no mtk chg data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1041,7 +1041,7 @@ bool pmic_chrdet_status(void)
 	if (upmu_is_chr_det())
 		return true;
 
-	pr_notice("%s: No charger\n", __func__);
+	pr_debug("%s: No charger\n", __func__);
 	return false;
 }
 

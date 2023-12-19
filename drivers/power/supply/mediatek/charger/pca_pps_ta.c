@@ -403,19 +403,19 @@ static int pca_pps_tcp_notifier_call(struct notifier_block *nb,
 	case TCP_NOTIFY_PD_STATE:
 		switch (noti->pd_state.connected) {
 		case PD_CONNECT_NONE:
-			dev_info(info->dev, "detached\n");
+			dev_dbg(info->dev, "detached\n");
 			info->is_pps_en_unlock = false;
 			info->hrst_cnt = 0;
 			break;
 		case PD_CONNECT_HARD_RESET:
 			info->hrst_cnt++;
-			dev_info(info->dev, "pd hardreset, cnt = %d\n",
+			dev_dbg(info->dev, "pd hardreset, cnt = %d\n",
 				 info->hrst_cnt);
 			info->is_pps_en_unlock = false;
 			break;
 		case PD_CONNECT_PE_READY_SNK_APDO:
 			if (info->hrst_cnt < 5) {
-				dev_info(info->dev, "%s en unlock\n", __func__);
+				dev_dbg(info->dev, "%s en unlock\n", __func__);
 				info->is_pps_en_unlock = true;
 			}
 			break;
@@ -448,7 +448,7 @@ static int pca_pps_probe(struct platform_device *pdev)
 	int ret;
 	struct pca_pps_info *info;
 
-	dev_info(&pdev->dev, "%s\n", __func__);
+	dev_dbg(&pdev->dev, "%s\n", __func__);
 
 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
 	if (!info)
@@ -486,7 +486,7 @@ static int pca_pps_probe(struct platform_device *pdev)
 		goto err;
 	}
 
-	dev_info(info->dev, "%s successfully\n", __func__);
+	dev_dbg(info->dev, "%s successfully\n", __func__);
 	return 0;
 err:
 	unregister_tcp_dev_notifier(info->tcpc, &info->tcp_nb,

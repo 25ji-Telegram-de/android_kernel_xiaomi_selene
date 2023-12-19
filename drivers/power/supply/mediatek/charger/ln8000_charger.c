@@ -1404,7 +1404,7 @@ static int ln8000_get_dev_role(struct i2c_client *client)
         return -EINVAL;
     }
 
-    dev_info(&client->dev,"%s: matched to %s\n", __func__, of_id->compatible);
+    dev_dbg(&client->dev,"%s: matched to %s\n", __func__, of_id->compatible);
 
     return (long)of_id->data;
 }
@@ -1524,7 +1524,7 @@ static int ln8000_probe(struct i2c_client *client, const struct i2c_device_id *i
         dev_err(&client->dev, "fail to detect ln8000 on i2c_bus(addr=0x%x)\n", client->addr);
         return -ENODEV;
     }
-    dev_info(&client->dev, "device id=0x%x\n", ret);
+    dev_dbg(&client->dev, "device id=0x%x\n", ret);
 
     info = devm_kzalloc(&client->dev, sizeof(struct ln8000_info), GFP_KERNEL);
     if (info == NULL) {

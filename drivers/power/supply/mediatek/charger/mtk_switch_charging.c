@@ -67,13 +67,6 @@
 #include "mtk_switch_charging.h"
 
 extern int call_mode;
-static int _uA_to_mA(int uA)
-{
-	if (uA == -1)
-		return -1;
-	else
-		return uA / 1000;
-}
 
 static void _disable_all_charging(struct charger_manager *info)
 {
@@ -344,19 +337,6 @@ done:
 	ret = charger_dev_get_min_input_current(info->chg1_dev, &aicr1_min);
 	if (ret != -ENOTSUPP && pdata->input_current_limit < aicr1_min)
 		pdata->input_current_limit = 0;
-
-	chr_err("force:%d thermal:%d,%d pe4:%d,%d,%d setting:%d %d type:%d usb_unlimited:%d usbif:%d usbsm:%d aicl:%d atm:%d\n",
-		_uA_to_mA(pdata->force_charging_current),
-		_uA_to_mA(pdata->thermal_input_current_limit),
-		_uA_to_mA(pdata->thermal_charging_current_limit),
-		_uA_to_mA(info->pe4.pe4_input_current_limit),
-		_uA_to_mA(info->pe4.pe4_input_current_limit_setting),
-		_uA_to_mA(info->pe4.input_current_limit),
-		_uA_to_mA(pdata->input_current_limit),
-		_uA_to_mA(pdata->charging_current_limit),
-		info->chr_type, info->usb_unlimited,
-		IS_ENABLED(CONFIG_USBIF_COMPLIANCE), info->usb_state,
-		pdata->input_current_limit_by_aicl, info->atm_enabled);
 
 	charger_dev_set_input_current(info->chg1_dev,
 					pdata->input_current_limit);

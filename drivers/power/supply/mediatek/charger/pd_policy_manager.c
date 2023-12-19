@@ -586,12 +586,12 @@ static void usbpd_pm_evaluate_src_caps(struct usbpd_pm *pdpm)
 
 	
 	if (pdpm->pps_supported)
-		pr_notice("PPS supported, preferred APDO pos:%d, max volt:%d, current:%d\n",
+		pr_debug("PPS supported, preferred APDO pos:%d, max volt:%d, current:%d\n",
 				pdpm->apdo_selected_pdo,
 				pdpm->apdo_max_volt,
 				pdpm->apdo_max_curr);
 	else
-		pr_notice("Not qualified PPS adapter\n");
+		pr_debug("Not qualified PPS adapter\n");
 }
 
 
@@ -677,18 +677,18 @@ static int usbpd_pm_fc2_charge_algo(struct usbpd_pm *pdpm)
     }
 
 	if (pdpm->cp.bat_therm_fault ) { /* battery overheat, stop charge*/
-		pr_notice("bat_therm_fault:%d\n", pdpm->cp.bat_therm_fault);
+		pr_debug("bat_therm_fault:%d\n", pdpm->cp.bat_therm_fault);
 		return PM_ALGO_RET_THERM_FAULT;
 	} else if (pdpm->cp.bat_ocp_fault || pdpm->cp.bus_ocp_fault 
 			|| pdpm->cp.bat_ovp_fault || pdpm->cp.bus_ovp_fault) {
-		pr_notice("bat_ocp_fault:%d, bus_ocp_fault:%d, bat_ovp_fault:%d, \
+		pr_debug("bat_ocp_fault:%d, bus_ocp_fault:%d, bat_ovp_fault:%d, \
 				bus_ovp_fault:%d\n", pdpm->cp.bat_ocp_fault,
 				pdpm->cp.bus_ocp_fault, pdpm->cp.bat_ovp_fault,
 				pdpm->cp.bus_ovp_fault);
 	        return PM_ALGO_RET_OTHER_FAULT; /* go to switch, and try to ramp up*/
 	} else if ((!pdpm->cp.charge_enabled && (pdpm->cp.vbus_error_low
                 || pdpm->cp.vbus_error_high)) || (pm_config.cp_sec_enable && !pdpm->cp_sec.charge_enabled && !pdpm->cp_sec_stopped)){
-		pr_notice("cp.charge_enabled:%d  %d  %d,cp_sec.charge_enabled:%d\n",
+		pr_debug("cp.charge_enabled:%d  %d  %d,cp_sec.charge_enabled:%d\n",
 				pdpm->cp.charge_enabled, pdpm->cp.vbus_error_low, pdpm->cp.vbus_error_high,pdpm->cp_sec.charge_enabled);
 		return PM_ALGO_RET_CHG_DISABLED;
 	}
@@ -697,7 +697,7 @@ static int usbpd_pm_fc2_charge_algo(struct usbpd_pm *pdpm)
 	if (pdpm->cp.vbat_volt > pm_config.bat_volt_lp_lmt - 50 
 			&& pdpm->cp.ibat_curr < pm_config.fc2_taper_current) {
 		if (fc2_taper_timer++ > TAPER_TIMEOUT) {
-			pr_notice("charge pump taper charging done\n");
+			pr_debug("charge pump taper charging done\n");
 			fc2_taper_timer = 0;
 			return PM_ALGO_RET_TAPER_DONE;
 		}
@@ -758,14 +758,14 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 		recover = false;
 
 		if (pdpm->cp.vbat_volt < pm_config.min_vbat_for_cp) {
-			pr_notice("batt_volt-%d, waiting...\n", pdpm->cp.vbat_volt);
+			pr_debug("batt_volt-%d, waiting...\n", pdpm->cp.vbat_volt);
 		} else if (pdpm->cp.vbat_volt > pm_config.bat_volt_lp_lmt - 100) {
-			pr_notice("batt_volt-%d is too high for cp,\
+			pr_debug("batt_volt-%d is too high for cp,\
 					charging with switch charger\n", 
 					pdpm->cp.vbat_volt);
 			usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_EXIT);
 		} else {
-			pr_notice("batt_volt-%d is ok, start flash charging\n", 
+			pr_debug("batt_volt-%d is ok, start flash charging\n", 
 					pdpm->cp.vbat_volt);
 			usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_ENTRY);
 		}
@@ -817,13 +817,13 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 			pr_err("request_voltage:%d, request_current:%d\n",
 					pdpm->request_voltage, pdpm->request_current);
 		} else {
-			pr_notice("adapter volt tune ok, retry %d times\n", tune_vbus_retry);
+			pr_debug("adapter volt tune ok, retry %d times\n", tune_vbus_retry);
 		    usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_ENTRY_3);
 			break;
 		}
 		
 		if (tune_vbus_retry > 25) {
-			pr_notice("Failed to tune adapter volt into valid range, \
+			pr_debug("Failed to tune adapter volt into valid range, \
 					charge with switching charger\n");
 			usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_EXIT);
 		}	
@@ -856,17 +856,17 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 	case PD_PM_STATE_FC2_TUNE:
 		ret = usbpd_pm_fc2_charge_algo(pdpm);
 		if (ret == PM_ALGO_RET_THERM_FAULT) {
-			pr_notice("Move to stop charging:%d\n", ret);
+			pr_debug("Move to stop charging:%d\n", ret);
 			stop_sw = true;
 			usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_EXIT);
 			break;
 		} else if (ret == PM_ALGO_RET_OTHER_FAULT || ret == PM_ALGO_RET_TAPER_DONE) {
-			pr_notice("Move to switch charging:%d\n", ret);
+			pr_debug("Move to switch charging:%d\n", ret);
 			stop_sw = false;
 			usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_EXIT);
 			break;
 		} else if (ret == PM_ALGO_RET_CHG_DISABLED) {
-			pr_notice("Move to switch charging, will try to recover \
+			pr_debug("Move to switch charging, will try to recover \
 					flash charging:%d\n", ret);
 			recover = true;
 			stop_sw = false;
@@ -884,7 +884,7 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 		if (pm_config.cp_sec_enable && pdpm->cp_sec.charge_enabled 
 				&& pdpm->cp.vbat_volt > pm_config.bat_volt_lp_lmt - 50
 				&& (pdpm->cp.ibus_curr < 750 || pdpm->cp_sec.ibus_curr < 750)) {
-			pr_notice("second cp is disabled due to ibus < 750mA\n");
+			pr_debug("second cp is disabled due to ibus < 750mA\n");
 			usbpd_pm_enable_cp_sec(pdpm, false);
 			usbpd_pm_check_cp_sec_enabled(pdpm);
 			pdpm->cp_sec_stopped = true;

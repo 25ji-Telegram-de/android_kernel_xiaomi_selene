@@ -106,13 +106,6 @@ done:
 	if (ret != -ENOTSUPP && pdata->charging_current_limit < ichg1_min)
 		pdata->charging_current_limit = 0;
 
-	chr_err("force:%d thermal:%d setting:%d type:%d usb_unlimited:%d usbif:%d usbsm:%d\n",
-		pdata->force_charging_current,
-		pdata->thermal_charging_current_limit,
-		pdata->charging_current_limit,
-		info->chr_type, info->usb_unlimited,
-		IS_ENABLED(CONFIG_USBIF_COMPLIANCE), info->usb_state);
-
 	charger_dev_set_charging_current(info->chg1_dev,
 					pdata->charging_current_limit);
 
@@ -226,7 +219,7 @@ static bool charging_full_check(struct charger_manager *info)
 			full_check_count = 0;
 			chg_full_status = true;
 			charger_dev_do_event(info->chg1_dev, EVENT_EOC, 0);
-			pr_notice("battery full on ichg = %d uA\n",
+			pr_debug("battery full on ichg = %d uA\n",
 				chg_current);
 		}
 	}
@@ -289,7 +282,7 @@ static int mtk_linear_chr_cc(struct charger_manager *info)
 	if (vbat > algo_data->topoff_voltage) {
 		algo_data->state = CHR_TOPOFF;
 		get_monotonic_boottime(&algo_data->topoff_begin_time);
-		pr_notice("enter TOPOFF mode on vbat = %d uV\n", vbat);
+		pr_debug("enter TOPOFF mode on vbat = %d uV\n", vbat);
 	}
 
 	linear_chg_turn_on_charging(info);
@@ -327,7 +320,7 @@ static int mtk_linear_chr_topoff(struct charger_manager *info)
 
 		/* Disable charging */
 		charger_dev_enable(info->chg1_dev, false);
-		pr_notice("%s: disable charging\n", __func__);
+		pr_debug("%s: disable charging\n", __func__);
 	}
 
 	return 0;
@@ -390,7 +383,7 @@ static int mtk_linear_chr_full(struct charger_manager *info)
 		charger_dev_do_event(info->chg1_dev, EVENT_RECHARGE, 0);
 		info->enable_dynamic_cv = true;
 		get_monotonic_boottime(&algo_data->charging_begin_time);
-		pr_notice("battery recharging on vbat = %d uV\n", vbat);
+		pr_debug("battery recharging on vbat = %d uV\n", vbat);
 		info->polling_interval = CHARGING_INTERVAL;
 	}
 

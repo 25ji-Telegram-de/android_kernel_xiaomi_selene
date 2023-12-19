@@ -109,7 +109,7 @@ static ssize_t pca_show_property(struct device *dev,
 	struct prop_chgalgo_device *pca = to_pca_device(dev);
 	const ptrdiff_t offset = attr - pca_device_attributes;
 
-	dev_info(dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 	switch (offset) {
 	case PCA_DESC_NAME:
 		snprintf(buf + strlen(buf), PAGE_SIZE, "%s\n", pca->desc->name);
@@ -132,7 +132,7 @@ static ssize_t pca_store_property(struct device *dev,
 				  struct device_attribute *attr,
 				  const char *buf, size_t count)
 {
-	dev_info(dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 	return count;
 }
 
@@ -140,7 +140,7 @@ static void pca_device_release(struct device *dev)
 {
 	struct prop_chgalgo_device *pca = to_pca_device(dev);
 
-	dev_info(dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 	devm_kfree(dev, pca);
 }
 
@@ -563,7 +563,7 @@ prop_chgalgo_device_register(struct device *parent,
 	int ret;
 	struct prop_chgalgo_device *pca;
 
-	dev_info(parent, "%s (%s)\n", __func__, pca_desc->name);
+	dev_dbg(parent, "%s (%s)\n", __func__, pca_desc->name);
 	pca = devm_kzalloc(parent, sizeof(*pca), GFP_KERNEL);
 	if (!pca)
 		return ERR_PTR(-ENOMEM);
@@ -587,7 +587,7 @@ prop_chgalgo_device_register(struct device *parent,
 		return ERR_PTR(ret);
 	}
 
-	dev_info(parent, "%s (%s) successfully\n", __func__, pca->desc->name);
+	dev_dbg(parent, "%s (%s) successfully\n", __func__, pca->desc->name);
 	return pca;
 }
 EXPORT_SYMBOL(prop_chgalgo_device_register);

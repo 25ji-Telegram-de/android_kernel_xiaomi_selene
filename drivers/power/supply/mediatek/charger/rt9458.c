@@ -273,20 +273,20 @@ static inline int rt9458_set_aicr(struct rt9458_info *ri, u32 uA)
 	ret = rt9458_reg_assign_bits(ri, RT9458_REG_CTRL2, RT9458_IAICR_MASK,
 				     iaicr << RT9458_IAICR_SHFT);
 	if (ret < 0) {
-		dev_info(ri->dev, "config iaicr fail\n");
+		dev_dbg(ri->dev, "config iaicr fail\n");
 		return ret;
 	}
 	ret = rt9458_reg_assign_bits(ri, RT9458_REG_CTRL6,
 				     RT9458_IAICRSEL_MASK,
 				     (iaicr_sel ? 0xff : 0));
 	if (ret < 0) {
-		dev_info(ri->dev, "config iaicr_sel fail\n");
+		dev_dbg(ri->dev, "config iaicr_sel fail\n");
 		return ret;
 	}
 	/* config aicr to internal aicr register */
 	ret = rt9458_reg_set_bits(ri, RT9458_REG_CTRL2, RT9458_IAICRINT_MASK);
 	if (ret < 0) {
-		dev_info(ri->dev, "config iaicr_int  fail\n");
+		dev_dbg(ri->dev, "config iaicr_int  fail\n");
 		return ret;
 	}
 	return 0;
@@ -416,7 +416,7 @@ static int rt9458_charger_enable_otg(struct charger_device *chg_dev, bool en)
 	int ret = 0;
 
 	/* clear HZ mode */
-	dev_info(ri->dev, "%s: clear HZ mode\n", __func__);
+	dev_dbg(ri->dev, "%s: clear HZ mode\n", __func__);
 	rt9458_reg_clr_bits(ri, RT9458_REG_CTRL2, RT9458_HZ_MASK);
 
 	if (en) {
@@ -658,25 +658,25 @@ static int rt9458_charger_dump_registers(struct charger_device *chg_dev)
 
 	ret = rt9458_charger_get_ichg(chg_dev, &ichg);
 	if (ret < 0)
-		dev_info(ri->dev, "get ichg fail\n");
+		dev_dbg(ri->dev, "get ichg fail\n");
 	ret = rt9458_charger_get_aicr(chg_dev, &aicr);
 	if (ret < 0)
-		dev_info(ri->dev, "get aicr fail\n");
+		dev_dbg(ri->dev, "get aicr fail\n");
 	ret = rt9458_get_mivr(ri, &mivr);
 	if (ret < 0)
-		dev_info(ri->dev, "get mivr fail\n");
+		dev_dbg(ri->dev, "get mivr fail\n");
 	ret = rt9458_charger_is_enabled(chg_dev, &chg_en);
 	if (ret < 0)
-		dev_info(ri->dev, "get charger enabled fail\n");
+		dev_dbg(ri->dev, "get charger enabled fail\n");
 	ret = rt9458_get_ieoc(ri, &ieoc);
 	if (ret < 0)
-		dev_info(ri->dev, "get ieoc fail\n");
+		dev_dbg(ri->dev, "get ieoc fail\n");
 	ret = rt9458_charger_get_cv(chg_dev, &voreg);
 	if (ret < 0)
-		dev_info(ri->dev, "get cv fail\n");
+		dev_dbg(ri->dev, "get cv fail\n");
 	ret = rt9458_charger_get_charging_stat(chg_dev, &chg_stat);
 	if (ret < 0)
-		dev_info(ri->dev, "get charger status fail\n");
+		dev_dbg(ri->dev, "get charger status fail\n");
 
 	if (dbg_log_en) {
 		for (i = RT9458_REG_CTRL1; i <= RT9458_REG_CTRL8; i++) {
@@ -689,15 +689,15 @@ static int rt9458_charger_dump_registers(struct charger_device *chg_dev)
 			ret = rt9458_reg_read(ri, i);
 			if (ret < 0)
 				continue;
-			dev_info(ri->dev, "[0x%02X] : 0x%02x\n", i, ret);
+			dev_dbg(ri->dev, "[0x%02X] : 0x%02x\n", i, ret);
 		}
 	}
-	dev_info(ri->dev,
+	dev_dbg(ri->dev,
 		"%s: ICHG = %dmA, AICR = %dmA%s, MIVR = %dmV, IEOC = %dmA\n",
 		__func__, ichg / 1000, aicr / 1000, (aicr == U32_MAX) ?
 		" (no limit)" : "", mivr / 1000, ieoc / 1000);
 
-	dev_info(ri->dev,
+	dev_dbg(ri->dev,
 		"%s: CV = %dmV, vmreg = %dmV, CHG_EN = %d, CHG_STATUS = %s\n",
 		__func__, voreg / 1000, pdata->vmreg / 1000, chg_en,
 		rt9458_chg_stat_name[chg_stat]);
@@ -711,11 +711,11 @@ static int rt9458_charger_do_event(struct charger_device *chg_dev, u32 event,
 
 	switch (event) {
 	case EVENT_EOC:
-		dev_info(ri->dev, "do eoc event\n");
+		dev_dbg(ri->dev, "do eoc event\n");
 		charger_dev_notify(ri->chg_dev, CHARGER_DEV_NOTIFY_EOC);
 		break;
 	case EVENT_RECHARGE:
-		dev_info(ri->dev, "do recharge event\n");
+		dev_dbg(ri->dev, "do recharge event\n");
 		charger_dev_notify(ri->chg_dev, CHARGER_DEV_NOTIFY_RECHG);
 		break;
 	default:
@@ -767,7 +767,7 @@ static irqreturn_t rt9458_irq_BATAB_handler(int irq, void *dev_id)
 {
 	struct rt9458_info *ri = (struct rt9458_info *)dev_id;
 
-	dev_info(ri->dev, "%s\n", __func__);
+	dev_dbg(ri->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -775,7 +775,7 @@ static irqreturn_t rt9458_irq_VINOVPI_handler(int irq, void *dev_id)
 {
 	struct rt9458_info *ri = (struct rt9458_info *)dev_id;
 
-	dev_info(ri->dev, "%s\n", __func__);
+	dev_dbg(ri->dev, "%s\n", __func__);
 #if defined(CONFIG_MTK_GAUGE_VERSION) && (CONFIG_MTK_GAUGE_VERSION == 30)
 	ri->chg_dev->noti.vbusov_stat = true;
 	charger_dev_notify(ri->chg_dev, CHARGER_DEV_NOTIFY_VBUS_OVP);
@@ -787,7 +787,7 @@ static irqreturn_t rt9458_irq_TSDI_handler(int irq, void *dev_id)
 {
 	struct rt9458_info *ri = (struct rt9458_info *)dev_id;
 
-	dev_info(ri->dev, "%s\n", __func__);
+	dev_dbg(ri->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -795,7 +795,7 @@ static irqreturn_t rt9458_irq_CHMIVRI_handler(int irq, void *dev_id)
 {
 	struct rt9458_info *ri = (struct rt9458_info *)dev_id;
 
-	dev_info(ri->dev, "%s\n", __func__);
+	dev_dbg(ri->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -819,7 +819,7 @@ static irqreturn_t rt9458_irq_CHRCHGI_handler(int irq, void *dev_id)
 {
 	struct rt9458_info *ri = (struct rt9458_info *)dev_id;
 
-	dev_info(ri->dev, "%s\n", __func__);
+	dev_dbg(ri->dev, "%s\n", __func__);
 #if defined(CONFIG_MTK_GAUGE_VERSION) && (CONFIG_MTK_GAUGE_VERSION == 30)
 	charger_dev_notify(ri->chg_dev, CHARGER_DEV_NOTIFY_RECHG);
 #endif /* #if (CONFIG_MTK_GAUGE_VERSION == 30) */
@@ -830,7 +830,7 @@ static irqreturn_t rt9458_irq_CHTERMI_handler(int irq, void *dev_id)
 {
 	struct rt9458_info *ri = (struct rt9458_info *)dev_id;
 
-	dev_info(ri->dev, "%s\n", __func__);
+	dev_dbg(ri->dev, "%s\n", __func__);
 #if defined(CONFIG_MTK_GAUGE_VERSION) && (CONFIG_MTK_GAUGE_VERSION == 30)
 	charger_dev_notify(ri->chg_dev, CHARGER_DEV_NOTIFY_EOC);
 #endif /* #if (CONFIG_MTK_GAUGE_VERSION == 30) */
@@ -841,7 +841,7 @@ static irqreturn_t rt9458_irq_CHBATOVI_handler(int irq, void *dev_id)
 {
 	struct rt9458_info *ri = (struct rt9458_info *)dev_id;
 
-	dev_info(ri->dev, "%s\n", __func__);
+	dev_dbg(ri->dev, "%s\n", __func__);
 #if defined(CONFIG_MTK_GAUGE_VERSION) && (CONFIG_MTK_GAUGE_VERSION == 30)
 	charger_dev_notify(ri->chg_dev, CHARGER_DEV_NOTIFY_BAT_OVP);
 #endif /* #if (CONFIG_MTK_GAUGE_VERSION == 30) */
@@ -852,7 +852,7 @@ static irqreturn_t rt9458_irq_CHRVPI_handler(int irq, void *dev_id)
 {
 	struct rt9458_info *ri = (struct rt9458_info *)dev_id;
 
-	dev_info(ri->dev, "%s\n", __func__);
+	dev_dbg(ri->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -860,7 +860,7 @@ static irqreturn_t rt9458_irq_BST32SI_handler(int irq, void *dev_id)
 {
 	struct rt9458_info *ri = (struct rt9458_info *)dev_id;
 
-	dev_info(ri->dev, "%s\n", __func__);
+	dev_dbg(ri->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -915,7 +915,7 @@ static irqreturn_t rt9458_intr_handler(int irq, void *dev_id)
 	ret = rt9458_reg_block_read(ri, RT9458_REG_IRQ1,
 				    RT9458_IRQ_REGNUM, event);
 	if (ret < 0) {
-		dev_info(ri->dev, "read irq event fail\n");
+		dev_dbg(ri->dev, "read irq event fail\n");
 		goto out_intr_handler;
 	}
 	for (i = 0; i < RT9458_IRQ_REGNUM; i++) {
@@ -945,7 +945,7 @@ static int rt9458_chip_irq_init(struct rt9458_info *ri)
 	ret = devm_gpio_request_one(ri->dev, pdata->intr_gpio, GPIOF_IN,
 				    "rt9458_intr_gpio");
 	if (ret < 0) {
-		dev_info(ri->dev, "request gpio fail\n");
+		dev_dbg(ri->dev, "request gpio fail\n");
 		return ret;
 	}
 	ri->irq = gpio_to_irq(pdata->intr_gpio);
@@ -954,7 +954,7 @@ static int rt9458_chip_irq_init(struct rt9458_info *ri)
 					IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
 					dev_name(ri->dev), ri);
 	if (ret < 0) {
-		dev_info(ri->dev, "request interrupt fail\n");
+		dev_dbg(ri->dev, "request interrupt fail\n");
 		return ret;
 	}
 	device_init_wakeup(ri->dev, true);
@@ -992,37 +992,37 @@ static int rt9458_chip_pdata_init(struct rt9458_info *ri)
 
 	ret = rt9458_set_mivr(ri, pdata->mivr);
 	if (ret < 0) {
-		dev_info(ri->dev, "set mivr fail\n");
+		dev_dbg(ri->dev, "set mivr fail\n");
 		return ret;
 	}
 	ret = rt9458_set_aicr(ri, pdata->aicr);
 	if (ret < 0) {
-		dev_info(ri->dev, "set aicr fail\n");
+		dev_dbg(ri->dev, "set aicr fail\n");
 		return ret;
 	}
 	ret = rt9458_set_vmreg(ri, pdata->vmreg);
 	if (ret < 0) {
-		dev_info(ri->dev, "set vmreg fail\n");
+		dev_dbg(ri->dev, "set vmreg fail\n");
 		return ret;
 	}
 	ret = rt9458_set_voreg(ri, pdata->voreg);
 	if (ret < 0) {
-		dev_info(ri->dev, "set voreg fail\n");
+		dev_dbg(ri->dev, "set voreg fail\n");
 		return ret;
 	}
 	ret = rt9458_set_ichg(ri, pdata->ichg);
 	if (ret < 0) {
-		dev_info(ri->dev, "set ichg fail\n");
+		dev_dbg(ri->dev, "set ichg fail\n");
 		return ret;
 	}
 	ret = rt9458_set_ieoc(ri, pdata->ieoc);
 	if (ret < 0) {
-		dev_info(ri->dev, "set ieoc fail\n");
+		dev_dbg(ri->dev, "set ieoc fail\n");
 		return ret;
 	}
 	ret = rt9458_set_eoc_shdn(ri, pdata->enable_eoc_shdn);
 	if (ret < 0)
-		dev_info(ri->dev, "set eoc shutdown fail\n");
+		dev_dbg(ri->dev, "set eoc shutdown fail\n");
 	if (!strcmp(pdata->chg_name, "secondary_chg"))
 		rt9458_set_chg_enable(ri, false);
 	return ret;
@@ -1035,27 +1035,27 @@ static int rt9458_chip_reset(struct i2c_client *i2c)
 
 	ret = i2c_smbus_write_byte_data(i2c, RT9458_REG_CTRL4, 0x80);
 	if (ret < 0) {
-		dev_info(&i2c->dev, "chip reset fail\n");
+		dev_dbg(&i2c->dev, "chip reset fail\n");
 		return ret;
 	}
 	msleep(20);
 	/* default disable safety timer */
 	ret = i2c_smbus_write_byte_data(i2c, RT9458_REG_CTRL5, 0x02);
 	if (ret < 0) {
-		dev_info(&i2c->dev, "default disable timer fail\n");
+		dev_dbg(&i2c->dev, "default disable timer fail\n");
 		return ret;
 	}
 	memset(tmp, 0xff, RT9458_IRQ_REGNUM);
 	ret = i2c_smbus_write_i2c_block_data(i2c, RT9458_REG_MASK1,
 					     RT9458_IRQ_REGNUM, tmp);
 	if (ret < 0) {
-		dev_info(&i2c->dev, "set all masked fail\n");
+		dev_dbg(&i2c->dev, "set all masked fail\n");
 		return ret;
 	}
 	ret = i2c_smbus_read_i2c_block_data(i2c, RT9458_REG_IRQ1,
 					    RT9458_IRQ_REGNUM, tmp);
 	if (ret < 0) {
-		dev_info(&i2c->dev, "read all irqevents fail\n");
+		dev_dbg(&i2c->dev, "read all irqevents fail\n");
 		return ret;
 	}
 	return 0;
@@ -1067,12 +1067,12 @@ static inline int rt9458_i2c_detect_devid(struct i2c_client *i2c)
 
 	ret = i2c_smbus_read_byte_data(i2c, RT9458_REG_DEVID);
 	if (ret < 0) {
-		dev_info(&i2c->dev, "%s: chip io may bail\n", __func__);
+		dev_dbg(&i2c->dev, "%s: chip io may bail\n", __func__);
 		return ret;
 	}
 	dev_dbg(&i2c->dev, "%s: dev_id 0x%02x\n", __func__, ret);
 	if ((ret & 0xf0) != 0x00) {
-		dev_info(&i2c->dev, "%s: vendor id not correct\n", __func__);
+		dev_dbg(&i2c->dev, "%s: vendor id not correct\n", __func__);
 		return -ENODEV;
 	}
 	/* finally return the rev id */
@@ -1119,7 +1119,7 @@ static int rt9458_i2c_probe(struct i2c_client *i2c,
 	bool use_dt = i2c->dev.of_node;
 	int ret = 0;
 
-	dev_info(&i2c->dev, "%s start(%s)\n", __func__, RT9458_DRV_VERSION);
+	dev_dbg(&i2c->dev, "%s start(%s)\n", __func__, RT9458_DRV_VERSION);
 
 	ret = rt9458_i2c_detect_devid(i2c);
 	if (ret < 0)
@@ -1140,7 +1140,7 @@ static int rt9458_i2c_probe(struct i2c_client *i2c,
 		rt_parse_dt(&i2c->dev, pdata);
 	} else {
 		if (!pdata) {
-			dev_info(&i2c->dev, "no pdata specify\n");
+			dev_dbg(&i2c->dev, "no pdata specify\n");
 			return -EINVAL;
 		}
 	}
@@ -1167,14 +1167,14 @@ static int rt9458_i2c_probe(struct i2c_client *i2c,
 					      &rt9458_chg_ops,
 					      &rt9458_chg_props);
 	if (IS_ERR(ri->chg_dev)) {
-		dev_info(ri->dev, "charger device register fail\n");
+		dev_dbg(ri->dev, "charger device register fail\n");
 		return PTR_ERR(ri->chg_dev);
 	}
 #endif /* #if (CONFIG_MTK_GAUGE_VERSION == 30) */
 	ret = rt9458_chip_irq_init(ri);
 	if (ret < 0)
 		return ret;
-	dev_info(ri->dev, "%s end\n", __func__);
+	dev_dbg(ri->dev, "%s end\n", __func__);
 	return 0;
 }
 
@@ -1182,14 +1182,14 @@ static int rt9458_i2c_remove(struct i2c_client *i2c)
 {
 	struct rt9458_info *ri = i2c_get_clientdata(i2c);
 
-	dev_info(ri->dev, "%s start\n", __func__);
+	dev_dbg(ri->dev, "%s start\n", __func__);
 #if defined(CONFIG_MTK_GAUGE_VERSION) && (CONFIG_MTK_GAUGE_VERSION == 30)
 	charger_device_unregister(ri->chg_dev);
 #endif /* #if (CONFIG_MTK_GAUGE_VERSION == 30) */
 #ifdef CONFIG_RT_REGMAP
 	rt_regmap_device_unregister(ri->regmap_dev);
 #endif /* #ifdef CONFIG_RT_REGMAP */
-	dev_info(ri->dev, "%s end\n", __func__);
+	dev_dbg(ri->dev, "%s end\n", __func__);
 	return 0;
 }
 

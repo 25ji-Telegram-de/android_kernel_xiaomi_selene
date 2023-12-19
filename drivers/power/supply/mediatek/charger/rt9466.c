@@ -445,7 +445,7 @@ static int rt9466_register_rt_regmap(struct rt9466_info *info)
 	struct i2c_client *client = info->client;
 	struct rt_regmap_properties *prop = NULL;
 
-	dev_info("%s\n", __func__);
+	dev_dbg("%s\n", __func__);
 
 	prop = devm_kzalloc(&client->dev, sizeof(struct rt_regmap_properties),
 		GFP_KERNEL);
@@ -2441,7 +2441,7 @@ static int rt9466_get_vbus(struct charger_device *chg_dev, u32 *vbus)
 
 	*vbus = adc_vbus;
 
-	dev_info(info->dev, "%s: vbus = %dmA\n", __func__, adc_vbus);
+	dev_dbg(info->dev, "%s: vbus = %dmA\n", __func__, adc_vbus);
 	return ret;
 }
 #endif
