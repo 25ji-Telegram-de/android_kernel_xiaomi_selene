@@ -810,7 +810,6 @@ info_retry:
 
 	NVT_LOG("fw_ver = 0x%02X, fw_type = 0x%02X\n", ts->fw_ver, buf[14]);
 	/*BSP.Touch - 2020.11.13 - add for hw_info start*/
-	printk("[%s]: fw_ver = 0x%02x \n", ts->fw_ver);
 	tp_fw_version = ts->fw_ver;
 	/*BSP.Touch - 2020.11.13 - add for hw_info end*/
 	//---Get Novatek PID---
