@@ -376,7 +376,7 @@ static int mtk_vcodec_dec_probe(struct platform_device *pdev)
 	if (ret) {
 		ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
 		if (ret) {
-			dev_info(&pdev->dev, "64-bit DMA enable failed\n");
+			dev_dbg(&pdev->dev, "64-bit DMA enable failed\n");
 			return ret;
 		}
 	}
