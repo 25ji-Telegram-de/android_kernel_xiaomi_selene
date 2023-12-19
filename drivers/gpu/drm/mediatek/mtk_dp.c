@@ -3035,7 +3035,7 @@ static int mtk_dp_control_kthread(void *data)
 	return 0;
 }
 
-int mtk_drm_dp_get_dev_info(struct drm_device *dev, void *data,
+int mtk_drm_dp_get_dev_dbg(struct drm_device *dev, void *data,
 		struct drm_file *file_priv)
 {
 	struct mtk_dispif_info *info = data;

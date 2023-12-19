@@ -339,22 +339,22 @@ void mtk_dp_inf_video_clock(struct mtk_dp_intf *dp_intf)
 		con1 = 0x830F93B1; //htotal = 1500
 		break;
 	default:
-		pr_info("%s error res %d!\n", __func__, dp_intf->res);
+		pr_debug("%s error res %d!\n", __func__, dp_intf->res);
 
 	}
 
 	if (clk_apmixed_base == NULL) {
 		node = of_find_compatible_node(NULL, NULL, "mediatek,apmixed");
 		if (!node)
-			pr_info("dp_intf [CLK_APMIXED] find node failed\n");
+			pr_debug("dp_intf [CLK_APMIXED] find node failed\n");
 			clk_apmixed_base = of_iomap(node, 0);
 		if (clk_apmixed_base == NULL) {
-			pr_info("dp_intf [CLK_APMIXED] io map failed\n");
+			pr_debug("dp_intf [CLK_APMIXED] io map failed\n");
 			return;
 		}
 	}
 
-	pr_info("clk_apmixed_base clk_apmixed_base 0x%lx!!!,res %d\n",
+	pr_debug("clk_apmixed_base clk_apmixed_base 0x%lx!!!,res %d\n",
 		clk_apmixed_base, dp_intf->res);
 	ret = clk_prepare_enable(dp_intf->pclk);
 	ret = clk_set_parent(dp_intf->pclk, dp_intf->pclk_src[clksrc]);
@@ -365,7 +365,7 @@ void mtk_dp_inf_video_clock(struct mtk_dp_intf *dp_intf)
 	DISP_REG_SET_FIELD(NULL, REG_FLD_MSB_LSB(0, 0),
 			clk_apmixed_base + 0x380, 1);
 
-	pr_info("%s set pclk2 and src %d\n", __func__, clksrc);
+	pr_debug("%s set pclk2 and src %d\n", __func__, clksrc);
 
 }
 
@@ -392,7 +392,7 @@ static void mtk_dp_intf_config(struct mtk_ddp_comp *comp,
 	unsigned int bg_left, bg_right;
 	unsigned int bg_top, bg_bot;
 
-	pr_info("%s w %d, h, %d, fps %d!\n",
+	pr_debug("%s w %d, h, %d, fps %d!\n",
 			__func__, cfg->w, cfg->h, cfg->vrefresh);
 
 	hsize = cfg->w;
@@ -463,7 +463,7 @@ static void mtk_dp_intf_config(struct mtk_ddp_comp *comp,
 		mtk_ddp_write_mask(comp, RB_SWAP,
 			DP_OUTPUT_SETTING, RB_SWAP, handle);
 	} else
-		pr_info("%s error, w %d, h, %d, fps %d!\n",
+		pr_debug("%s error, w %d, h, %d, fps %d!\n",
 			__func__, cfg->w, cfg->h, cfg->vrefresh);
 
 
@@ -710,12 +710,12 @@ static int mtk_dp_intf_probe(struct platform_device *pdev)
 	if (clk_apmixed_base == NULL) {
 		node = of_find_compatible_node(NULL, NULL, "mediatek,apmixed");
 		if (!node)
-			pr_info("[CLK_APMIXED] find node failed\n");
+			pr_debug("[CLK_APMIXED] find node failed\n");
 		clk_apmixed_base = of_iomap(node, 0);
 		if (clk_apmixed_base == NULL)
-			pr_info("[CLK_APMIXED] io map failed\n");
+			pr_debug("[CLK_APMIXED] io map failed\n");
 
-		pr_info("clk_apmixed_base clk_apmixed_base 0x%lx!!!\n",
+		pr_debug("clk_apmixed_base clk_apmixed_base 0x%lx!!!\n",
 			clk_apmixed_base);
 	}
 
@@ -826,7 +826,7 @@ static irqreturn_t mtk_dp_intf_irq_status(int irq, void *dev_id)
 		|| ((irq_vdesa+1)%200 == 0)
 		|| ((irq_underflowsa+1)%200 == 0)
 		|| ((irq_tl+1)%200 == 0))
-		pr_info("dp_intf irq %d - %d - %d - %d! 0x%x\n", irq_intsa,
+		pr_debug("dp_intf irq %d - %d - %d - %d! 0x%x\n", irq_intsa,
 				irq_vdesa, irq_underflowsa, irq_tl, status);
 
 	return IRQ_HANDLED;

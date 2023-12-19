@@ -18,8 +18,8 @@
 #include "tci.h"
 #include "tlDPHdcpCMD.h"
 
-#define TLCINFO(string, args...) pr_info("[TLC_HDCP]info: "string, ##args)
-#define TLCERR(string, args...) pr_info("[TLC_HDCP]line:%d,err:%s:"string,\
+#define TLCINFO(string, args...) pr_debug("[TLC_HDCP]info: "string, ##args)
+#define TLCERR(string, args...) pr_debug("[TLC_HDCP]line:%d,err:%s:"string,\
 	__LINE__, __func__, ##args)
 
 #define RET_ERROR_KEY_INVALID   10

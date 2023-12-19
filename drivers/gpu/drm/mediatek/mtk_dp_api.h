@@ -18,7 +18,7 @@
 #include <drm/drmP.h>
 
 void mtk_dp_SWInterruptSet(int bstatus);
-int mtk_drm_dp_get_dev_info(struct drm_device *dev,
+int mtk_drm_dp_get_dev_dbg(struct drm_device *dev,
 			void *data, struct drm_file *file_priv);
 int mtk_drm_dp_audio_enable(struct drm_device *dev,
 			void *data, struct drm_file *file_priv);

@@ -5164,7 +5164,7 @@ static int mtk_dsi_probe(struct platform_device *pdev)
 		dsi->panel = of_drm_find_panel(remote_node);
 		of_node_put(remote_node);
 		if (!dsi->bridge && !dsi->panel) {
-			dev_info(dev, "Waiting for bridge or panel driver\n");
+			dev_dbg(dev, "Waiting for bridge or panel driver\n");
 			ret = -EPROBE_DEFER;
 			goto error;
 		}
@@ -5258,12 +5258,12 @@ static int mtk_dsi_probe(struct platform_device *pdev)
 	phy_power_on(dsi->phy);
 	ret = clk_prepare_enable(dsi->engine_clk);
 	if (ret < 0)
-		pr_info("%s Failed to enable engine clock: %d\n",
+		pr_debug("%s Failed to enable engine clock: %d\n",
 			__func__, ret);
 
 	ret = clk_prepare_enable(dsi->digital_clk);
 	if (ret < 0)
-		pr_info("%s Failed to enable digital clock: %d\n",
+		pr_debug("%s Failed to enable digital clock: %d\n",
 			__func__, ret);
 #endif
 	dsi->output_en = true;

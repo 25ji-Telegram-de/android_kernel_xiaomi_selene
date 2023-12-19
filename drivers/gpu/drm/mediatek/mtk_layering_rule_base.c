@@ -1217,7 +1217,7 @@ static int get_layer_weight(int disp_idx,
 		struct disp_session_info dispif_info;
 
 		/* For seconary display, set the weight 4K@30 as 2K@60.	*/
-		hdmi_get_dev_info(true, &dispif_info);
+		hdmi_get_dev_dbg(true, &dispif_info);
 
 		if (dispif_info.displayWidth > 2560)
 			weight = HRT_UINT_WEIGHT * 2;

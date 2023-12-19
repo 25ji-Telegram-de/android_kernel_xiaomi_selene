@@ -375,7 +375,7 @@ int mtkfb_set_aod_backlight_level(unsigned int level)
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
 	if (!crtc) {
-		pr_info("find crtc fail\n");
+		pr_debug("find crtc fail\n");
 		return 0;
 	}
 	mtk_drm_aod_setbacklight(crtc, level);
@@ -1420,7 +1420,7 @@ static void process_dbg_opt(const char *opt)
 
 		ret = sscanf(opt, "aod_bl:%u\n", &level);
 		if (ret != 1) {
-			pr_info("%d fail to parse cmd %s\n",
+			pr_debug("%d fail to parse cmd %s\n",
 				__LINE__, opt);
 			return;
 		}
@@ -1977,41 +1977,41 @@ void disp_dbg_probe(void)
 				   NULL,
 				   &debug_fops);
 	if (!mtkfb_procfs) {
-		pr_info("[%s %d]failed to create mtkfb in /proc/disp_ddp\n",
+		pr_debug("[%s %d]failed to create mtkfb in /proc/disp_ddp\n",
 			__func__, __LINE__);
 		goto out;
 	}
 
 	disp_lowpower_proc = proc_mkdir("displowpower", NULL);
 	if (!disp_lowpower_proc) {
-		pr_info("[%s %d]failed to create dir: /proc/displowpower\n",
+		pr_debug("[%s %d]failed to create dir: /proc/displowpower\n",
 			__func__, __LINE__);
 		goto out;
 	}
 
 	if (!proc_create("idletime", S_IFREG | 0444,
 			 disp_lowpower_proc, &idletime_fops)) {
-		pr_info("[%s %d]failed to create idletime in /proc/displowpower\n",
+		pr_debug("[%s %d]failed to create idletime in /proc/displowpower\n",
 			__func__, __LINE__);
 		goto out;
 	}
 
 	if (!proc_create("idlevfp", S_IFREG | 0444,
 		disp_lowpower_proc, &idlevfp_fops)) {
-		pr_info("[%s %d]failed to create idlevfp in /proc/displowpower\n",
+		pr_debug("[%s %d]failed to create idlevfp in /proc/displowpower\n",
 			__func__, __LINE__);
 		goto out;
 	}
 
 	mtkfb_debug_procfs = proc_mkdir("mtkfb_debug", NULL);
 	if (!mtkfb_debug_procfs) {
-		pr_info("[%s %d]failed to create dir: /proc/mtkfb_debug\n",
+		pr_debug("[%s %d]failed to create dir: /proc/mtkfb_debug\n",
 			__func__, __LINE__);
 		goto out;
 	}
 	if (!proc_create("disp_met", S_IFREG | 0444,
 		mtkfb_debug_procfs, &disp_met_fops)) {
-		pr_info("[%s %d]failed to create idlevfp in /proc/mtkfb_debug/disp_met\n",
+		pr_debug("[%s %d]failed to create idlevfp in /proc/mtkfb_debug/disp_met\n",
 			__func__, __LINE__);
 		goto out;
 	}

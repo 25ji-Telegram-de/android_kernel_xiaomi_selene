@@ -487,7 +487,7 @@ static int mtk_hdmi_phy_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	dev_info(dev, "Using default TX DRV impedance: 4.2k/36\n");
+	dev_dbg(dev, "Using default TX DRV impedance: 4.2k/36\n");
 	hdmi_phy->drv_imp_clk = 0x30;
 	hdmi_phy->drv_imp_d2 = 0x30;
 	hdmi_phy->drv_imp_d1 = 0x30;

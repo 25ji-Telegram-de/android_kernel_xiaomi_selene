@@ -62,7 +62,7 @@ static void mtk_read_reg(unsigned long addr)
 	void __iomem *reg_va = 0;
 
 	reg_va = ioremap_nocache(addr, sizeof(reg_va));
-	pr_info("r:0x%8lx = 0x%08x\n", addr, readl(reg_va));
+	pr_debug("r:0x%8lx = 0x%08x\n", addr, readl(reg_va));
 	iounmap(reg_va);
 }
 
@@ -457,7 +457,7 @@ void mtk_drm_debugfs_init(struct drm_device *dev, struct mtk_drm_private *priv)
 	mtkdrm_dbgfs = proc_create("mtkdrm", S_IFREG | 0644, NULL,
 					   &debug_fops);
 	if (!mtkdrm_dbgfs) {
-		pr_info("[%s %d]failed to create mtkdrm in /proc\n",
+		pr_debug("[%s %d]failed to create mtkdrm in /proc\n",
 			__func__, __LINE__);
 		goto out;
 	}
