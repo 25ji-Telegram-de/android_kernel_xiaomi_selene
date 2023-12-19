@@ -1904,7 +1904,7 @@ void mtk_drm_top_clk_disable_unprepare(struct drm_device *drm)
 		while (atomic_read(&top_isr_ref) > 0 &&
 		       cnt++ < 10) {
 			spin_unlock_irqrestore(&top_clk_lock, flags);
-			pr_notice("%s waiting for isr job, %d\n",
+			pr_debug("%s waiting for isr job, %d\n",
 				  __func__, cnt);
 			usleep_range(20, 40);
 			spin_lock_irqsave(&top_clk_lock, flags);
@@ -2338,7 +2338,7 @@ int mtk_drm_ioctl_get_lcm_index(struct drm_device *dev, void *data,
 		*info = params->lcm_index;
 	} else {
 		*info = 0;
-		pr_info("Cannot get lcm_ext_params\n");
+		pr_debug("Cannot get lcm_ext_params\n");
 	}
 
 	return ret;
@@ -2576,7 +2576,7 @@ static const struct drm_ioctl_desc mtk_ioctls[] = {
 	DRM_IOCTL_DEF_DRV(MTK_SEC_HND_TO_GEM_HND, mtk_drm_sec_hnd_to_gem_hnd,
 			  DRM_UNLOCKED | DRM_AUTH | DRM_RENDER_ALLOW),
 #ifdef CONFIG_MTK_HDMI_SUPPORT
-	DRM_IOCTL_DEF_DRV(MTK_HDMI_GET_DEV_INFO, mtk_drm_dp_get_dev_info,
+	DRM_IOCTL_DEF_DRV(MTK_HDMI_GET_DEV_INFO, mtk_drm_dp_get_dev_dbg,
 			  DRM_UNLOCKED | DRM_AUTH | DRM_RENDER_ALLOW),
 	DRM_IOCTL_DEF_DRV(MTK_HDMI_AUDIO_ENABLE, mtk_drm_dp_audio_enable,
 			  DRM_UNLOCKED | DRM_AUTH | DRM_RENDER_ALLOW),
@@ -2957,7 +2957,7 @@ static int mtk_drm_probe(struct platform_device *pdev)
 	private->reg_data = mtk_ddp_get_mmsys_reg_data(private->data->mmsys_id);
 	if (IS_ERR(private->reg_data)) {
 		ret = PTR_ERR(private->config_regs);
-		pr_info("Failed to get mmsys register data: %d\n", ret);
+		pr_debug("Failed to get mmsys register data: %d\n", ret);
 		return ret;
 	}
 
@@ -3080,7 +3080,7 @@ static int mtk_drm_probe(struct platform_device *pdev)
 		    || comp_type == MTK_DP_INTF || comp_type == MTK_DISP_DPTX
 #endif
 		    ) {
-			dev_info(dev, "Adding component match for %s, comp_id:%d\n",
+			dev_dbg(dev, "Adding component match for %s, comp_id:%d\n",
 				 node->full_name, comp_id);
 			component_match_add(dev, &match, compare_of, node);
 		} else {

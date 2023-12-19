@@ -394,7 +394,7 @@ struct mtk_disp_ovl_data {
 	bool fmt_rgb565_is_0;
 	unsigned int fmt_uyvy;
 	unsigned int fmt_yuyv;
-	const struct compress_info *compr_info;
+	const struct compress_info *compr_debug;
 	bool support_shadow;
 };
 
@@ -665,7 +665,7 @@ static void mtk_ovl_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 	int ret;
 	unsigned int val;
 	struct mtk_disp_ovl *ovl = comp_to_ovl(comp);
-	const struct compress_info *compr_info = ovl->data->compr_info;
+	const struct compress_info *compr_debug = ovl->data->compr_debug;
 	unsigned int value = 0, mask = 0;
 
 	DDPDBG("%s+ %s\n", __func__, mtk_dump_comp_str(comp));
@@ -684,7 +684,7 @@ static void mtk_ovl_start(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 		       0x61F2, ~0);
 
 	/* In 6779 we need to set DISP_OVL_FORCE_RELAY_MODE */
-	if (compr_info && strncmp(compr_info->name, "PVRIC_V3_1", 10) == 0) {
+	if (compr_debug && strncmp(compr_debug->name, "PVRIC_V3_1", 10) == 0) {
 		val = FBDC_8XE_MODE | FBDC_FILTER_EN;
 		cmdq_pkt_write(handle, comp->cmdq_base,
 			comp->regs_pa + DISP_REG_OVL_FBDC_CFG1, val, val);
@@ -1434,8 +1434,8 @@ static void mtk_ovl_layer_config(struct mtk_ddp_comp *comp, unsigned int idx,
 	}
 
 	/* handle buffer de-compression */
-	if (ovl->data->compr_info && ovl->data->compr_info->l_config) {
-		if (ovl->data->compr_info->l_config(comp,
+	if (ovl->data->compr_debug && ovl->data->compr_debug->l_config) {
+		if (ovl->data->compr_debug->l_config(comp,
 			    idx, state, handle)) {
 			DDPPR_ERR("wrong fbdc input config\n");
 			return;
@@ -3501,7 +3501,7 @@ static const struct mtk_disp_ovl_data mt2701_ovl_driver_data = {
 	.support_shadow = false,
 };
 
-static const struct compress_info compr_info_mt6779  = {
+static const struct compress_info compr_debug_mt6779  = {
 	.name = "PVRIC_V3_1_MTK_1",
 	.l_config = &compr_l_config_PVRIC_V3_1,
 };
@@ -3511,11 +3511,11 @@ static const struct mtk_disp_ovl_data mt6779_ovl_driver_data = {
 	.fmt_rgb565_is_0 = true,
 	.fmt_uyvy = 4U << 12,
 	.fmt_yuyv = 5U << 12,
-	.compr_info = &compr_info_mt6779,
+	.compr_debug = &compr_debug_mt6779,
 	.support_shadow = false,
 };
 
-static const struct compress_info compr_info_mt6885  = {
+static const struct compress_info compr_debug_mt6885  = {
 	.name = "AFBC_V1_2_MTK_1",
 	.l_config = &compr_l_config_AFBC_V1_2,
 };
@@ -3525,11 +3525,11 @@ static const struct mtk_disp_ovl_data mt6885_ovl_driver_data = {
 	.fmt_rgb565_is_0 = true,
 	.fmt_uyvy = 4U << 12,
 	.fmt_yuyv = 5U << 12,
-	.compr_info = &compr_info_mt6885,
+	.compr_debug = &compr_debug_mt6885,
 	.support_shadow = false,
 };
 
-static const struct compress_info compr_info_mt6873  = {
+static const struct compress_info compr_debug_mt6873  = {
 	.name = "AFBC_V1_2_MTK_1",
 	.l_config = &compr_l_config_AFBC_V1_2,
 };
@@ -3539,11 +3539,11 @@ static const struct mtk_disp_ovl_data mt6873_ovl_driver_data = {
 	.fmt_rgb565_is_0 = true,
 	.fmt_uyvy = 4U << 12,
 	.fmt_yuyv = 5U << 12,
-	.compr_info = &compr_info_mt6873,
+	.compr_debug = &compr_debug_mt6873,
 	.support_shadow = false,
 };
 
-static const struct compress_info compr_info_mt6853  = {
+static const struct compress_info compr_debug_mt6853  = {
 	.name = "AFBC_V1_2_MTK_1",
 	.l_config = &compr_l_config_AFBC_V1_2,
 };
@@ -3553,11 +3553,11 @@ static const struct mtk_disp_ovl_data mt6853_ovl_driver_data = {
 	.fmt_rgb565_is_0 = true,
 	.fmt_uyvy = 4U << 12,
 	.fmt_yuyv = 5U << 12,
-	.compr_info = &compr_info_mt6853,
+	.compr_debug = &compr_debug_mt6853,
 	.support_shadow = false,
 };
 
-static const struct compress_info compr_info_mt6833  = {
+static const struct compress_info compr_debug_mt6833  = {
 	.name = "AFBC_V1_2_MTK_1",
 	.l_config = &compr_l_config_AFBC_V1_2,
 };
@@ -3567,7 +3567,7 @@ static const struct mtk_disp_ovl_data mt6833_ovl_driver_data = {
 	.fmt_rgb565_is_0 = true,
 	.fmt_uyvy = 4U << 12,
 	.fmt_yuyv = 5U << 12,
-	.compr_info = &compr_info_mt6833,
+	.compr_debug = &compr_debug_mt6833,
 	.support_shadow = false,
 };
 

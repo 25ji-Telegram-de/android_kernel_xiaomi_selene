@@ -192,7 +192,7 @@ struct layering_rule_ops {
 
 // int layering_rule_start(struct drm_mtk_layering_info *disp_info, int
 // debug_mode);
-extern int hdmi_get_dev_info(int is_sf, void *info);
+extern int hdmi_get_dev_dbg(int is_sf, void *info);
 // int gen_hrt_pattern(void);
 // int set_hrt_state(enum HRT_SYS_STATE sys_state, int en);
 void mtk_register_layering_rule_ops(struct layering_rule_ops *ops,

@@ -203,14 +203,14 @@ static int mtk_disp_merge_bind(struct device *dev, struct device *master,
 	//struct mtk_drm_private *private = drm_dev->dev_private;
 	int ret;
 
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	ret = mtk_ddp_comp_register(drm_dev, &priv->ddp_comp);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component %s: %d\n",
 			dev->of_node->full_name, ret);
 		return ret;
 	}
-	pr_info("%s end\n", __func__);
+	pr_debug("%s end\n", __func__);
 	return 0;
 }
 
@@ -234,7 +234,7 @@ static int mtk_disp_merge_probe(struct platform_device *pdev)
 	enum mtk_ddp_comp_id comp_id;
 	int ret;
 
-	pr_info("%s+\n", __func__);
+	pr_debug("%s+\n", __func__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -264,7 +264,7 @@ static int mtk_disp_merge_probe(struct platform_device *pdev)
 		pm_runtime_disable(dev);
 	}
 
-	pr_info("%s-\n", __func__);
+	pr_debug("%s-\n", __func__);
 
 	return ret;
 }

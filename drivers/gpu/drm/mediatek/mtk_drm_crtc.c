@@ -226,7 +226,7 @@ void mtk_drm_crtc_dump(struct drm_crtc *crtc)
 		mutex_dump_reg_mt6873(mtk_crtc->mutex[0]);
 		break;
 	default:
-		pr_info("%s mtk drm not support mmsys id %d\n",
+		pr_debug("%s mtk drm not support mmsys id %d\n",
 			__func__, priv->data->mmsys_id);
 		break;
 	}
@@ -317,7 +317,7 @@ void mtk_drm_crtc_analysis(struct drm_crtc *crtc)
 		mutex_dump_analysis_mt6833(mtk_crtc->mutex[0]);
 		break;
 	default:
-		pr_info("%s mtk drm not support mmsys id %d\n",
+		pr_debug("%s mtk drm not support mmsys id %d\n",
 			__func__, priv->data->mmsys_id);
 		break;
 	}
@@ -2043,7 +2043,7 @@ bool mtk_crtc_is_frame_trigger_mode(struct drm_crtc *crtc)
 	if (comp->id == DDP_COMPONENT_DP_INTF0 ||
 		comp->id == DDP_COMPONENT_DPI0 ||
 		comp->id == DDP_COMPONENT_DPI1) {
-		pr_info("%s(%d-%d) is vdo mode\n", __func__,
+		pr_debug("%s(%d-%d) is vdo mode\n", __func__,
 			comp->id, DDP_COMPONENT_DPI0);
 		return false;
 	}
@@ -5776,7 +5776,7 @@ int mtk_drm_crtc_create(struct drm_device *drm_dev,
 
 		node = priv->comp_node[comp_id];
 		if (!node) {
-			dev_info(
+			dev_dbg(
 				dev,
 				"Not creating crtc %d because component %d is disabled or missing\n",
 				pipe, comp_id);

@@ -95,7 +95,7 @@ static int mtk_lvds_tx_power_on_signal(struct phy *phy)
 	struct mtk_lvds_tx *lvds_tx = phy_get_drvdata(phy);
 	u32 reg;
 
-	dev_info(lvds_tx->dev, "%s\n", __func__);
+	dev_dbg(lvds_tx->dev, "%s\n", __func__);
 
 	writel(DA_LVDSTX_PWR_ON, lvds_tx->tx1_regs + VOPLL_CTL3);
 	writel(DA_LVDSTX_PWR_ON, lvds_tx->tx2_regs + VOPLL_CTL3);
@@ -146,7 +146,7 @@ static void mtk_lvds_tx_power_off_signal(struct phy *phy)
 	struct mtk_lvds_tx *lvds_tx = phy_get_drvdata(phy);
 	u32 reg;
 
-	dev_info(lvds_tx->dev, "%s\n", __func__);
+	dev_dbg(lvds_tx->dev, "%s\n", __func__);
 
 	writel(DA_LVDSTX_PWR_ON | LVDS_ISO_EN, lvds_tx->tx1_regs + VOPLL_CTL3);
 	writel(DA_LVDSTX_PWR_ON | LVDS_ISO_EN, lvds_tx->tx2_regs + VOPLL_CTL3);

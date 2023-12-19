@@ -796,7 +796,7 @@ static int mtk_dpi_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
-	dev_info(dev, "Found bridge node: %s\n", bridge_node->full_name);
+	dev_dbg(dev, "Found bridge node: %s\n", bridge_node->full_name);
 
 	dpi->encoder.bridge = of_drm_find_bridge(bridge_node);
 	of_node_put(bridge_node);
