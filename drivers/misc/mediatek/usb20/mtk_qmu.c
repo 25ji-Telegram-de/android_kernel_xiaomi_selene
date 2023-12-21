@@ -217,7 +217,7 @@ int qmu_init_gpd_pool(struct device *dev)
 		Rx_gpd_max_count[i] = Tx_gpd_max_count[i] = mtk_qmu_max_gpd_num;
 
 	gpd_sz = (u32) (u64) sizeof(struct TGPD);
-	pr_notice("sizeof(struct TGPD):%d\n", gpd_sz);
+	pr_debug("sizeof(struct TGPD):%d\n", gpd_sz);
 	if (gpd_sz != GPD_SZ)
 		QMU_ERR("ERR!!!, GPD SIZE != %d\n", GPD_SZ);
 
@@ -1901,7 +1901,7 @@ void mtk_pr_err_recover(struct musb *musb, u8 ep_num, u8 isRx, bool is_len_err)
 			}
 		}
 	}
-	pr_notice("RESUME QMU\n");
+	pr_debug("RESUME QMU\n");
 	/* RESUME QMU */
 	mtk_qmu_resume(ep_num, isRx);
 }
