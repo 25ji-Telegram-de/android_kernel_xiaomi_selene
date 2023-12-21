@@ -36,7 +36,7 @@
 #define PFX "S5KJN1_camera_sensor"
 
 #define LOG_DBG(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
-#define LOG_INF(format, args...)    pr_info(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_INF(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 #define LOG_ERR(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
 
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
@@ -2632,7 +2632,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 // if(*sensor_id == 0x38e1)
 // *sensor_id = imgsensor_info.sensor_id;
 				if (*sensor_id == imgsensor_info.sensor_id) {
-					pr_info
+					pr_debug
 			("s5kjn1sp_ofilm i2c 0x%x, sid 0x%x\n",
 			 imgsensor.i2c_write_id, *sensor_id);
 					return ERROR_NONE;
