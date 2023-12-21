@@ -28,7 +28,6 @@
 
 #define AF_DRVNAME "bu64748af_main2_drv"
 
-#define AF_DEBUG
 #ifdef AF_DEBUG
 #define LOG_INF(format, args...)                                               \
 	pr_debug(AF_DRVNAME " [%s] " format, __func__, ##args)

@@ -60,7 +60,6 @@ static struct i2c_board_info kd_lens_dev __initdata = {
 	I2C_BOARD_INFO(AF_DRVNAME, I2C_REGISTER_ID)};
 #endif
 
-#define AF_DEBUG
 #ifdef AF_DEBUG
 #define LOG_INF(format, args...)                                               \
 	pr_debug(AF_DRVNAME " [%s] " format, __func__, ##args)

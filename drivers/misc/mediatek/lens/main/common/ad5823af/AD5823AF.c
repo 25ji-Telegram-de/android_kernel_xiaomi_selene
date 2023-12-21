@@ -27,7 +27,6 @@
 #define AF_DRVNAME "AD5823AF_DRV"
 #define AF_I2C_SLAVE_ADDR 0x0C
 
-#define AF_DEBUG
 #ifdef AF_DEBUG
 #define LOG_INF(format, args...)                                               \
 	pr_debug(AF_DRVNAME " [%s] " format, __func__, ##args)
