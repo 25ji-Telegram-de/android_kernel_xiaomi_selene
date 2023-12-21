@@ -22,7 +22,6 @@
 #define IRQTag "KEEPER"
 #define pr_fmt(fmt) MyTag "[%s] " fmt, __func__
 
-#define ISP_DEBUG
 #ifdef ISP_DEBUG
 #define LOG_DBG(format, args...)    pr_debug(MyTag "[%s] " format, \
 	 __func__, ##args)
