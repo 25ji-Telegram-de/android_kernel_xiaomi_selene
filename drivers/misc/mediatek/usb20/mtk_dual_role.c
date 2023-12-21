@@ -34,7 +34,7 @@ static int mt_dual_role_get_prop(struct dual_role_phy_instance *dual_role,
 	int ret = 0;
 	int mode, pr, dr;
 
-	dev_info(musb->controller, "prop=%d, power=%d, is_host=%d",
+	dev_dbg(musb->controller, "prop=%d, power=%d, is_host=%d",
 			 prop, musb->power, is_host_active(musb));
 
 	if (musb->power) {
@@ -116,7 +116,7 @@ int mt_usb_dual_role_init(struct musb *musb)
 	musb->dr_usb = devm_dual_role_instance_register(musb->controller,
 							dual_desc);
 	if (IS_ERR(musb->dr_usb)) {
-		dev_info(musb->controller, "fail to register dual role usb\n");
+		dev_dbg(musb->controller, "fail to register dual role usb\n");
 		return -EINVAL;
 	}
 	return 0;

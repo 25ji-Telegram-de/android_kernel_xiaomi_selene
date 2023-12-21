@@ -280,7 +280,7 @@ int musb_otg_send_event(struct usb_otg *otg, enum usb_otg_event event)
 	    module_name, kobject_get_path(&otg->phy->dev->kobj, GFP_KERNEL));
 	ret = kobject_uevent_env(&otg->phy->dev->kobj, KOBJ_CHANGE, envp);
 	if (ret < 0)
-		pr_info("uevent sending failed with ret = %d\n", ret);
+		pr_debug("uevent sending failed with ret = %d\n", ret);
 	return ret;
 }
 EXPORT_SYMBOL_GPL(musb_otg_send_event);
@@ -1500,7 +1500,7 @@ void musb_flush_dma_transcation(struct musb *musb)
 						MUSB_HSDMA_CONTROL));
 
 		if (val)
-			pr_notice("CH%d(0x%x)=0x%x\n", i,
+			pr_debug("CH%d(0x%x)=0x%x\n", i,
 						MUSB_HSDMA_CHANNEL_OFFSET((i),
 						MUSB_HSDMA_CONTROL), val);
 
@@ -1514,7 +1514,7 @@ void musb_flush_dma_transcation(struct musb *musb)
 		val = musb_readl(musb->mregs, MUSB_HSDMA_CHANNEL_OFFSET((i),
 					MUSB_HSDMA_CONTROL));
 		if (val)
-			pr_notice("CH%d(0x%x)=0x%x\n", i,
+			pr_debug("CH%d(0x%x)=0x%x\n", i,
 				MUSB_HSDMA_CHANNEL_OFFSET((i),
 				MUSB_HSDMA_CONTROL), val);
 	}
@@ -1607,12 +1607,12 @@ static void musb_shutdown(struct platform_device *pdev)
 	musb_flush_dma_transcation(musb);
 
 	musb_platform_disable(musb);
-	pr_notice("%s, musb has already disable\n", __func__);
+	pr_debug("%s, musb has already disable\n", __func__);
 	#ifndef CONFIG_MTK_MUSB_PORT0_LOWPOWER_MODE
 	spin_unlock_irqrestore(&musb->lock, flags);
 	#endif
 	if (musb->is_host) {
-		pr_notice("%s, line %d.\n", __func__, __LINE__);
+		pr_debug("%s, line %d.\n", __func__, __LINE__);
 		musb_platform_set_vbus(mtk_musb, 0);
 		usb_remove_hcd(musb_to_hcd(musb));
 	}
@@ -1980,7 +1980,7 @@ static int musb_core_init(u16 musb_type, struct musb *musb)
 		musb->is_multipoint = 0;
 		type = "";
 #ifndef	CONFIG_USB_OTG_BLACKLIST_HUB
-		pr_notice("%s: kernel must blacklist external hubs\n"
+		pr_debug("%s: kernel must blacklist external hubs\n"
 			, musb_driver_name);
 #endif
 	}
@@ -2530,7 +2530,7 @@ static int musb_init_controller
 	/* resolve CR ALPS01823375 */
 
 	status = musb_platform_init(musb);
-	/* pr_info("musb init controller after allocate\n"); */
+	/* pr_debug("musb init controller after allocate\n"); */
 #ifdef CONFIG_OF
 	musb->xceiv->io_priv = ctrlp;
 #endif
@@ -2731,7 +2731,7 @@ static int musb_probe(struct platform_device *pdev)
 	if (irq <= 0)
 		return -ENODEV;
 
-	pr_info("%s mac=0x%lx, phy=0x%lx, irq=%d\n"
+	pr_debug("%s mac=0x%lx, phy=0x%lx, irq=%d\n"
 		, __func__, (unsigned long)base, (unsigned long)pbase, irq);
 	status = musb_init_controller(dev, irq, base, pbase);
 
@@ -2983,7 +2983,7 @@ static int __init musb_init(void)
 	if (usb_disabled())
 		return 0;
 
-	pr_info("%s: version " MUSB_VERSION ", ?dma?, otg (peripheral+host)\n"
+	pr_debug("%s: version " MUSB_VERSION ", ?dma?, otg (peripheral+host)\n"
 		, musb_driver_name);
 	return platform_driver_register(&musb_driver);
 }
