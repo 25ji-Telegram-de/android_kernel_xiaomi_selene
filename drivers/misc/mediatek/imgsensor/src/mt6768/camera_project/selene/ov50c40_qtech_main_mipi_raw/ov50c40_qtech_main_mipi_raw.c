@@ -48,7 +48,7 @@
 #include "cam_cal_define.h"
 #define PFX "OV50C40_QTECH_camera_sensor"
 #define LOG_DBG(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
-#define LOG_INF(format, args...)    pr_info(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_INF(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 #define LOG_ERR(format, args...)    pr_err(PFX "[%s] " format, __FUNCTION__, ##args)
 
 #define MULTI_WRITE 1
@@ -4293,7 +4293,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			if (VENDOR_ID_TEMP == vendor_id || VENDOR_ID == vendor_id) {
 				*sensor_id = return_sensor_id();
 				if (*sensor_id == imgsensor_info.sensor_id) {
-					pr_info
+					pr_debug
 					    ("OV50C40_qtech i2c write id: 0x%x, sensor id: 0x%x vendor_id: 0x%x\n",
 					     imgsensor.i2c_write_id, *sensor_id,
 					     vendor_id);
