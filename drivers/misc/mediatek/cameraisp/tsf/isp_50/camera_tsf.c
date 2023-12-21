@@ -137,13 +137,13 @@ struct TSF_CLK_STRUCT TSF_clk;
 #define LOG_VRB(format,	args...)    pr_debug(MyTag format, ##args)
 
 #ifdef TSF_DEBUG_USE
-#define LOG_DBG(format, args...)    pr_info(MyTag format, ##args)
+#define LOG_DBG(format, args...)    pr_debug(MyTag format, ##args)
 #else
 #define LOG_DBG(format, args...)
 #endif
-#define LOG_ERR(format, args...)    pr_info(MyTag format,  ##args)
-#define LOG_INF(format, args...)    pr_info(MyTag format,  ##args)
-#define LOG_NOTICE(format, args...) pr_notice(MyTag format,  ##args)
+#define LOG_ERR(format, args...)    pr_debug(MyTag format,  ##args)
+#define LOG_INF(format, args...)    pr_debug(MyTag format,  ##args)
+#define LOG_NOTICE(format, args...) pr_debug(MyTag format,  ##args)
 
 
 /******************************************************************************
@@ -1830,7 +1830,7 @@ static signed int TSF_probe(struct platform_device *pDev)
 #ifdef CONFIG_OF
 
 	if (pDev == NULL) {
-		dev_info(&pDev->dev, "pDev is NULL");
+		dev_dbg(&pDev->dev, "pDev is NULL");
 		return -ENXIO;
 	}
 
@@ -1838,7 +1838,7 @@ static signed int TSF_probe(struct platform_device *pDev)
 	_tsfdev = krealloc(TSF_devs,
 		sizeof(struct TSF_device) * nr_TSF_devs, GFP_KERNEL);
 	if (!_tsfdev) {
-		dev_info(&pDev->dev, "Unable to allocate TSF_devs\n");
+		dev_dbg(&pDev->dev, "Unable to allocate TSF_devs\n");
 		return -ENOMEM;
 	}
 	TSF_devs = _tsfdev;
@@ -1851,7 +1851,7 @@ static signed int TSF_probe(struct platform_device *pDev)
 	/* gISPSYS_Reg[nr_TSF_devs - 1] = TSF_dev->regs; */
 
 	if (!TSF_dev->regs) {
-		dev_info(&pDev->dev,
+		dev_dbg(&pDev->dev,
 			"Unable to ioremap registers, of_iomap fail, nr_TSF_devs=%d, devnode(%s).\n",
 			nr_TSF_devs, pDev->dev.of_node->name);
 		return -ENOMEM;
@@ -1868,7 +1868,7 @@ static signed int TSF_probe(struct platform_device *pDev)
 		if (of_property_read_u32_array(
 		    pDev->dev.of_node, "interrupts",
 		    irq_info, ARRAY_SIZE(irq_info))) {
-			dev_info(&pDev->dev, "get irq flags from DTS fail!!\n");
+			dev_dbg(&pDev->dev, "get irq flags from DTS fail!!\n");
 			return -ENODEV;
 		}
 
@@ -1883,7 +1883,7 @@ static signed int TSF_probe(struct platform_device *pDev)
 				    NULL);
 
 				if (Ret) {
-					dev_info(
+					dev_dbg(
 					    &pDev->dev,
 					    "Unable to request IRQ, request_irq fail, nr_TSF_devs=%d, devnode(%s), irq=%d, ISR: %s\n",
 					    nr_TSF_devs,
@@ -1928,7 +1928,7 @@ static signed int TSF_probe(struct platform_device *pDev)
 		/* Register char driver */
 		Ret = TSF_RegCharDev();
 		if (Ret) {
-			dev_info(&pDev->dev, "register char failed");
+			dev_dbg(&pDev->dev, "register char failed");
 			return Ret;
 		}
 #if !defined(CONFIG_MTK_LEGACY) && defined(CONFIG_COMMON_CLK) /*CCF*/
@@ -1957,7 +1957,7 @@ static signed int TSF_probe(struct platform_device *pDev)
 
 		if (IS_ERR(dev)) {
 			Ret = PTR_ERR(dev);
-			dev_info(
+			dev_dbg(
 			    &pDev->dev,
 			    "Failed to create device: /dev/%s, err = %d",
 			    TSF_DEV_NAME, Ret);

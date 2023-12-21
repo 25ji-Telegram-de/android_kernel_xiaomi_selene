@@ -77,13 +77,13 @@ pr_debug("FDVT [%s] " format, __func__, ##args)
 #define log_dbg(format, args...) \
 pr_debug("FDVT [%s] " format, __func__, ##args)
 #define log_inf(format, args...) \
-pr_info("FDVT [%s] " format, __func__, ##args)
+pr_debug("FDVT [%s] " format, __func__, ##args)
 #define log_wrn(format, args...) \
-pr_info("FDVT [%s] WARNING: " format, __func__, ##args)
+pr_debug("FDVT [%s] WARNING: " format, __func__, ##args)
 #define log_err(format, args...) \
-pr_info("FDVT [%s, line%04d] ERROR: " format, __func__, __LINE__, ##args)
+pr_debug("FDVT [%s, line%04d] ERROR: " format, __func__, __LINE__, ##args)
 #define log_ast(format, args...) \
-pr_info("FDVT [%s, line%04d] ASSERT: " format, __func__, __LINE__, ##args)
+pr_debug("FDVT [%s, line%04d] ASSERT: " format, __func__, __LINE__, ##args)
 
 
 #define LDVT_EARLY_PORTING_NO_CCF 0
@@ -1051,7 +1051,7 @@ static int FDVT_probe(struct platform_device *dev)
 	log_dbg("[FDVT_DEBUG] %s\n", __func__);
 
 	if (dev == NULL) {
-		dev_info(&dev->dev, "dev is NULL");
+		dev_dbg(&dev->dev, "dev is NULL");
 		return -ENXIO;
 	}
 
@@ -1061,7 +1061,7 @@ static int FDVT_probe(struct platform_device *dev)
 		sizeof(struct fdvt_device) * new_count,
 		GFP_KERNEL);
 	if (!tempFdvt) {
-		dev_info(&dev->dev, "Unable to realloc fdvt_devs\n");
+		dev_dbg(&dev->dev, "Unable to realloc fdvt_devs\n");
 		return -ENOMEM;
 	}
 	fdvt_devs = tempFdvt;
@@ -1072,7 +1072,7 @@ static int FDVT_probe(struct platform_device *dev)
 	for (i = 0; i < FDVT_BASEADDR_NUM; i++)	{
 		fdvt_dev->regs[i] = of_iomap(dev->dev.of_node, i);
 		if (!fdvt_dev->regs[i]) {
-			dev_info(&dev->dev,
+			dev_dbg(&dev->dev,
 				"Unable to ioremap registers, of_iomap fail, i=%d\n",
 				i);
 			return -ENOMEM;
@@ -1139,7 +1139,7 @@ static int FDVT_probe(struct platform_device *dev)
 			 */
 		}
 		if (ret) {
-			dev_info(&dev->dev, "Unable to request IRQ, request_irq fail, i=%d, irq=%d\n",
+			dev_dbg(&dev->dev, "Unable to request IRQ, request_irq fail, i=%d, irq=%d\n",
 				i, fdvt_dev->irq[i]);
 			return ret;
 		}
