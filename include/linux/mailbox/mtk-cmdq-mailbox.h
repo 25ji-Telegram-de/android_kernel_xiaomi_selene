@@ -177,52 +177,22 @@ do { \
 /* MTK only functions */
 
 #define cmdq_msg(fmt, args...) \
-	pr_notice("[cmdq] "fmt"\n", ##args)
+	pr_debug("[cmdq] "fmt"\n", ##args)
 
 #define cmdq_err(fmt, args...) \
 	pr_notice("[cmdq][err] "fmt" @%s,%u\n", ##args, __func__, __LINE__)
 
 #define cmdq_dump(fmt, args...) \
-	pr_notice("[cmdq][err] "fmt"\n", ##args)
+	pr_debug("[cmdq][err] "fmt"\n", ##args)
 
 /* CMDQ FTRACE */
-#define cmdq_trace_begin(fmt, args...) do { \
-	preempt_disable(); \
-	event_trace_printk(cmdq_get_tracing_mark(), \
-		"B|%d|"fmt"\n", current->tgid, ##args); \
-	preempt_enable();\
-} while (0)
-
-#define cmdq_trace_end() do { \
-	preempt_disable(); \
-	event_trace_printk(cmdq_get_tracing_mark(), "E\n"); \
-	preempt_enable(); \
-} while (0)
+#define cmdq_trace_begin(fmt, args...)
+#define cmdq_trace_end()
 
 extern int cmdq_trace;
-#define cmdq_trace_ex_begin(fmt, args...) do { \
-	if (cmdq_trace) { \
-		preempt_disable(); \
-		event_trace_printk(cmdq_get_tracing_mark(), \
-			"B|%d|"fmt"\n", current->tgid, ##args); \
-		preempt_enable();\
-	} \
-} while (0)
-
-#define cmdq_trace_ex_end() do { \
-	if (cmdq_trace) { \
-		preempt_disable(); \
-		event_trace_printk(cmdq_get_tracing_mark(), "E\n"); \
-		preempt_enable(); \
-	} \
-} while (0)
-
-#define cmdq_trace_c(fmt, args...) do { \
-	preempt_disable(); \
-	event_trace_printk(cmdq_get_tracing_mark(), \
-		"C|"fmt, ##args); \
-	preempt_enable(); \
-} while (0)
+#define cmdq_trace_ex_begin(fmt, args...)
+#define cmdq_trace_ex_end()
+#define cmdq_trace_c(fmt, args...)
 
 dma_addr_t cmdq_thread_get_pc(struct cmdq_thread *thread);
 dma_addr_t cmdq_thread_get_end(struct cmdq_thread *thread);
