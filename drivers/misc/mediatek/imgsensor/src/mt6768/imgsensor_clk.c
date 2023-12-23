@@ -73,7 +73,6 @@ int imgsensor_dfs_ctrl(enum DFS_OPTION option, void *pbuff)
 {
 	int i4RetValue = 0;
 	if (pbuff == NULL) {
-		pr_info("pbuff == null");
 		return IMGSENSOR_RETURN_ERROR;
 	}
 	/*pr_info("%s\n", __func__);*/
@@ -313,7 +312,6 @@ void imgsensor_clk_disable_all(struct IMGSENSOR_CLK *pclk)
 int imgsensor_clk_ioctrl_handler(void *pbuff)
 {
 	if (pbuff == NULL) {
-		pr_info("pbuff == null");
 		return IMGSENSOR_RETURN_ERROR;
 	}
 	*(unsigned int *)pbuff = mt_get_ckgen_freq(*(unsigned int *)pbuff);
