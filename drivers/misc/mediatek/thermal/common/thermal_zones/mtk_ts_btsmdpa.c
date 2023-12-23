@@ -105,7 +105,7 @@ do {                                    \
 } while (0)
 
 #define mtkts_btsmdpa_printk(fmt, args...) \
-pr_notice("[Thermal/TZ/BTSMDPA]" fmt, ##args)
+pr_debug("[Thermal/TZ/BTSMDPA]" fmt, ##args)
 
 
 #if defined(CONFIG_MEDIATEK_MT6577_AUXADC)
