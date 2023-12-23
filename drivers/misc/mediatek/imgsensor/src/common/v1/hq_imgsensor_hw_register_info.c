@@ -183,7 +183,7 @@ MINT8 hq_imgsensor_sensor_hw_register(struct IMGSENSOR_SENSOR *psensor, struct I
 	int j = psensor->inst.sensor_idx;
 
 	for (search_index = 0; search_index < MAX_VENDOR_COUNT; search_index++) {
-		pr_info("%s %s is %s", __func__, psensor_inst->psensor_name,
+		pr_debug("%s %s is %s", __func__, psensor_inst->psensor_name,
 		cam_str_buff[j][search_index].psensor_name);
 		if (strncmp(
 				(char *)(psensor_inst->psensor_name),
@@ -191,11 +191,11 @@ MINT8 hq_imgsensor_sensor_hw_register(struct IMGSENSOR_SENSOR *psensor, struct I
 				strlen(psensor_inst->psensor_name)) == 0) {
 				ret = hq_regiser_hw_info(cam_str_buff[j][search_index].hw_register_id,
 				cam_str_buff[j][search_index].hw_register_name);
-				pr_info("%s j = %d  search_index = %d", __func__, j, search_index);
+				pr_debug("%s j = %d  search_index = %d", __func__, j, search_index);
 				break;
 			}
 	}
-	pr_err("%s %s is %s", __func__,
-	psensor_inst->psensor_name, cam_str_buff[j][search_index].psensor_name);
+	pr_debug("%s %s is %s", __func__,
+		psensor_inst->psensor_name, cam_str_buff[j][search_index].psensor_name);
 	return ret;
 }
