@@ -468,7 +468,7 @@ static inline int imgsensor_check_is_alive(struct IMGSENSOR_SENSOR *psensor)
 		pr_info("Fail to get sensor ID %x\n", sensorID);
 		err = ERROR_SENSOR_CONNECT_FAIL;
 	} else {
-		pr_info(" Sensor found ID = 0x%x\n", sensorID);
+		pr_debug(" Sensor found ID = 0x%x\n", sensorID);
 		err = ERROR_NONE;
 	}
 
