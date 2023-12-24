@@ -298,7 +298,7 @@ struct fusb303_chip {
 	do { \
 	if (chip && st < FUSB_STATE_FORCE_SNK) { \
 		chip->state = st; \
-		dev_info(&chip->client->dev, "%s: %s\n", __func__, #st); \
+		dev_dbg(&chip->client->dev, "%s: %s\n", __func__, #st); \
 		wake_up_interruptible(&mode_switch); \
 	} \
 	} while (0)
@@ -332,7 +332,7 @@ static int fusb303_read_device_id(struct fusb303_chip *chip)
 	if (rc < 0)
 		return rc;
 	chip->dev_id = rc;
-	dev_info(cdev, "%s: device id: 0x%02x\n", __func__, rc);
+	dev_dbg(cdev, "%s: device id: 0x%02x\n", __func__, rc);
 	return rc;
 }
 static int fusb303_update_status(struct fusb303_chip *chip)
@@ -398,7 +398,7 @@ static int fusb303_set_manual_reg(struct fusb303_chip *chip, u8 state)
 				__func__, rc);
 		return rc;
 	}
-	dev_info(cdev, "%s: state=%d\n", __func__, state);
+	dev_dbg(cdev, "%s: state=%d\n", __func__, state);
 	return rc;
 }
 static int fusb303_set_chip_state(struct fusb303_chip *chip, u8 state)
@@ -406,7 +406,7 @@ static int fusb303_set_chip_state(struct fusb303_chip *chip, u8 state)
 	struct device *cdev = &chip->client->dev;
 	int rc = 0;
 
-	dev_info(cdev, "%s: update manual reg=%d\n", __func__, state);
+	dev_dbg(cdev, "%s: update manual reg=%d\n", __func__, state);
 	rc = fusb303_set_manual_reg(chip, state);
 	if (rc < 0) {
 		dev_err(cdev, "%s: failed to write manual reg\n", __func__);
@@ -618,7 +618,7 @@ static int fusb303_dangling_cbl_en(struct fusb303_chip *chip,
 				__func__, rc);
 		return rc;
 	}
-	dev_info(cdev, "%s: dangling cable enabled=%d\n", __func__, enable);
+	dev_dbg(cdev, "%s: dangling cable enabled=%d\n", __func__, enable);
 	return rc;
 }
 static int fusb303_remedy_en(struct fusb303_chip *chip,
@@ -637,7 +637,7 @@ static int fusb303_remedy_en(struct fusb303_chip *chip,
 				__func__, rc);
 		return rc;
 	}
-	dev_info(cdev, "%s: remedy func enabled=%d\n", __func__, enable);
+	dev_dbg(cdev, "%s: remedy func enabled=%d\n", __func__, enable);
 	return rc;
 }
 static int fusb303_auto_snk_en(struct fusb303_chip *chip,
@@ -656,7 +656,7 @@ static int fusb303_auto_snk_en(struct fusb303_chip *chip,
 				__func__, rc);
 		return rc;
 	}
-	dev_info(cdev, "%s: auto snk func enabled=%d\n", __func__, enable);
+	dev_dbg(cdev, "%s: auto snk func enabled=%d\n", __func__, enable);
 	return rc;
 }
 
@@ -665,7 +665,7 @@ bool platform_get_device_irq_state(struct fusb303_chip *chip)
 	struct device *cdev = &chip->client->dev;
 	int rc = 0;
 
-	dev_info(cdev, "%s enter\n", __func__);
+	dev_dbg(cdev, "%s enter\n", __func__);
 
 	if (!chip) {
 		pr_err("%s Error: Chip structure is NULL!\n", __func__);
@@ -676,7 +676,7 @@ bool platform_get_device_irq_state(struct fusb303_chip *chip)
 		} else {
 			rc = !gpio_get_value(chip->pdata->int_gpio);
 		}
-		dev_info(cdev, "%s finish, state=%d\n", __func__, rc);
+		dev_dbg(cdev, "%s finish, state=%d\n", __func__, rc);
 		return (rc != 0);
 	}
 }
@@ -688,7 +688,7 @@ static int fusb303_enable(struct fusb303_chip *chip, bool enable)
 	u8  count = 5;
 	u8 data[5] = {0xAB, 0x00, 0x00, 0x00, 0x08};
 
-	dev_info(cdev, "%s: state=%d\n", __func__, enable);
+	dev_dbg(cdev, "%s: state=%d\n", __func__, enable);
 	if (chip->ccdebtime != FUSB303_TCCDEB_150MS) {
 		data[0] = data[0] & (~FUSB303_TCCDEB_MASK);
 		data[0] = data[0] | chip->ccdebtime;
@@ -1547,7 +1547,7 @@ static void fusb303_bclvl_changed(struct fusb303_chip *chip)
 	}
 	type = (status & FUSB303_ATTACH) ?
 			(rc & FUSB303_TYPE_MASK) : FUSB303_TYPE_INVALID;
-	dev_info(cdev, "sts[0x%02x], type[0x%02x]\n", status, type);
+	dev_dbg(cdev, "sts[0x%02x], type[0x%02x]\n", status, type);
 
 	// make sure all TYPEs are correct here
 	if (type == FUSB303_TYPE_SNK ||
@@ -1559,7 +1559,7 @@ static void fusb303_bclvl_changed(struct fusb303_chip *chip)
 				(chip->bc_lvl == FUSB303_SNK_1500MA ? 1500 : 0));
 		fusb303_power_set_icurrent_max(chip, limit);
 	}
-	dev_info(cdev, "%s: bc_lvl=%d\n", __func__, chip->bc_lvl);
+	dev_dbg(cdev, "%s: bc_lvl=%d\n", __func__, chip->bc_lvl);
 
 	if (!chip->bc_lvl && type == FUSB303_TYPE_SNK) {
 		fusb303_detach(chip);
@@ -1569,7 +1569,7 @@ static void fusb303_autosnk_changed(struct fusb303_chip *chip)
 {
 	/* TODO */
 	/* implement autosnk changed work */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	return;
 }
 static void fusb303_vbus_changed(struct fusb303_chip *chip)
@@ -1617,7 +1617,7 @@ static void fusb303_fault_changed(struct fusb303_chip *chip)
 {
 	/* TODO */
 	/* implement fault changed work */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	return;
 }
 static void fusb303_orient_changed(struct fusb303_chip *chip)
@@ -1648,49 +1648,49 @@ static void fusb303_orient_changed(struct fusb303_chip *chip)
 		chip->orientation = FUSB303_ORIENT_NONE;
 	}
 	typec_cc_orientation = chip->orientation;
-	dev_info(cdev, "orientation[0x%02x]\n", chip->orientation);
+	dev_dbg(cdev, "orientation[0x%02x]\n", chip->orientation);
 	return;
 }
 static void fusb303_remedy_changed(struct fusb303_chip *chip)
 {
 	/* TODO */
 	/* implement remedy changed work */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	return;
 }
 static void fusb303_frc_succ_changed(struct fusb303_chip *chip)
 {
 	/* TODO */
 	/* implement frc succ changed work */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	return;
 }
 static void fusb303_frc_fail_changed(struct fusb303_chip *chip)
 {
 	/* TODO */
 	/* implement frc fail changed work */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	return;
 }
 static void fusb303_rem_fail_changed(struct fusb303_chip *chip)
 {
 	/* TODO */
 	/* implement rem fail changed work */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	return;
 }
 static void fusb303_rem_vbon_changed(struct fusb303_chip *chip)
 {
 	/* TODO */
 	/* implement rem vbon changed work */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	return;
 }
 static void fusb303_rem_vboff_changed(struct fusb303_chip *chip)
 {
 	/* TODO */
 	/* implement rem vboff changed work */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	return;
 }
 static void fusb303_attached_src(struct fusb303_chip *chip)
@@ -1706,7 +1706,7 @@ static void fusb303_attached_src(struct fusb303_chip *chip)
 	dual_role_instance_changed(chip->dual_role);
 #endif /* HAVE_DR */
 	chip->type = FUSB303_TYPE_SRC;
-	dev_info(cdev, "%s: chip->type=0x%02x\n", __func__, chip->type);
+	dev_dbg(cdev, "%s: chip->type=0x%02x\n", __func__, chip->type);
 }
 static void fusb303_attached_snk(struct fusb303_chip *chip)
 {
@@ -1720,7 +1720,7 @@ static void fusb303_attached_snk(struct fusb303_chip *chip)
 	dual_role_instance_changed(chip->dual_role);
 #endif /* HAVE_DR */
 	chip->type = FUSB303_TYPE_SNK;
-	dev_info(cdev, "%s: chip->type=0x%02x\n", __func__, chip->type);
+	dev_dbg(cdev, "%s: chip->type=0x%02x\n", __func__, chip->type);
 }
 static void fusb303_attached_dbg_acc(struct fusb303_chip *chip)
 {
@@ -1728,7 +1728,7 @@ static void fusb303_attached_dbg_acc(struct fusb303_chip *chip)
 	 * TODO
 	 * need to implement
 	 */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	fusb_update_state(chip, FUSB_STATE_DEBUG_ACCESSORY);
 }
 static void fusb303_attached_aud_acc(struct fusb303_chip *chip)
@@ -1744,7 +1744,7 @@ static void fusb303_attached_aud_acc(struct fusb303_chip *chip)
 	 * TODO
 	 * need to implement
 	 */
-	pr_info("%s: enter \n", __func__);
+	pr_debug("%s: enter \n", __func__);
 	fusb_update_state(chip, FUSB_STATE_AUDIO_ACCESSORY);
 	fusb303_detach(chip);
 }
@@ -1812,7 +1812,7 @@ static void fusb303_attach(struct fusb303_chip *chip)
 
 	type = (status & FUSB303_ATTACH) ?
 		(rc & FUSB303_TYPE_MASK) : FUSB303_TYPE_INVALID;
-	dev_info(cdev, "%s: rc=0x%02x,status=0x%02x, status1=0x%02x, type=0x%02x\n",
+	dev_dbg(cdev, "%s: rc=0x%02x,status=0x%02x, status1=0x%02x, type=0x%02x\n",
 			__func__, rc,status, status1, type);
 	switch (type) {
 	case FUSB303_TYPE_SRC:
@@ -1894,7 +1894,7 @@ static void fusb303_work_handler(struct work_struct *work)
 		goto work_unlock;
 	}
 	int_sts = rc & FUSB303_INT_STS_MASK;
-	dev_info(cdev, "%s: int_sts[0x%02x]\n", __func__, int_sts);
+	dev_dbg(cdev, "%s: int_sts[0x%02x]\n", __func__, int_sts);
 	if (int_sts & FUSB303_I_DETACH) {
 		fusb303_detach(chip);
 	} else {
@@ -1925,7 +1925,7 @@ static void fusb303_work_handler(struct work_struct *work)
 	}
 
 	int_sts1 = rc & FUSB303_INT1_STS_MASK;
-	dev_info(cdev, "%s: interrupt_1=0x%02x\n", __func__, int_sts1);
+	dev_dbg(cdev, "%s: interrupt_1=0x%02x\n", __func__, int_sts1);
 
 	if (int_sts1 & FUSB303_I_REMEDY) {
 		fusb303_remedy_changed(chip);
@@ -1977,7 +1977,7 @@ static int fusb303_init_gpio(struct fusb303_chip *chip)
 
 	chip->pdata->int_gpio = of_get_named_gpio(cdev->of_node,
 			"fusb303,int-gpio", 0);
-	dev_info(cdev, "%s: int_gpio: %d\n",
+	dev_dbg(cdev, "%s: int_gpio: %d\n",
 			__func__, chip->pdata->int_gpio);
 
 	ret = devm_gpio_request(&chip->client->dev,
@@ -2007,7 +2007,7 @@ static int fusb303_init_gpio(struct fusb303_chip *chip)
 		dev_err(cdev, "unable to request int_gpio %d\n",
 				chip->pdata->int_gpio);
 
-	dev_info(cdev, "%s: name=%s, gpio=%d, IRQ number=%d\n",
+	dev_dbg(cdev, "%s: name=%s, gpio=%d, IRQ number=%d\n",
 			__func__, chip->tcpc_desc->name,
 			chip->pdata->int_gpio, chip->irq_gpio);
 	return ret;
@@ -2201,81 +2201,81 @@ static int dual_role_set_prop(struct dual_role_phy_instance *dual_role,
 int fusb303_alert_status_clear(struct tcpc_device *tcpc,
 		uint32_t mask)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 static int fusb303_tcpc_init(struct tcpc_device *tcpc, bool sw_reset)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 int fusb303_fault_status_clear(struct tcpc_device *tcpc, uint8_t status)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 int fusb303_get_alert_mask(struct tcpc_device *tcpc, uint32_t *mask)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 int fusb303_get_alert_status(struct tcpc_device *tcpc, uint32_t *alert)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 static int fusb303_get_power_status(
 		struct tcpc_device *tcpc, uint16_t *pwr_status)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 int fusb303_get_fault_status(struct tcpc_device *tcpc, uint8_t *status)
 {
 
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 static int fusb303_get_cc(struct tcpc_device *tcpc, int *cc1, int *cc2)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 static int fusb303_set_cc(struct tcpc_device *tcpc, int pull)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 static int fusb303_set_polarity(struct tcpc_device *tcpc, int polarity)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 static int fusb303_set_low_rp_duty(struct tcpc_device *tcpc, bool low_rp)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 static int fusb303_set_vconn(struct tcpc_device *tcpc, int enable)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
 static int fusb303_tcpc_deinit(struct tcpc_device *tcpc_dev)
 {
-		pr_info("%s enter \n", __func__);
+		pr_debug("%s enter \n", __func__);
 	return 0;
 }
 
@@ -2372,7 +2372,7 @@ static void fusb303_first_check_typec_work(struct work_struct *work)
 
 	first_check = false;
 	int_sts = rc & FUSB303_INT_STS_MASK;
-	dev_info(cdev, "%s: interrupt=0x%02x\n", __func__, int_sts);
+	dev_dbg(cdev, "%s: interrupt=0x%02x\n", __func__, int_sts);
 	if (int_sts & FUSB303_I_DETACH) {
 		fusb303_detach(chip);
 	} else {
@@ -2403,7 +2403,7 @@ static void fusb303_first_check_typec_work(struct work_struct *work)
 		goto work_unlock;
 	}
 	int_sts1 = rc & FUSB303_INT1_STS_MASK;
-	dev_info(cdev, "%s: interrupt_1=0x%02x\n", __func__, int_sts1);
+	dev_dbg(cdev, "%s: interrupt_1=0x%02x\n", __func__, int_sts1);
 	if (int_sts1 & FUSB303_I_REMEDY) {
 		fusb303_remedy_changed(chip);
 	}

@@ -703,7 +703,7 @@ static int mt6360_init_alert_mask(struct tcpc_device *tcpc)
 {
 	struct mt6360_chip *chip = tcpc_get_dev_data(tcpc);
 
-	dev_info(chip->dev, "%s\n", __func__);
+	dev_dbg(chip->dev, "%s\n", __func__);
 
 	__mt6360_init_alert_mask(tcpc);
 	mt6360_init_power_status_mask(tcpc);
@@ -999,7 +999,7 @@ static int mt6360_init_alert(struct tcpc_device *tcpc)
 	ret = snprintf(name, PAGE_SIZE, "%s-IRQ", chip->tcpc_desc->name);
 	if ((ret < 0) || (ret >= PAGE_SIZE - 1))
 		return -EINVAL;
-	dev_info(chip->dev, "%s name = %s, gpio = %d\n", __func__,
+	dev_dbg(chip->dev, "%s name = %s, gpio = %d\n", __func__,
 		 chip->tcpc_desc->name, chip->irq_gpio);
 	ret = devm_gpio_request(chip->dev, chip->irq_gpio, name);
 #ifdef DEBUG_GPIO
@@ -1025,7 +1025,7 @@ static int mt6360_init_alert(struct tcpc_device *tcpc)
 			__func__, chip->irq);
 		goto init_alert_err;
 	}
-	dev_info(chip->dev, "%s IRQ number = %d\n", __func__, chip->irq);
+	dev_dbg(chip->dev, "%s IRQ number = %d\n", __func__, chip->irq);
 
 #if 1 /* (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)) */
 	kthread_init_worker(&chip->irq_worker);
@@ -1814,7 +1814,7 @@ static int mt6360_is_water_detected(struct tcpc_device *tcpc)
 
 	ret = charger_dev_enable_usbid_floating(chip->chgdev, false);
 	if (ret < 0)
-		dev_info(chip->dev, "%s disable usbid float fail\n", __func__);
+		dev_dbg(chip->dev, "%s disable usbid float fail\n", __func__);
 	ret = mt6360_get_usbid_adc(tcpc, &usbid);
 	if (ret < 0) {
 		dev_err(chip->dev, "%s get usbid adc fail\n", __func__);
@@ -1822,24 +1822,24 @@ static int mt6360_is_water_detected(struct tcpc_device *tcpc)
 	}
 	ret = charger_dev_enable_usbid_floating(chip->chgdev, true);
 	if (ret < 0)
-		dev_info(chip->dev, "%s enable usbid float fail\n", __func__);
+		dev_dbg(chip->dev, "%s enable usbid float fail\n", __func__);
 	MT6360_INFO("%s pl usbid %dmV\n", __func__, usbid);
 
 	/* Water detected, check again */
 	if (usbid > CONFIG_WD_SBU_PL_BOUND) {
 		charger_dev_enable_usbid_floating(chip->chgdev, false);
 		if (ret < 0)
-			dev_info(chip->dev, "%s disable usbid float fail\n",
+			dev_dbg(chip->dev, "%s disable usbid float fail\n",
 				 __func__);
 		ret = mt6360_get_usbid_adc(tcpc, &usbid);
 		if (ret < 0) {
-			dev_info(chip->dev, "%s get usbid adc fail\n",
+			dev_dbg(chip->dev, "%s get usbid adc fail\n",
 				 __func__);
 			goto err;
 		}
 		charger_dev_enable_usbid_floating(chip->chgdev, true);
 		if (ret < 0)
-			dev_info(chip->dev, "%s enable usbid float fail\n",
+			dev_dbg(chip->dev, "%s enable usbid float fail\n",
 				 __func__);
 		MT6360_INFO("%s recheck pl usbid %dmV\n", __func__, usbid);
 		if (usbid > CONFIG_WD_SBU_PL_BOUND) {
@@ -1892,7 +1892,7 @@ static int mt6360_is_water_detected(struct tcpc_device *tcpc)
 			goto out;
 		}
 	} else
-		dev_info(chip->dev, "%s get usbid adc fail\n", __func__);
+		dev_dbg(chip->dev, "%s get usbid adc fail\n", __func__);
 #ifdef CONFIG_CABLE_TYPE_DETECTION
 	cable_type = tcpc->typec_cable_type;
 	if (cable_type == TCPC_CABLE_TYPE_NONE) {
@@ -2242,7 +2242,7 @@ static int mt6360_parse_dt(struct mt6360_chip *chip, struct device *dev,
 	struct resource *res;
 	int res_cnt, ret;
 
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	np = of_find_node_by_name(NULL, "type_c_port0");
 	if (!np) {
@@ -2271,7 +2271,7 @@ static int mt6360_parse_dt(struct mt6360_chip *chip, struct device *dev,
 #if (!defined(CONFIG_MTK_GPIO) || defined(CONFIG_MTK_GPIOLIB_STAND))
 	ret = of_get_named_gpio(np, "mt6360pd,pcb_gpio", 0);
 	if (ret < 0) {
-		dev_info(dev, "%s no pcb_gpio info(gpiolib)\n", __func__);
+		dev_dbg(dev, "%s no pcb_gpio info(gpiolib)\n", __func__);
 		return ret;
 	}
 	chip->pcb_gpio = ret;
@@ -2279,34 +2279,34 @@ static int mt6360_parse_dt(struct mt6360_chip *chip, struct device *dev,
 	ret = of_property_read_u32(np, "mt6360pd,pcb_gpio_polarity",
 				    &chip->pcb_gpio_polarity);
 	if (ret < 0) {
-		dev_info(dev, "%s no pcb_gpio_polarity info\n", __func__);
+		dev_dbg(dev, "%s no pcb_gpio_polarity info\n", __func__);
 		return ret;
 	}
 #else
 	ret = of_property_read_u32(np, "mt6360pd,pcb_gpio_num",
 				   &chip->pcb_gpio);
 	if (ret < 0) {
-		dev_info(dev, "%s no pcb_gpio info\n", __func__);
+		dev_dbg(dev, "%s no pcb_gpio info\n", __func__);
 		return ret;
 	}
 
 	ret = of_property_read_u32(np, "mt6360pd,pcb_gpio_polarity",
 				    &chip->pcb_gpio_polarity);
 	if (ret < 0) {
-		dev_info(dev, "%s no pcb_gpio_polarity info\n", __func__);
+		dev_dbg(dev, "%s no pcb_gpio_polarity info\n", __func__);
 		return ret;
 	}
 #endif /* !CONFIG_MTK_GPIO || CONFIG_MTK_GPIOLIB_STAND */
 	ret = devm_gpio_request(dev, chip->pcb_gpio, "pcb_gpio");
 	if (ret < 0) {
-		dev_info(dev, "%s request pcb gpio fail\n", __func__);
+		dev_dbg(dev, "%s request pcb gpio fail\n", __func__);
 		return ret;
 	}
 #endif /* CONFIG_MTK_TYPEC_WATER_DETECT_BY_PCB */
 
 	res_cnt = of_irq_count(np);
 	if (!res_cnt) {
-		dev_info(dev, "%s no irqs specified\n", __func__);
+		dev_dbg(dev, "%s no irqs specified\n", __func__);
 		return 0;
 	}
 	res = devm_kzalloc(dev,  res_cnt * sizeof(*res), GFP_KERNEL);
@@ -2319,7 +2319,7 @@ static int mt6360_parse_dt(struct mt6360_chip *chip, struct device *dev,
 }
 
 /*
- * In some platform pr_info may spend too much time on printing debug message.
+ * In some platform pr_debug may spend too much time on printing debug message.
  * So we use this function to test the printk performance.
  * If your platform cannot not pass this check function, please config
  * PD_DBG_INFO, this will provide the threaded debug message for you.
@@ -2343,20 +2343,20 @@ static void check_printk_performance(void)
 	}
 	for (i = 0; i < 10; i++) {
 		t1 = local_clock();
-		pr_info("%d\n", i);
+		pr_debug("%d\n", i);
 		t2 = local_clock();
 		t2 -= t1;
 		nsrem = do_div(t2, 1000000000);
-		pr_info("pr_info : t2-t1 = %lu\n", (unsigned long)nsrem / 1000);
+		pr_debug("pr_debug : t2-t1 = %lu\n", (unsigned long)nsrem / 1000);
 	}
 #else
 	for (i = 0; i < 10; i++) {
 		t1 = local_clock();
-		pr_info("%d\n", i);
+		pr_debug("%d\n", i);
 		t2 = local_clock();
 		t2 -= t1;
 		nsrem = do_div(t2, 1000000000);
-		pr_info("t2-t1 = %lu\n", (unsigned long)nsrem /  1000);
+		pr_debug("t2-t1 = %lu\n", (unsigned long)nsrem /  1000);
 		PD_BUG_ON(nsrem > 100*1000);
 	}
 #endif /* CONFIG_PD_DBG_INFO */
@@ -2379,7 +2379,7 @@ static int mt6360_tcpcdev_init(struct mt6360_chip *chip, struct device *dev)
 		else
 			desc->role_def = val;
 	} else {
-		dev_info(dev, "%s use default Role DRP\n", __func__);
+		dev_dbg(dev, "%s use default Role DRP\n", __func__);
 		desc->role_def = TYPEC_ROLE_DRP;
 	}
 
@@ -2415,7 +2415,7 @@ static int mt6360_tcpcdev_init(struct mt6360_chip *chip, struct device *dev)
 		else
 			desc->vconn_supply = val;
 	} else {
-		dev_info(dev, "%s use default VconnSupply\n", __func__);
+		dev_dbg(dev, "%s use default VconnSupply\n", __func__);
 		desc->vconn_supply = TCPC_VCONN_SUPPLY_ALWAYS;
 	}
 #endif	/* CONFIG_TCPC_VCONN_SUPPLY_MODE */
@@ -2443,9 +2443,9 @@ static int mt6360_tcpcdev_init(struct mt6360_chip *chip, struct device *dev)
 #endif	/* CONFIG_USB_PD_REV30 */
 
 	if (chip->tcpc->tcpc_flags & TCPC_FLAGS_PD_REV30)
-		dev_info(dev, "%s PD REV30\n", __func__);
+		dev_dbg(dev, "%s PD REV30\n", __func__);
 	else
-		dev_info(dev, "%s PD REV20\n", __func__);
+		dev_dbg(dev, "%s PD REV20\n", __func__);
 
 	chip->tcpc->tcpc_flags |= TCPC_FLAGS_DISABLE_LEGACY;
 	chip->tcpc->tcpc_flags |= TCPC_FLAGS_WATCHDOG_EN;
@@ -2508,11 +2508,11 @@ static int mt6360_i2c_probe(struct i2c_client *client,
 	struct mt6360_chip *chip;
 	int ret, chip_id;
 
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	ret = i2c_check_functionality(client->adapter,
 				      I2C_FUNC_SMBUS_I2C_BLOCK |
 				      I2C_FUNC_SMBUS_BYTE_DATA);
-	pr_info("%s I2C functionality : %s\n", __func__, ret ? "ok" : "fail");
+	pr_debug("%s I2C functionality : %s\n", __func__, ret ? "ok" : "fail");
 
 	chip_id = mt6360_check_revision(client);
 	if (chip_id < 0)
@@ -2561,7 +2561,7 @@ static int mt6360_i2c_probe(struct i2c_client *client,
 	INIT_WORK(&chip->wd_work, mt6360_wd_work);
 #endif /* CONFIG_WD_SBU_POLLING */
 
-	dev_info(chip->dev, "%s chipID = 0x%0X\n", __func__, chip->chip_id);
+	dev_dbg(chip->dev, "%s chipID = 0x%0X\n", __func__, chip->chip_id);
 
 #ifdef CONFIG_RT_REGMAP
 	ret = mt6360_regmap_init(chip);
@@ -2611,7 +2611,7 @@ static int mt6360_i2c_probe(struct i2c_client *client,
 #ifdef CONFIG_WATER_DETECTION
 	mt6360_water_calibration(chip->tcpc);
 #endif /* CONFIG_WATER_DETECTION */
-	dev_info(chip->dev, "%s successfully!\n", __func__);
+	dev_dbg(chip->dev, "%s successfully!\n", __func__);
 	return 0;
 
 err_sw_reset:
@@ -2740,9 +2740,9 @@ static int __init mt6360_init(void)
 {
 	struct device_node *np;
 
-	pr_info("%s (%s)\n", __func__, MT6360_DRV_VERSION);
+	pr_debug("%s (%s)\n", __func__, MT6360_DRV_VERSION);
 	np = of_find_node_by_name(NULL, "usb_type_c");
-	pr_info("%s usb_type_c node %s\n", __func__,
+	pr_debug("%s usb_type_c node %s\n", __func__,
 		np == NULL ? "not found" : "found");
 
 	return i2c_add_driver(&mt6360_driver);
