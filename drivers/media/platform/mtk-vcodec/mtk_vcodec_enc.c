@@ -466,7 +466,6 @@ static int vidioc_venc_s_ctrl(struct v4l2_ctrl *ctrl)
 		ctx->param_change |= MTK_ENCODE_PARAM_TSVC;
 		break;
 	default:
-		mtk_v4l2_err("ctrl-id=%d not support!", ctrl->id);
 		ret = -EINVAL;
 		break;
 	}
@@ -495,7 +494,6 @@ static int vidioc_venc_g_ctrl(struct v4l2_ctrl *ctrl)
 			reschange);
 		break;
 	default:
-		mtk_v4l2_err("ctrl-id=%d not support!", ctrl->id);
 		ret = -EINVAL;
 		break;
 	}
