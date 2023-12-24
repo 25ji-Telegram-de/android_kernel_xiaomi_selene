@@ -1949,9 +1949,9 @@ static int mt6362_register_tcpcdev(struct mt6362_tcpc_data *tdata)
 	tdata->tcpc->tcpc_flags |= TCPC_FLAGS_PD_REV30;
 #endif	/* CONFIG_USB_PD_REV30 */
 	if (tdata->tcpc->tcpc_flags & TCPC_FLAGS_PD_REV30)
-		dev_info(tdata->dev, "%s PD REV30\n", __func__);
+		dev_dbg(tdata->dev, "%s PD REV30\n", __func__);
 	else
-		dev_info(tdata->dev, "%s PD REV20\n", __func__);
+		dev_dbg(tdata->dev, "%s PD REV20\n", __func__);
 	tdata->tcpc->tcpc_flags |= TCPC_FLAGS_DISABLE_LEGACY;
 	tdata->tcpc->tcpc_flags |= TCPC_FLAGS_WATCHDOG_EN;
 	return 0;
@@ -2090,13 +2090,13 @@ static int mt6362_check_revision(struct mt6362_tcpc_data *tdata)
 		dev_err(tdata->dev, "%s read did fail(%d)\n", __func__, ret);
 		return ret;
 	}
-	dev_info(tdata->dev, "%s did = 0x%04X\n", __func__, id);
+	dev_dbg(tdata->dev, "%s did = 0x%04X\n", __func__, id);
 	tdata->did = id;
 	return 0;
 }
 
 /*
- * In some platform pr_info may spend too much time on printing debug message.
+ * In some platform pr_debug may spend too much time on printing debug message.
  * So we use this function to test the printk performance.
  * If your platform cannot not pass this check function, please config
  * PD_DBG_INFO, this will provide the threaded debug message for you.
@@ -2120,20 +2120,20 @@ static void check_printk_performance(void)
 	}
 	for (i = 0; i < 10; i++) {
 		t1 = local_clock();
-		pr_info("%d\n", i);
+		pr_debug("%d\n", i);
 		t2 = local_clock();
 		t2 -= t1;
 		nsrem = do_div(t2, 1000000000);
-		pr_info("pr_info : t2-t1 = %lu\n", (unsigned long)nsrem / 1000);
+		pr_debug("pr_debug : t2-t1 = %lu\n", (unsigned long)nsrem / 1000);
 	}
 #else
 	for (i = 0; i < 10; i++) {
 		t1 = local_clock();
-		pr_info("%d\n", i);
+		pr_debug("%d\n", i);
 		t2 = local_clock();
 		t2 -= t1;
 		nsrem = do_div(t2, 1000000000);
-		pr_info("t2-t1 = %lu\n", (unsigned long)nsrem /  1000);
+		pr_debug("t2-t1 = %lu\n", (unsigned long)nsrem /  1000);
 		PD_BUG_ON(nsrem > 100*1000);
 	}
 #endif /* CONFIG_PD_DBG_INFO */
@@ -2222,7 +2222,7 @@ static int mt6362_tcpc_probe(struct platform_device *pdev)
 	}
 
 	tcpc_schedule_init_work(tdata->tcpc);
-	dev_info(tdata->dev, "%s successfully!\n", __func__);
+	dev_dbg(tdata->dev, "%s successfully!\n", __func__);
 	return 0;
 err:
 	tcpc_device_unregister(tdata->dev, tdata->tcpc);
