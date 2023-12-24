@@ -445,6 +445,7 @@ struct DCM dcm_array[NR_DCM_TYPE] = {
 
 void dcm_dump_regs(void)
 {
+# if 0
 	dcm_pr_info("\n******** dcm dump register *********\n");
 	REG_DUMP(CPU_PLLDIV_CFG0);
 	REG_DUMP(CPU_PLLDIV_CFG1);
@@ -477,7 +478,7 @@ void dcm_dump_regs(void)
 	REG_DUMP(DRAMC_CH1_TOP1_DRAMC_PD_CTRL);
 	REG_DUMP(DRAMC_CH1_TOP1_CLKAR);
 	REG_DUMP(CHN1_EMI_CHN_EMI_CONB);
-
+#endif
 }
 
 #if 0 /* 6768 doesn't need */
