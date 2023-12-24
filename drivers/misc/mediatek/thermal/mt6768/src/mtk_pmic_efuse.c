@@ -33,7 +33,7 @@
  *Local variable definition
  *=============================================================
  */
-int mtktspmic_debug_log;
+int mtktspmic_debug_log = 0;
 /* Cali */
 static __s32 g_o_vts;
 static __s32 g_o_vts_2;
@@ -128,7 +128,7 @@ static void mtktspmic_read_efuse(void)
 		pmic_get_register_value(PMIC_AUXADC_EFUSE_O_SLOPE_SIGN);
 	g_o_slope = pmic_get_register_value(PMIC_AUXADC_EFUSE_O_SLOPE);
 	g_id = pmic_get_register_value(PMIC_AUXADC_EFUSE_ID);
-
+#if 0
 	mtktspmic_info("[pmic_debug] 6358_efuse: g_o_vts        = %d\n",
 			g_o_vts);
 	mtktspmic_info("[pmic_debug] 6358_efuse: g_o_vts_2      = %d\n",
@@ -149,6 +149,7 @@ static void mtktspmic_read_efuse(void)
 			g_id);
 
 	mtktspmic_info("[pmic_debug]  end\n");
+#endif
 }
 
 void mtktspmic_cali_prepare(void)
@@ -161,7 +162,6 @@ void mtktspmic_cali_prepare(void)
 	/* g_adc_cali_en=0;//FIX ME */
 
 	if (g_adc_cali_en == 0) {	/* no calibration */
-		mtktspmic_info("[pmic_debug]  It isn't calibration values\n");
 		g_o_vts = 1600;
 		g_o_vts_2 = 1600;
 		g_o_vts_3 = 1600;
@@ -175,6 +175,7 @@ void mtktspmic_cali_prepare(void)
 	if (g_degc_cali < 38 || g_degc_cali > 60)
 		g_degc_cali = 53;
 
+#if 0
 	mtktspmic_info("[pmic_debug] g_o_vts        = 0x%x\n", g_o_vts);
 	mtktspmic_info("[pmic_debug] g_o_vts_2      = 0x%x\n", g_o_vts_2);
 	mtktspmic_info("[pmic_debug] g_o_vts_3      = 0x%x\n", g_o_vts_3);
@@ -184,7 +185,7 @@ void mtktspmic_cali_prepare(void)
 	mtktspmic_info("[pmic_debug] g_o_slope      = 0x%x\n", g_o_slope);
 	mtktspmic_info("[pmic_debug] g_o_slope_sign = 0x%x\n", g_o_slope_sign);
 	mtktspmic_info("[pmic_debug] g_id           = 0x%x\n", g_id);
-
+#endif
 }
 
 void mtktspmic_cali_prepare2(void)
