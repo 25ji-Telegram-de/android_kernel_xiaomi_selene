@@ -4607,34 +4607,36 @@ static inline void mtk_drm_layer_dispatch_to_dual_pipe(
 		plane_state, sizeof(struct mtk_plane_state));
 
 	/*left path*/
-	//Case: Image cross from left to right
-	plane_state_l->pending.width  = w/2 - plane_state_l->pending.dst_x;
+	plane_state_l->pending.width  = w/2 -
+		plane_state_l->pending.dst_x;
 
-	//Case: All of the image In the left partition
-	if ((plane_state->pending.dst_x + plane_state->pending.width) < w/2)
+	if (w/2 < plane_state->pending.dst_x)
+		plane_state_l->pending.enable = 0;
+	if (plane_state_l->pending.width > plane_state->pending.width)
 		plane_state_l->pending.width = plane_state->pending.width;
 
-	//Case: All of the image In the right partition
-	if (plane_state->pending.dst_x > w/2)
-		plane_state_l->pending.enable = 0;
-
 	/*right path*/
-	//Case: Image cross from left to right
-	plane_state_r->pending.width += plane_state_r->pending.dst_x - w/2;
-	plane_state_r->pending.dst_x = 0;
-	plane_state_r->pending.src_x +=
-		plane_state->pending.width - plane_state_r->pending.width;
 
-	//Case: All of the image In the left partition
-	if ((plane_state->pending.dst_x + plane_state->pending.width) < w/2)
+	plane_state_r->pending.width +=
+		plane_state_r->pending.dst_x - w/2;
+
+	plane_state_r->pending.dst_x +=
+		plane_state->pending.width -
+		plane_state_r->pending.width - w/2;
+
+	plane_state_r->pending.src_x +=
+		plane_state->pending.width -
+		plane_state_r->pending.width;
+
+	if (w/2 > (plane_state->pending.width
+		+ plane_state->pending.dst_x))
 		plane_state_r->pending.enable = 0;
 
-	//Case: All of the image In the right partition
-	if (plane_state->pending.dst_x > w/2) {
-		plane_state_r->pending.width = plane_state->pending.width;
-		plane_state_r->pending.dst_x = plane_state->pending.dst_x - w/2;
-		plane_state_r->pending.src_x = plane_state->pending.src_x;
-	}
+	if (plane_state_r->pending.width
+		> plane_state->pending.width)
+		plane_state_r->pending.width =
+		plane_state->pending.width;
+
 	memcpy(plane_state,
 		plane_state_l, sizeof(struct mtk_plane_state));
 }
