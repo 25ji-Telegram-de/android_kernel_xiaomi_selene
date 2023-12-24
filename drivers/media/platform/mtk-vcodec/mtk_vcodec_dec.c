@@ -2704,7 +2704,6 @@ static int mtk_vdec_s_ctrl(struct v4l2_ctrl *ctrl)
 		ctx->dec_params.queued_frame_buf_count = ctrl->val;
 		break;
 	default:
-		mtk_v4l2_err("ctrl-id=%x not support!", ctrl->id);
 		return -EINVAL;
 	}
 
