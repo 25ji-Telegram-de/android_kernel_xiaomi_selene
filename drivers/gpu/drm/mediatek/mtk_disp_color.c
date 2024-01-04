@@ -2080,10 +2080,9 @@ static void mtk_color_config(struct mtk_ddp_comp *comp,
 		       comp->regs_pa + DISP_COLOR_WIDTH(color), cfg->w, ~0);
 	cmdq_pkt_write(handle, comp->cmdq_base,
 		       comp->regs_pa + DISP_COLOR_HEIGHT(color), cfg->h, ~0);
-
 }
 
-void ddp_color_bypass_color(struct mtk_ddp_comp *comp, int bypass,
+static void ddp_color_bypass_color(struct mtk_ddp_comp *comp, int bypass,
 		struct cmdq_pkt *handle)
 {
 
@@ -3187,3 +3186,21 @@ struct platform_driver mtk_disp_color_driver = {
 			.of_match_table = mtk_disp_color_driver_dt_match,
 		},
 };
+
+void mtk_color_setbypass(struct mtk_ddp_comp *comp, bool bypass)
+{
+	DDPINFO("%s, bypass: %d\n", __func__, bypass);
+	if (default_comp != NULL) {
+		if (bypass) {
+			mtk_ddp_write_mask_cpu(default_comp, 0x80,
+				DISP_COLOR_CFG_MAIN, COLOR_BYPASS_ALL);
+			g_color_bypass[index_of_color(default_comp->id)] = 0x1;
+		} else {
+			mtk_ddp_write_mask_cpu(default_comp, 0x0,
+				DISP_COLOR_CFG_MAIN, COLOR_BYPASS_ALL);
+			g_color_bypass[index_of_color(default_comp->id)] = 0x0;
+		}
+	} else {
+		DDPINFO("%s, default_comp is null\n", __func__);
+	}
+}
