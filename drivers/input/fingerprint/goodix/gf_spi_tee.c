@@ -106,6 +106,7 @@ struct TEEC_UUID uuid_ta_gf = { 0x8888c03f, 0xc30c, 0x4dd0,
 	{ 0xa3, 0x19, 0xea, 0x29, 0x64, 0x3d, 0x4d, 0x4b } };
 
 /*************************************************************/
+static int Screen_status = 0;
 static LIST_HEAD(device_list);
 static DEFINE_MUTEX(device_list_lock);
 
@@ -615,11 +616,13 @@ static int gf_fb_notifier_callback(struct notifier_block *self,
 
 	switch (blank) {
 	case FB_BLANK_UNBLANK:
+		Screen_status =1;
 		gf_debug(INFO_LOG, "[%s] : lcd on notify\n", __func__);
 		gf_netlink_send(gf_dev, GF_NETLINK_SCREEN_ON);
 		break;
 
 	case FB_BLANK_POWERDOWN:
+		Screen_status =2;
 		gf_debug(INFO_LOG, "[%s] : lcd off notify\n", __func__);
 		gf_netlink_send(gf_dev, GF_NETLINK_SCREEN_OFF);
 		break;
@@ -877,47 +880,6 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case GF_IOC_INPUT_KEY_EVENT:
-		if (copy_from_user(&gf_key, (struct gf_key *)arg, sizeof(struct gf_key))) {
-			gf_debug(ERR_LOG, "Failed to copy input key event from user to kernel\n");
-			retval = -EFAULT;
-			break;
-		}
-
-		//K19A code for HQ-124340 by shicheng at 2021.5.24 start
-		if (GF_KEY_HOME_DOUBLE_CLICK== gf_key.key) {
-			key_input = GF_KEY_INPUT_DOUBLE;
-		} else if (GF_KEY_POWER == gf_key.key) {
-			key_input = GF_KEY_INPUT_HOME;
-		} else if (GF_KEY_CAMERA == gf_key.key) {
-			key_input = GF_KEY_INPUT_CAMERA;
-		} else if (GF_KEY_HOME == gf_key.key) {
-			key_input = GF_KEY_INPUT_HOME;
-		}else {
-			/* add special key define */
-			key_input = gf_key.key;
-		}
-
-		gf_debug(ERR_LOG, "%s: received key event[%d], key=%d, value=%d\n",
-				__func__, key_input, gf_key.key, gf_key.value);
-
-		if(GF_KEY_HOME_DOUBLE_CLICK == gf_key.key){
-			input_report_key(gf_dev->input, key_input, gf_key.value);
-		    input_sync(gf_dev->input);
-		}
-
-		if ((GF_KEY_POWER == gf_key.key || GF_KEY_CAMERA == gf_key.key) && (gf_key.value == 1)) {
-			input_report_key(gf_dev->input, key_input, 1);
-			input_sync(gf_dev->input);
-			input_report_key(gf_dev->input, key_input, 0);
-			input_sync(gf_dev->input);
-		}
-
-		if ((GF_KEY_HOME == gf_key.key)) {
-		    input_report_key(gf_dev->input, key_input, gf_key.value);
-		    input_sync(gf_dev->input);
-		}
-		//K19A code for HQ-124340 by shicheng at 2021.5.24 end
-            
 		break;
 
 	case GF_IOC_NAV_EVENT:
@@ -2208,18 +2170,11 @@ static int gf_probe(struct spi_device *spi)
 	}
 
 	__set_bit(EV_KEY, gf_dev->input->evbit);
-	__set_bit(GF_KEY_INPUT_HOME, gf_dev->input->keybit);
-	//K19A code for HQ-124340 by shicheng at 2021.5.24 start
-	__set_bit(GF_KEY_INPUT_DOUBLE, gf_dev->input->keybit);
-	__set_bit(GF_KEY_INPUT_MENU, gf_dev->input->keybit);
-	__set_bit(GF_KEY_INPUT_BACK, gf_dev->input->keybit);
-	__set_bit(GF_KEY_INPUT_POWER, gf_dev->input->keybit);
 
 	__set_bit(GF_NAV_INPUT_UP, gf_dev->input->keybit);
 	__set_bit(GF_NAV_INPUT_DOWN, gf_dev->input->keybit);
 	__set_bit(GF_NAV_INPUT_RIGHT, gf_dev->input->keybit);
 	__set_bit(GF_NAV_INPUT_LEFT, gf_dev->input->keybit);
-	__set_bit(GF_KEY_INPUT_CAMERA, gf_dev->input->keybit);
 	__set_bit(GF_NAV_INPUT_CLICK, gf_dev->input->keybit);
 	__set_bit(GF_NAV_INPUT_DOUBLE_CLICK, gf_dev->input->keybit);
 	__set_bit(GF_NAV_INPUT_LONG_PRESS, gf_dev->input->keybit);
@@ -2227,9 +2182,6 @@ static int gf_probe(struct spi_device *spi)
 	//__set_bit(GF_KEY_INPUT_KPENTER, gf_dev->input->keybit);
 
 	gf_dev->input->name = GF_INPUT_NAME;
-	gf_dev->input->id.vendor  = 0x0666;
-	gf_dev->input->id.product = 0x0888;
-	//K19A code for HQ-124340 by shicheng at 2021.5.24 end
 	if (input_register_device(gf_dev->input)) {
 		gf_debug(ERR_LOG, "%s, Failed to register input device.\n", __func__);
 		status = -ENODEV;
