@@ -13,9 +13,11 @@ ifdef CONFIG_MTK_RAM_CONSOLE
 ccflags-y += -Idrivers/misc/mediatek/include/
 endif
 
+ifeq ($(cc-name),clang)
 ifdef CONFIG_INLINE_OPTIMIZATION
 ccflags-y += -mllvm -inline-threshold=15000
 ccflags-y += -mllvm -inlinehint-threshold=10000
+endif
 endif
 
 obj-y                          := main.o version.o mounts.o
