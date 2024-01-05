@@ -749,11 +749,13 @@ ifdef CONFIG_LTO_CLANG
 KBUILD_CFLAG	+= -fwhole-program-vtables
 endif
 
+ifeq ($(cc-name),clang)
 ifdef CONFIG_INLINE_OPTIMIZATION
 KBUILD_CFLAGS	+= -mllvm -inline-threshold=2000
 KBUILD_CFLAGS	+= -mllvm -inlinehint-threshold=3000
 KBUILD_CFLAGS   += -mllvm -unroll-threshold=1200
 KBUILD_LDFLAGS  += --plugin-opt=-import-instr-limit=40
+endif
 endif
 else
 KBUILD_CFLAGS   += -O3
