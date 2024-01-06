@@ -271,7 +271,7 @@ static int __init combiner_probe(struct platform_device *pdev)
 	irq_set_chained_handler_and_data(combiner->parent_irq,
 					 combiner_handle_irq, combiner);
 
-	dev_info(&pdev->dev, "Initialized with [p=%d,n=%d,r=%p]\n",
+	dev_dbg(&pdev->dev, "Initialized with [p=%d,n=%d,r=%p]\n",
 		 combiner->parent_irq, combiner->nirqs, combiner->regs[0].addr);
 	return 0;
 }

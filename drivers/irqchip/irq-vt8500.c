@@ -230,7 +230,7 @@ static int __init vt8500_irq_init(struct device_node *node,
 
 	vt8500_init_irq_hw(intc[active_cnt].base);
 
-	pr_info("vt8500-irq: Added interrupt controller\n");
+	pr_debug("vt8500-irq: Added interrupt controller\n");
 
 	active_cnt++;
 
@@ -248,7 +248,7 @@ static int __init vt8500_irq_init(struct device_node *node,
 			enable_irq(irq);
 		}
 
-		pr_info("vt8500-irq: Enabled slave->parent interrupts\n");
+		pr_debug("vt8500-irq: Enabled slave->parent interrupts\n");
 	}
 out:
 	return 0;

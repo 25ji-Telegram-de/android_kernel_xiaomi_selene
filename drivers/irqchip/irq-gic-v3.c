@@ -496,7 +496,7 @@ static int __gic_populate_rdist(struct redist_region *region, void __iomem *ptr)
 		gic_data_rdist_rd_base() = ptr;
 		gic_data_rdist()->phys_base = region->phys_base + offset;
 
-		pr_info("CPU%d: found redistributor %lx region %d:%pa\n",
+		pr_debug("CPU%d: found redistributor %lx region %d:%pa\n",
 			smp_processor_id(), mpidr,
 			(int)(region - gic_data.redist_regions),
 			&gic_data_rdist()->phys_base);
@@ -532,7 +532,7 @@ static int __gic_update_vlpi_properties(struct redist_region *region,
 static void gic_update_vlpi_properties(void)
 {
 	gic_iterate_rdists(__gic_update_vlpi_properties);
-	pr_info("%sVLPI support, %sdirect LPI support\n",
+	pr_debug("%sVLPI support, %sdirect LPI support\n",
 		!gic_data.rdists.has_vlpis ? "no " : "",
 		!gic_data.rdists.has_direct_lpi ? "no " : "");
 }
@@ -1041,7 +1041,7 @@ static int __init gic_init_bases(void __iomem *dist_base,
 		static_key_slow_dec(&supports_deactivate);
 
 	if (static_key_true(&supports_deactivate))
-		pr_info("GIC: Using split EOI/Deactivate mode\n");
+		pr_debug("GIC: Using split EOI/Deactivate mode\n");
 
 	gic_data.fwnode = handle;
 	gic_data.dist_base = dist_base;
@@ -1156,7 +1156,7 @@ static void __init gic_populate_ppi_partitions(struct device_node *gic_node)
 
 		part->partition_id = of_node_to_fwnode(child_part);
 
-		pr_info("GIC: PPI partition %s[%d] { ",
+		pr_debug("GIC: PPI partition %s[%d] { ",
 			child_part->name, part_idx);
 
 		n = of_property_count_elems_of_size(child_part, "affinity",
@@ -1396,7 +1396,7 @@ static int __init gic_acpi_collect_gicr_base(void)
 	if (acpi_table_parse_madt(type, redist_parser, 0) > 0)
 		return 0;
 
-	pr_info("No valid GICR entries exist\n");
+	pr_debug("No valid GICR entries exist\n");
 	return -ENODEV;
 }
 

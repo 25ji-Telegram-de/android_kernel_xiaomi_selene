@@ -202,7 +202,7 @@ static int __init brcmstb_l2_intc_of_init(struct device_node *np,
 		ct->chip.irq_set_wake = irq_gc_set_wake;
 	}
 
-	pr_info("registered L2 intc (mem: 0x%p, parent irq: %d)\n",
+	pr_debug("registered L2 intc (mem: 0x%p, parent irq: %d)\n",
 			data->base, data->parent_irq);
 
 	return 0;

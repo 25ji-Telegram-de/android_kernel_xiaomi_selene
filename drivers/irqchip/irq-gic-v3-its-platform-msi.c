@@ -109,7 +109,7 @@ static int __init its_pmsi_init_one(struct fwnode_handle *fwnode,
 		return -ENXIO;
 	}
 
-	pr_info("Platform MSI: %s domain created\n", name);
+	pr_debug("Platform MSI: %s domain created\n", name);
 	return 0;
 }
 

@@ -150,7 +150,7 @@ static int __init stm32_exti_init(struct device_node *node,
 	nr_exti = fls(readl_relaxed(base + EXTI_RTSR));
 	writel_relaxed(0, base + EXTI_RTSR);
 
-	pr_info("%pOF: %d External IRQs detected\n", node, nr_exti);
+	pr_debug("%pOF: %d External IRQs detected\n", node, nr_exti);
 
 	domain = irq_domain_add_linear(node, nr_exti,
 				       &irq_exti_domain_ops, NULL);

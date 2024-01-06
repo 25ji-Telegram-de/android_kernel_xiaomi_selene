@@ -1344,7 +1344,7 @@ static int __init its_lpi_init(u32 id_bits)
 		return -ENOMEM;
 	}
 
-	pr_info("ITS: Allocated %d chunks for LPIs\n", (int)lpi_chunks);
+	pr_debug("ITS: Allocated %d chunks for LPIs\n", (int)lpi_chunks);
 	return 0;
 }
 
@@ -1450,7 +1450,7 @@ static int __init its_alloc_lpi_tables(void)
 	}
 
 	paddr = page_to_phys(gic_rdists->prop_page);
-	pr_info("GIC: using LPI property table @%pa\n", &paddr);
+	pr_debug("GIC: using LPI property table @%pa\n", &paddr);
 
 	return its_lpi_init(lpi_id_bits);
 }
@@ -1596,7 +1596,7 @@ retry_baser:
 	baser->psz = psz;
 	tmp = indirect ? GITS_LVL1_ENTRY_SIZE : esz;
 
-	pr_info("ITS@%pa: allocated %d %s @%lx (%s, esz %d, psz %dK, shr %d)\n",
+	pr_debug("ITS@%pa: allocated %d %s @%lx (%s, esz %d, psz %dK, shr %d)\n",
 		&its->phys_base, (int)(PAGE_ORDER_TO_SIZE(order) / (int)tmp),
 		its_base_type_string[type],
 		(unsigned long)virt_to_phys(base),
@@ -1785,7 +1785,7 @@ static void its_cpu_init_lpis(void)
 		}
 
 		paddr = page_to_phys(pend_page);
-		pr_info("CPU%d: using LPI pending table @%pa\n",
+		pr_debug("CPU%d: using LPI pending table @%pa\n",
 			smp_processor_id(), &paddr);
 		gic_data_rdist()->pend_page = pend_page;
 	}
@@ -1821,7 +1821,7 @@ static void its_cpu_init_lpis(void)
 			val |= GICR_PROPBASER_nC;
 			gicr_write_propbaser(val, rbase + GICR_PROPBASER);
 		}
-		pr_info_once("GIC: using cache flushing for LPI property table\n");
+		pr_debug_once("GIC: using cache flushing for LPI property table\n");
 		gic_rdists->flags |= RDIST_FLAGS_PROPBASE_NEEDS_FLUSHING;
 	}
 
@@ -2883,7 +2883,7 @@ static int its_init_vpe_domain(void)
 	int entries;
 
 	if (gic_rdists->has_direct_lpi) {
-		pr_info("ITS: Using DirectLPI for VPE invalidation\n");
+		pr_debug("ITS: Using DirectLPI for VPE invalidation\n");
 		return 0;
 	}
 
@@ -2911,7 +2911,7 @@ static int its_init_vpe_domain(void)
 
 	raw_spin_lock_init(&vpe_proxy.lock);
 	vpe_proxy.next_victim = 0;
-	pr_info("ITS: Allocated DevID %x as GICv4 proxy device (%d slots)\n",
+	pr_debug("ITS: Allocated DevID %x as GICv4 proxy device (%d slots)\n",
 		devid, vpe_proxy.dev->nr_ites);
 
 	return 0;
@@ -2983,7 +2983,7 @@ static int __init its_probe_one(struct resource *res,
 		goto out_unmap;
 	}
 
-	pr_info("ITS %pR\n", res);
+	pr_debug("ITS %pR\n", res);
 
 	its = kzalloc(sizeof(*its), GFP_KERNEL);
 	if (!its) {
@@ -3006,10 +3006,10 @@ static int __init its_probe_one(struct resource *res,
 			if (err < 0)
 				goto out_free_its;
 
-			pr_info("ITS@%pa: Using ITS number %d\n",
+			pr_debug("ITS@%pa: Using ITS number %d\n",
 				&res->start, err);
 		} else {
-			pr_info("ITS@%pa: Single VMOVP capable\n", &res->start);
+			pr_debug("ITS@%pa: Single VMOVP capable\n", &res->start);
 		}
 	}
 
@@ -3054,7 +3054,7 @@ static int __init its_probe_one(struct resource *res,
 			baser |= GITS_CBASER_nC;
 			gits_write_cbaser(baser, its->base + GITS_CBASER);
 		}
-		pr_info("ITS: using cache flushing for cmd queue\n");
+		pr_debug("ITS: using cache flushing for cmd queue\n");
 		its->flags |= ITS_FLAGS_CMDQ_NEEDS_FLUSHING;
 	}
 
@@ -3096,7 +3096,7 @@ int its_cpu_init(void)
 {
 	if (!list_empty(&its_nodes)) {
 		if (!gic_rdists_supports_plpis()) {
-			pr_info("CPU%d: LPIs not supported\n", smp_processor_id());
+			pr_debug("CPU%d: LPIs not supported\n", smp_processor_id());
 			return -ENXIO;
 		}
 		its_cpu_init_lpis();
@@ -3194,7 +3194,7 @@ static int __init gic_acpi_parse_srat_its(struct acpi_subtable_header *header,
 	its_srat_maps[its_in_srat].numa_node = node;
 	its_srat_maps[its_in_srat].its_id = its_affinity->its_id;
 	its_in_srat++;
-	pr_info("SRAT: PXM %d -> ITS %d -> Node %d\n",
+	pr_debug("SRAT: PXM %d -> ITS %d -> Node %d\n",
 		its_affinity->proximity_domain, its_affinity->its_id, node);
 
 	return 0;

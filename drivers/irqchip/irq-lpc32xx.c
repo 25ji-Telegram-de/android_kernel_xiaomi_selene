@@ -98,7 +98,7 @@ static int lpc32xx_irq_set_type(struct irq_data *d, unsigned int type)
 		high = false;
 		break;
 	default:
-		pr_info("unsupported irq type %d\n", type);
+		pr_debug("unsupported irq type %d\n", type);
 		return -EINVAL;
 	}
 

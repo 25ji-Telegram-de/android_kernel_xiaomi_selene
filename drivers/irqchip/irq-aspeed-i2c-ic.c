@@ -100,7 +100,7 @@ static int __init aspeed_i2c_ic_of_init(struct device_node *node,
 	irq_set_chained_handler_and_data(i2c_ic->parent_irq,
 					 aspeed_i2c_ic_irq_handler, i2c_ic);
 
-	pr_info("i2c controller registered, irq %d\n", i2c_ic->parent_irq);
+	pr_debug("i2c controller registered, irq %d\n", i2c_ic->parent_irq);
 
 	return 0;
 

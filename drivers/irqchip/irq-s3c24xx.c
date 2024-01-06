@@ -531,7 +531,7 @@ static void s3c24xx_clear_intc(struct s3c_irq_intc *intc)
 		if (intc->reg_intpnd)
 			writel_relaxed(pend, intc->reg_intpnd);
 
-		pr_info("irq: clearing pending status %08x\n", (int)pend);
+		pr_debug("irq: clearing pending status %08x\n", (int)pend);
 		last = pend;
 	}
 }
@@ -798,7 +798,7 @@ static struct s3c_irq_data init_s3c2412subint[32] = {
 
 void __init s3c2412_init_irq(void)
 {
-	pr_info("S3C2412: IRQ Support\n");
+	pr_debug("S3C2412: IRQ Support\n");
 
 #ifdef CONFIG_FIQ
 	init_FIQ(FIQ_START);
@@ -897,7 +897,7 @@ static struct s3c_irq_data init_s3c2416_second[32] = {
 
 void __init s3c2416_init_irq(void)
 {
-	pr_info("S3C2416: IRQ Support\n");
+	pr_debug("S3C2416: IRQ Support\n");
 
 #ifdef CONFIG_FIQ
 	init_FIQ(FIQ_START);
@@ -976,7 +976,7 @@ static struct s3c_irq_data init_s3c2440subint[32] = {
 
 void __init s3c2440_init_irq(void)
 {
-	pr_info("S3C2440: IRQ Support\n");
+	pr_debug("S3C2440: IRQ Support\n");
 
 #ifdef CONFIG_FIQ
 	init_FIQ(FIQ_START);
@@ -1049,7 +1049,7 @@ static struct s3c_irq_data init_s3c2442subint[32] = {
 
 void __init s3c2442_init_irq(void)
 {
-	pr_info("S3C2442: IRQ Support\n");
+	pr_debug("S3C2442: IRQ Support\n");
 
 #ifdef CONFIG_FIQ
 	init_FIQ(FIQ_START);
@@ -1139,7 +1139,7 @@ static struct s3c_irq_data init_s3c2443subint[32] = {
 
 void __init s3c2443_init_irq(void)
 {
-	pr_info("S3C2443: IRQ Support\n");
+	pr_debug("S3C2443: IRQ Support\n");
 
 #ifdef CONFIG_FIQ
 	init_FIQ(FIQ_START);

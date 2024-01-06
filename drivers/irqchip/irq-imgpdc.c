@@ -461,7 +461,7 @@ static int pdc_intc_probe(struct platform_device *pdev)
 	irq_set_chained_handler_and_data(priv->syswake_irq,
 					 pdc_intc_syswake_isr, priv);
 
-	dev_info(&pdev->dev,
+	dev_dbg(&pdev->dev,
 		 "PDC IRQ controller initialised (%u perip IRQs, %u syswake IRQs)\n",
 		 priv->nr_perips,
 		 priv->nr_syswakes);

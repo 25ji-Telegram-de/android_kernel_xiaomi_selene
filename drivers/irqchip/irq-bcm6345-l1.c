@@ -333,12 +333,12 @@ static int __init bcm6345_l1_of_init(struct device_node *dn,
 		goto out_unmap;
 	}
 
-	pr_info("registered BCM6345 L1 intc (IRQs: %d)\n",
+	pr_debug("registered BCM6345 L1 intc (IRQs: %d)\n",
 			IRQS_PER_WORD * intc->n_words);
 	for_each_cpu(idx, &intc->cpumask) {
 		struct bcm6345_l1_cpu *cpu = intc->cpus[idx];
 
-		pr_info("  CPU%u at MMIO 0x%p (irq = %d)\n", idx,
+		pr_debug("  CPU%u at MMIO 0x%p (irq = %d)\n", idx,
 				cpu->map_base, cpu->parent_irq);
 	}
 

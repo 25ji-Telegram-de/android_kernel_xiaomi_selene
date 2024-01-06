@@ -350,7 +350,7 @@ static int __init tegra_ictlr_init(struct device_node *node,
 
 	tegra_ictlr_syscore_init();
 
-	pr_info("%pOF: %d interrupts forwarded to %pOF\n",
+	pr_debug("%pOF: %d interrupts forwarded to %pOF\n",
 		node, num_ictlrs * 32, parent);
 
 	return 0;

@@ -140,7 +140,7 @@ static int __init its_pci_of_msi_init(void)
 		if (its_pci_msi_init_one(of_node_to_fwnode(np), np->full_name))
 			continue;
 
-		pr_info("PCI/MSI: %pOF domain created\n", np);
+		pr_debug("PCI/MSI: %pOF domain created\n", np);
 	}
 
 	return 0;
@@ -168,7 +168,7 @@ its_pci_msi_parse_madt(struct acpi_subtable_header *header,
 
 	err = its_pci_msi_init_one(dom_handle, node_name);
 	if (!err)
-		pr_info("PCI/MSI: %s domain created\n", node_name);
+		pr_debug("PCI/MSI: %s domain created\n", node_name);
 
 out:
 	kfree(node_name);

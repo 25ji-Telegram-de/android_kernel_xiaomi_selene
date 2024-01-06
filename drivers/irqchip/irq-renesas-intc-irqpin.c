@@ -583,7 +583,7 @@ static int intc_irqpin_probe(struct platform_device *pdev)
 	for (k = 0; k < nirqs; k++)
 		intc_irqpin_mask_unmask_prio(p, k, 0);
 
-	dev_info(dev, "driving %d irqs\n", nirqs);
+	dev_dbg(dev, "driving %d irqs\n", nirqs);
 
 	return 0;
 

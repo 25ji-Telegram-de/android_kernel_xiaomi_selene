@@ -117,7 +117,7 @@ static int __init zevio_of_init(struct device_node *node,
 
 	set_handle_irq(zevio_handle_irq);
 
-	pr_info("TI-NSPIRE classic IRQ controller\n");
+	pr_debug("TI-NSPIRE classic IRQ controller\n");
 	return 0;
 }
 
