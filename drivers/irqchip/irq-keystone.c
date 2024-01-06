@@ -197,7 +197,7 @@ static int keystone_irq_probe(struct platform_device *pdev)
 	/* clear all source bits */
 	keystone_irq_writel(kirq, ~0x0);
 
-	dev_info(dev, "irqchip registered, nr_irqs %u\n", KEYSTONE_N_IRQ);
+	dev_dbg(dev, "irqchip registered, nr_irqs %u\n", KEYSTONE_N_IRQ);
 
 	return 0;
 }

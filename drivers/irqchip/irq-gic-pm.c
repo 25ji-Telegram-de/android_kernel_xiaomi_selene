@@ -124,7 +124,7 @@ static int gic_probe(struct platform_device *pdev)
 
 	pm_runtime_put(dev);
 
-	dev_info(dev, "GIC IRQ controller registered\n");
+	dev_dbg(dev, "GIC IRQ controller registered\n");
 
 	return 0;
 

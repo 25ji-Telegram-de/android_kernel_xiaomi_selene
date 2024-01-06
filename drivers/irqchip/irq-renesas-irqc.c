@@ -241,7 +241,7 @@ static int irqc_probe(struct platform_device *pdev)
 		}
 	}
 
-	dev_info(&pdev->dev, "driving %d irqs\n", p->number_of_irqs);
+	dev_dbg(&pdev->dev, "driving %d irqs\n", p->number_of_irqs);
 
 	return 0;
 err4:

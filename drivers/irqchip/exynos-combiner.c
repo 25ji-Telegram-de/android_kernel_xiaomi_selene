@@ -264,7 +264,7 @@ static int __init combiner_of_init(struct device_node *np,
 	}
 
 	if (of_property_read_u32(np, "samsung,combiner-nr", &max_nr)) {
-		pr_info("%s: number of combiners not specified, "
+		pr_debug("%s: number of combiners not specified, "
 			"setting default as %d.\n",
 			__func__, max_nr);
 	}

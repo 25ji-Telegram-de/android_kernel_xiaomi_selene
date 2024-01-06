@@ -70,7 +70,7 @@ static int __init aic_irq_of_init(struct device_node *node,
 	struct irq_domain *domain;
 	int ret;
 
-	pr_info("Initializing J-Core AIC\n");
+	pr_debug("Initializing J-Core AIC\n");
 
 	/* AIC1 needs priority initialization to receive interrupts. */
 	if (of_device_is_compatible(node, "jcore,aic1")) {

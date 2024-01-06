@@ -158,7 +158,7 @@ static void __init omap_irq_soft_reset(void)
 
 	tmp = intc_readl(INTC_REVISION) & 0xff;
 
-	pr_info("IRQ: Found an INTC at 0x%p (revision %ld.%ld) with %d interrupts\n",
+	pr_debug("IRQ: Found an INTC at 0x%p (revision %ld.%ld) with %d interrupts\n",
 		omap_irq_base, tmp >> 4, tmp & 0xf, omap_nr_irqs);
 
 	tmp = intc_readl(INTC_SYSCONFIG);

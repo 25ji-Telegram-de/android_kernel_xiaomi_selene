@@ -864,7 +864,7 @@ int __init init_external_IRQ(void)
 	/* Set up system suspend/resume callbacks */
 	meta_intc_init_syscore_ops(priv);
 
-	pr_info("meta-intc: External IRQ controller initialised (%u IRQs)\n",
+	pr_debug("meta-intc: External IRQ controller initialised (%u IRQs)\n",
 		priv->nr_banks*32);
 
 	return 0;
