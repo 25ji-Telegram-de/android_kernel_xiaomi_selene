@@ -51,7 +51,7 @@
 
 #define NVT_DEBUG 0
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - start*/
-#define NVT_LOCKDOWN 1
+#define NVT_LOCKDOWN 0
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN, end*/
 //---GPIO number---
 #define NVTTOUCH_RST_PIN 980
