@@ -113,7 +113,7 @@
 
 #define FTS_HIGH_REPORT						 0
 #define FTS_SIZE_DEFAULT						15
-#define FTS_TP_ADD							  1
+#define FTS_TP_ADD							  0
 #define FOCAL_LOCKDOWN							1
 #define FTS_TP_DATA_DUMP_EN                     //create procfs /proc/tp_data_dump
 #if FOCAL_LOCKDOWN
