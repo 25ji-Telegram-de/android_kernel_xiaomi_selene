@@ -151,7 +151,7 @@
 
 #define FTS_PALM_EN                             1
 
-#define FTS_REPORT_PRESSURE_EN                  1
+#define FTS_REPORT_PRESSURE_EN                  0
 
 /*
  * Gesture function enable
