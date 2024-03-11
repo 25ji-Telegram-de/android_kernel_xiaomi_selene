@@ -24,7 +24,11 @@ extern int aee_rr_reboot_reason_show(struct seq_file *m, void *v);
 extern int aee_rr_last_fiq_step(void);
 extern void aee_rr_rec_exp_type(unsigned int type);
 
+#ifdef CONFIG_DEBUG_KERNEL
 extern int debug_locks;
+#else
+static const int debug_locks;
+#endif
 #ifdef WDT_DEBUG_VERBOSE
 extern int dump_localtimer_info(char *buffer, int size);
 extern int dump_idle_info(char *buffer, int size);
