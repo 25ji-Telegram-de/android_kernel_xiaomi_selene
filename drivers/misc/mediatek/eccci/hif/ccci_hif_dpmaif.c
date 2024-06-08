@@ -4098,8 +4098,9 @@ int dpmaif_stop(unsigned char hif_id)
 	/* rx rx clear */
 	dpmaif_stop_rx_sw(hif_id);
 	/* stop debug mechnism */
+#ifdef DPMAIF_TRAFFIC_MONITOR_INTERVAL
 	del_timer(&dpmaif_ctrl->traffic_monitor);
-
+#endif
 	#ifdef MT6297
 	/* todo: CG set */
 	ccci_set_clk_by_id(1, 0);
