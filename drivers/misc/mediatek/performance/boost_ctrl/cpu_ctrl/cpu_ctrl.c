@@ -146,8 +146,7 @@ int update_userlimit_cpu_freq(int kicker, int num_cluster
 		retval = -EIO;
 #ifdef CONFIG_TRACING
 		perfmgr_trace_printk("cpu_ctrl", "return -EIO 1\n");
-#endif
-		goto ret_update;
+#endif		goto ret_update;
 	}
 	for_each_perfmgr_clusters(i) {
 		freq_set[kicker][i].min = freq_limit[i].min >= -1 ?
