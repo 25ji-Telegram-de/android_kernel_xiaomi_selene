@@ -208,7 +208,7 @@ void connectivity_export_mt6306_set_gpio_dir(unsigned long pin,
 #define KERNEL_spm_resource_req
 #endif
 #ifdef CONFIG_TRACING
-xtern void tracing_record_cmdline(struct task_struct *tsk);
+extern void tracing_record_cmdline(struct task_struct *tsk);
 #endif
 extern void show_stack(struct task_struct *tsk, unsigned long *sp);
 #ifdef CPU_BOOST
