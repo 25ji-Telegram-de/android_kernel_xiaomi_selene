@@ -301,8 +301,6 @@ int dpmgr_module_notify(enum DISP_MODULE_ENUM module,
 	if (handle)
 		ret = dpmgr_signal_event(handle, event);
 
-	mmprofile_log_ex(ddp_mmp_get_events()->primary_display_aalod_trigger,
-		MMPROFILE_FLAG_PULSE, module, event);
 	return ret;
 }
 
@@ -1889,14 +1887,10 @@ int dpmgr_wait_event_timeout(disp_path_handle dp_handle,
 
 	if (wq_handle->init) {
 		cur_time = ktime_to_ns(ktime_get());
-		mmprofile_log_ex(ddp_mmp_get_events()->event_wait,
-			MMPROFILE_FLAG_PULSE, event, cur_time);
 
 		ret = wait_event_interruptible_timeout(wq_handle->wq,
 			cur_time < wq_handle->data, timeout);
 
-		mmprofile_log_ex(ddp_mmp_get_events()->event_wait,
-			MMPROFILE_FLAG_PULSE, event, ret);
 
 		if (ret == 0) {
 			DISP_LOG_E("wait %s timeout on scenario %s\n",
@@ -1945,14 +1939,10 @@ int _dpmgr_wait_event(disp_path_handle dp_handle, enum DISP_PATH_EVENT event,
 
 	cur_time = ktime_to_ns(ktime_get());
 
-	mmprofile_log_ex(ddp_mmp_get_events()->event_wait,
-		MMPROFILE_FLAG_PULSE, event, cur_time);
 
 	ret = wait_event_interruptible(wq_handle->wq,
 		cur_time < wq_handle->data);
 
-	mmprofile_log_ex(ddp_mmp_get_events()->event_wait,
-		MMPROFILE_FLAG_PULSE, event, ret);
 
 	if (ret < 0) {
 		DISP_LOG_E("wait %s interrupt by other ret %d on scenario %s\n",
@@ -1992,9 +1982,6 @@ int dpmgr_signal_event(disp_path_handle dp_handle, enum DISP_PATH_EVENT event)
 	if (handle->wq_list[event].init) {
 		wq_handle->data = ktime_to_ns(ktime_get());
 		wake_up_interruptible(&(handle->wq_list[event].wq));
-		mmprofile_log_ex(ddp_mmp_get_events()->event_signal,
-			MMPROFILE_FLAG_PULSE,
-			event, wq_handle->data);
 	}
 	return 0;
 }

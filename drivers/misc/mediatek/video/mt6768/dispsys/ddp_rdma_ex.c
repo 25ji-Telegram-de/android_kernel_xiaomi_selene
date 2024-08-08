@@ -1348,8 +1348,6 @@ static inline int rdma_switch_to_sec(enum DISP_MODULE_ENUM module,
 	/* cmdqRecSecureEnableDAPC(handle, (1LL << cmdq_engine)); */
 	if (rdma_is_sec[rdma_idx] == 0) {
 		DDPSVPMSG("[SVP] switch rdma%d to sec\n", rdma_idx);
-		mmprofile_log_ex(ddp_mmp_get_events()->svp_module[module],
-			MMPROFILE_FLAG_START, 0, 0);
 	}
 	rdma_is_sec[rdma_idx] = 1;
 
@@ -1419,8 +1417,6 @@ int rdma_switch_to_nonsec(enum DISP_MODULE_ENUM module,
 
 		cmdqRecDestroy(nonsec_switch_handle);
 		DDPSVPMSG("[SVP] switch rdma%d to nonsec\n", rdma_idx);
-		mmprofile_log_ex(ddp_mmp_get_events()->svp_module[module],
-			MMPROFILE_FLAG_END, 0, 0);
 	}
 
 	rdma_is_sec[rdma_idx] = 0;

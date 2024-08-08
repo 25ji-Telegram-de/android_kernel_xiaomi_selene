@@ -1033,9 +1033,11 @@ void dprec_reg_op(void *cmdq, unsigned int reg, unsigned int val,
 {
 	int len = 0;
 
+#ifdef SUPPORT_MMPROFILE /* FIXME: remove when MMP ready */
 	if (!cmdq)
 		mmprofile_log_ex(ddp_mmp_get_events()->dprec_cpu_write_reg,
 			MMPROFILE_FLAG_PULSE, reg, val);
+#endif
 
 	if (cmdq) {
 		if (mask) {

@@ -314,10 +314,6 @@ static int ovl2mem_callback(unsigned int userdata)
 	}
 
 	atomic_set(&g_release_ticket, userdata);
-	mmprofile_log_ex(ddp_mmp_get_events()->ovl_trigger,
-		MMPROFILE_FLAG_PULSE, 0x05,
-		(atomic_read(&g_trigger_ticket)<<16) |
-			atomic_read(&g_release_ticket));
 
 	_ovl2mem_path_unlock(__func__);
 	DISPINFO("%s done\n", __func__);
@@ -371,8 +367,6 @@ int ovl2mem_init(unsigned int session)
 #endif
 	DISPFUNC();
 
-	mmprofile_log_ex(ddp_mmp_get_events()->ovl_trigger,
-		MMPROFILE_FLAG_PULSE, 0x01, 0);
 
 	dpmgr_init();
 
@@ -496,8 +490,6 @@ int ovl2mem_init(unsigned int session)
 
 Exit:
 	_ovl2mem_path_unlock(__func__);
-	mmprofile_log_ex(ddp_mmp_get_events()->ovl_trigger,
-		MMPROFILE_FLAG_PULSE, 0x01, 1);
 
 	DISPMSG("%s done\n", __func__);
 
@@ -546,10 +538,6 @@ int ovl2mem_trigger(int blocking, void *callback, unsigned int userdata)
 	pgcl->need_trigger_path = 0;
 	atomic_add(1, &g_trigger_ticket);
 
-	mmprofile_log_ex(ddp_mmp_get_events()->ovl_trigger,
-		MMPROFILE_FLAG_PULSE, 0x02,
-		(atomic_read(&g_trigger_ticket)<<16) |
-		atomic_read(&g_release_ticket));
 
 	DISPINFO("%s done %d\n", __func__, get_ovl2mem_ticket());
 
@@ -836,10 +824,6 @@ int ovl2mem_deinit(void)
 
 	DISPFUNC();
 
-	mmprofile_log_ex(ddp_mmp_get_events()->ovl_trigger,
-		MMPROFILE_FLAG_START, 0x03,
-		(atomic_read(&g_trigger_ticket)<<16) |
-		atomic_read(&g_release_ticket));
 
 	_ovl2mem_path_lock(__func__);
 
@@ -901,8 +885,6 @@ int ovl2mem_deinit(void)
 
 Exit:
 	_ovl2mem_path_unlock(__func__);
-	mmprofile_log_ex(ddp_mmp_get_events()->ovl_trigger,
-		MMPROFILE_FLAG_END, 0x03, (loop_cnt<<24)|1);
 
 	DISPMSG("%s done\n", __func__);
 	return ret;
