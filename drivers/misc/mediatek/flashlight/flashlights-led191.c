@@ -42,12 +42,12 @@
 #define PK_DBG_FUNC(fmt, arg...) \
 	pr_debug(TAG_NAME "%s: " fmt, __func__, ##arg)
 #define PK_ERR(fmt, arg...) \
-	pr_info(TAG_NAME "%s: " fmt, __func__, ##arg)
+	pr_debug(TAG_NAME "%s: " fmt, __func__, ##arg)
 
 #define DEBUG_LEDS_STROBE
 #ifdef DEBUG_LEDS_STROBE
 #define PK_LOG(fmt, arg...) \
-	pr_info(TAG_NAME "%s is called.\n", __func__)
+	pr_debug(TAG_NAME "%s is called.\n", __func__)
 #define PK_DBG         PK_DBG_FUNC
 #else
 #define PK_LOG(fmt, arg...)       do {} while (0)
