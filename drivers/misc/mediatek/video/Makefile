@@ -27,17 +27,6 @@ ifeq (y, $(filter y, $(CONFIG_MACH_MT6833)))
 else
 	obj-$(CONFIG_MTK_FB) += $(subst ",,$(CONFIG_MTK_PLATFORM))/
 endif
-	obj-$(CONFIG_MACH_MT6771) += common/
 	obj-$(CONFIG_MACH_MT6768) += common/
-	obj-$(CONFIG_MACH_MT8167) += common/
-	obj-$(CONFIG_MACH_MT8168) += common/
-	obj-$(CONFIG_MACH_MT6739) += common/
-	obj-$(CONFIG_MACH_MT6785) += common/
-	obj-$(CONFIG_MACH_MT6885) += common/
-	obj-$(CONFIG_MACH_MT6765) += common/
-	obj-$(CONFIG_MACH_MT6873) += common/
-	obj-$(CONFIG_MACH_MT6853) += common/
-	obj-$(CONFIG_MACH_MT6893) += common/
-	obj-$(CONFIG_MACH_MT6833) += common/
 endif
 
