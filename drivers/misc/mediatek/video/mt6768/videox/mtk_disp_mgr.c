@@ -402,10 +402,6 @@ int _ioctl_prepare_present_fence(unsigned long arg)
 			__LINE__);
 		ret = -EFAULT;
 	}
-	mmprofile_log_ex(ddp_mmp_get_events()->present_fence_get,
-		MMPROFILE_FLAG_PULSE,
-		pnt_fence.present_fence_fd,
-		pnt_fence.present_fence_index);
 	DISPPR_FENCE("P+/%s%d/L%d/id%d/fd%d\n",
 		disp_session_mode_spy(pnt_fence.session_id),
 		DISP_SESSION_DEV(pnt_fence.session_id), timeline_id,

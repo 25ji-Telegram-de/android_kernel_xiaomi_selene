@@ -608,8 +608,6 @@ static void hdmi_state_reset(void)
 	if (IS_HDMI_NOT_ON())
 		return;
 
-	mmprofile_log_ex(ddp_mmp_get_events()->Extd_State, MMPROFILE_FLAG_START,
-			 Plugout, 0);
 
 	if (down_interruptible(&hdmi_update_mutex)) {
 		EXTDERR("[hdmi][HDMI] can't get semaphore in %s()\n", __func__);
@@ -631,8 +629,6 @@ static void hdmi_state_reset(void)
 
 	up(&hdmi_update_mutex);
 
-	mmprofile_log_ex(ddp_mmp_get_events()->Extd_State, MMPROFILE_FLAG_END,
-			 Plugout, 0);
 	EXTDINFO("hdmi_suspend done\n");
 }
 
@@ -644,8 +640,6 @@ static void hdmi_state_reset(void)
 	if (IS_HDMI_NOT_STANDBY())
 		return;
 
-	mmprofile_log_ex(ddp_mmp_get_events()->Extd_State, MMPROFILE_FLAG_START,
-			 Plugin, 0);
 
 	if (down_interruptible(&hdmi_update_mutex)) {
 		EXTDERR("[hdmi][HDMI] can't get semaphore in %s()\n", __func__);
@@ -657,8 +651,6 @@ static void hdmi_state_reset(void)
 	hdmi_drv->resume();
 	up(&hdmi_update_mutex);
 
-	mmprofile_log_ex(ddp_mmp_get_events()->Extd_State, MMPROFILE_FLAG_END,
-			 Plugin, 0);
 	EXTDINFO("hdmi_resume done\n");
 }
 
@@ -1105,8 +1097,6 @@ int hdmi_set_resolution(int res)
 	p->is_clock_on = false;
 	hdmi_reschange = res;
 
-	mmprofile_log_ex(ddp_mmp_get_events()->Extd_State, MMPROFILE_FLAG_START,
-			 ResChange, res);
 
 	if (down_interruptible(&hdmi_update_mutex)) {
 		EXTDERR("[HDMI] can't get semaphore in\n");
@@ -1137,8 +1127,6 @@ int hdmi_set_resolution(int res)
 	if (enable_ut != 1)
 		switch_set_state(&hdmires_switch_data, hdmi_reschange + 1);
 	p->is_clock_on = true;
-	mmprofile_log_ex(ddp_mmp_get_events()->Extd_State, MMPROFILE_FLAG_END,
-			 ResChange, hdmi_reschange + 1);
 
 	EXTDINFO("hdmi_set_resolution done\n");
 	return 0;
@@ -1157,13 +1145,8 @@ int hdmi_get_dev_info(int is_sf, void *info)
 			return -EFAULT;
 		}
 
-		mmprofile_log_ex(ddp_mmp_get_events()->Extd_DevInfo,
-				 MMPROFILE_FLAG_START, p->is_enabled,
-				 p->is_clock_on);
 
 		if (copy_from_user(&displayid, info, sizeof(displayid))) {
-			mmprofile_log_ex(ddp_mmp_get_events()->Extd_ErrorInfo,
-					 MMPROFILE_FLAG_PULSE, Devinfo, 0);
 			EXTDERR(": copy_from_user failed! line:%d\n", __LINE__);
 			return -EAGAIN;
 		}
@@ -1196,15 +1179,10 @@ int hdmi_get_dev_info(int is_sf, void *info)
 			hdmi_info.vsyncFPS = 6000;
 
 		if (copy_to_user(info, &hdmi_info, sizeof(hdmi_info))) {
-			mmprofile_log_ex(ddp_mmp_get_events()->Extd_ErrorInfo,
-					 MMPROFILE_FLAG_PULSE, Devinfo, 1);
 			EXTDERR("copy_to_user failed! line:%d\n", __LINE__);
 			ret = -EFAULT;
 		}
 
-		mmprofile_log_ex(ddp_mmp_get_events()->Extd_DevInfo,
-				 MMPROFILE_FLAG_END, p->is_enabled,
-				 hdmi_info.displayType);
 		EXTDINFO("DEV_INFO configuration get displayType-%d\n",
 			 hdmi_info.displayType);
 	} else if (is_sf == SF_GET_INFO) {

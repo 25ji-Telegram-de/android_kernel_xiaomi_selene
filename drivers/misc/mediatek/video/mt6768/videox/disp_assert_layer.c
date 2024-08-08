@@ -230,8 +230,6 @@ enum DAL_STATUS DAL_Clean(void)
 		return DAL_STATUS_NOT_READY;
 
 
-	mmprofile_log_ex(ddp_mmp_get_events()->dal_clean,
-		MMPROFILE_FLAG_START, 0, 0);
 	DAL_LOCK();
 	if (MFC_ResetCursor(mfc_handle) != MFC_STATUS_OK) {
 		DISPWARN("mfc_handle = %p\n", mfc_handle);
@@ -257,8 +255,6 @@ enum DAL_STATUS DAL_Clean(void)
 
 End:
 	DAL_UNLOCK();
-	mmprofile_log_ex(ddp_mmp_get_events()->dal_clean,
-		MMPROFILE_FLAG_END, 0, 0);
 	return ret;
 }
 EXPORT_SYMBOL(DAL_Clean);
@@ -284,8 +280,6 @@ enum DAL_STATUS DAL_Printf(const char *fmt, ...)
 	if (fmt == NULL)
 		return DAL_STATUS_INVALID_ARGUMENT;
 
-	mmprofile_log_ex(ddp_mmp_get_events()->dal_printf,
-		MMPROFILE_FLAG_START, 0, 0);
 	DAL_LOCK();
 	if (isAEEEnabled == 0) {
 		DISPMSG(
@@ -318,8 +312,6 @@ enum DAL_STATUS DAL_Printf(const char *fmt, ...)
 
 	DAL_UNLOCK();
 
-	mmprofile_log_ex(ddp_mmp_get_events()->dal_printf,
-		MMPROFILE_FLAG_END, 0, 0);
 
 	return ret;
 }

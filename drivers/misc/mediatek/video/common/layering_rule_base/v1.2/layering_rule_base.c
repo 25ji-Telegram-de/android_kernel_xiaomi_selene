@@ -2050,12 +2050,6 @@ int layering_rule_start(struct disp_layer_info *disp_info_user, int debug_mode)
 	HRT_SET_DC_FLAG(layering_info.hrt_num, adaptive_dc_request);
 	dump_disp_info(&layering_info, DISP_DEBUG_LEVEL_INFO);
 
-	mmprofile_log_ex(ddp_mmp_get_events()->hrt, MMPROFILE_FLAG_PULSE,
-			 layering_info.hrt_num,
-			 (layering_info.gles_head[0] << 24) |
-			 (layering_info.gles_tail[0] << 16) |
-			 (layering_info.layer_num[0] << 8) |
-			 layering_info.layer_num[1]);
 
 	ret = copy_layer_info_to_user(disp_info_user, debug_mode);
 	return ret;

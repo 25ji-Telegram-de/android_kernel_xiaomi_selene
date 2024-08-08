@@ -134,10 +134,6 @@ static struct disp_session_sync_info *_get_session_sync_info(
 
 		sprintf(name, "%s%d_prepare", disp_session_mode_spy(session_id),
 			DISP_SESSION_DEV(session_id));
-		dprec_logger_event_init(&session_info->event_prepare, name,
-					DPREC_LOGGER_LEVEL_DEFAULT |
-					DPREC_LOGGER_LEVEL_SYSTRACE,
-					&ddp_mmp_get_events()->session_Parent);
 		sprintf(name, "%s%d_frame_cfg",
 			disp_session_mode_spy(session_id),
 			DISP_SESSION_DEV(session_id));
@@ -460,16 +456,10 @@ unsigned int mtkfb_query_buf_mva(unsigned int session_id,
 	if (mva != 0x0) {
 		buf->ts_create = sched_clock();
 		if (buf->cache_sync) {
-			mmprofile_log_ex(
-				ddp_mmp_get_events()->primary_cache_sync,
-				MMPROFILE_FLAG_START, current->pid, 0);
 			#if defined(MTK_FB_ION_SUPPORT)
 			mtkfb_ion_cache_flush(ion_client, buf->hnd,
 			buf->mva, buf->size);
 			#endif
-			mmprofile_log_ex(
-				ddp_mmp_get_events()->primary_cache_sync,
-				MMPROFILE_FLAG_END, current->pid, 0);
 		}
 		MTKFB_FENCE_LOG("query buf mva: layer=%d, idx=%d, mva=0x%08x\n",
 			layer_id, idx, (unsigned int)(buf->mva));
@@ -774,9 +764,6 @@ bool mtkfb_update_buf_info(unsigned int session_id, unsigned int layer_id,
 		buf->mva_offset = mva_offset;
 		buf->seq = seq;
 		ret = true;
-		mmprofile_log_ex(ddp_mmp_get_events()->primary_seq_insert,
-			MMPROFILE_FLAG_PULSE, buf->mva + buf->mva_offset,
-			buf->seq);
 		break;
 	}
 

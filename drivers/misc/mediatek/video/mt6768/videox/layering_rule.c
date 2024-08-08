@@ -406,9 +406,6 @@ static void lr_gpu_change_rsz_info(void)
 
 static void layering_rule_senario_decision(struct disp_layer_info *disp_info)
 {
-	mmprofile_log_ex(ddp_mmp_get_events()->hrt, MMPROFILE_FLAG_START,
-		l_rule_info.disp_path,
-		l_rule_info.layer_tb_idx | (l_rule_info.bound_tb_idx << 16));
 
 	if (GET_SYS_STATE(DISP_HRT_MULTI_TUI_ON)) {
 		l_rule_info.disp_path = HRT_PATH_GENERAL;
@@ -491,9 +488,6 @@ static void layering_rule_senario_decision(struct disp_layer_info *disp_info)
 		}
 	}
 #endif
-	mmprofile_log_ex(ddp_mmp_get_events()->hrt, MMPROFILE_FLAG_END,
-		l_rule_info.disp_path,
-		l_rule_info.layer_tb_idx | (l_rule_info.bound_tb_idx << 16));
 }
 
 static bool filter_by_hw_limitation(struct disp_layer_info *disp_info)
@@ -742,8 +736,6 @@ int layering_rule_get_mm_freq_table(enum HRT_OPP_LEVEL opp_level)
 			dramc_type = HRT_DRAMC_TYPE_LP4_3200;
 	}
 #endif
-	mmprofile_log_ex(ddp_mmp_get_events()->dvfs,
-		MMPROFILE_FLAG_PULSE, dramc_type, opp_level);
 
 	return mm_freq_table[dramc_type][opp_level];
 }

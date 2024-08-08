@@ -950,8 +950,6 @@ static inline int ovl_switch_to_sec(enum DISP_MODULE_ENUM module, void *handle)
 	/* cmdqRecSecureEnableDAPC(handle, (1LL << cmdq_engine)); */
 	if (ovl_is_sec[ovl_idx] == 0) {
 		DDPSVPMSG("[SVP] switch ovl%d to sec\n", ovl_idx);
-		mmprofile_log_ex(ddp_mmp_get_events()->svp_module[module],
-			MMPROFILE_FLAG_START, 0, 0);
 	}
 	ovl_is_sec[ovl_idx] = 1;
 
@@ -1020,8 +1018,6 @@ int ovl_switch_to_nonsec(enum DISP_MODULE_ENUM module, void *handle)
 
 		cmdqRecDestroy(nonsec_switch_handle);
 		DDPSVPMSG("[SVP] switch ovl%d to nonsec\n", ovl_idx);
-		mmprofile_log_ex(ddp_mmp_get_events()->svp_module[module],
-				 MMPROFILE_FLAG_END, 0, 0);
 	}
 	ovl_is_sec[ovl_idx] = 0;
 
@@ -1319,8 +1315,6 @@ static void check_bch_reg(enum DISP_MODULE_ENUM module, int *phy_reg,
 		DDPDBG("sbch reg set fail phy:%x--%x, ext:%x--%x\n",
 			phy_value, phy_bit_dbg[module],
 			ext_value, ext_bit_dbg[module]);
-		mmprofile_log_ex(ddp_mmp_get_events()->sbch_set_error,
-			MMPROFILE_FLAG_PULSE, phy_value, phy_bit_dbg[module]);
 		/* disp_aee_print("sbch set error ovl%d\n",module); */
 	}
 
@@ -1334,10 +1328,6 @@ static void check_bch_reg(enum DISP_MODULE_ENUM module, int *phy_reg,
 				ddp_get_module_name(module),
 				phy_bit_dbg[module], phy_value,
 				ext_bit_dbg[module], ext_value);
-
-	if (phy_bit_dbg[module] || phy_value)
-		mmprofile_log_ex(ddp_mmp_get_events()->sbch_set,
-			MMPROFILE_FLAG_PULSE, phy_bit_dbg[module], phy_value);
 
 }
 
