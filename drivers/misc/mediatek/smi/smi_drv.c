@@ -621,6 +621,7 @@ EXPORT_SYMBOL_GPL(smi_sysram_enable);
 static inline void
 smi_debug_print(const bool gce, const u32 num, const u32 *pos, const u32 *val)
 {
+#if 0
 	char buf[LINK_MAX + 1];
 	s32 len, i, j, ret;
 
@@ -648,10 +649,12 @@ smi_debug_print(const bool gce, const u32 num, const u32 *pos, const u32 *val)
 		}
 		SMIWRN(gce, "%s\n", buf);
 	}
+#endif
 }
 
 static s32 smi_debug_dumper(const bool gce, const bool off, const u32 id)
 {
+#if 0
 	char *name;
 	void __iomem *base;
 	u32 nr_debugs, *debugs, temp[MAX_INPUT];
@@ -710,11 +713,13 @@ static s32 smi_debug_dumper(const bool gce, const bool off, const u32 id)
 		name, id, ATOMR_CLK(j));
 	smi_debug_print(gce, nr_debugs, debugs, temp);
 #endif
+#endif
 	return 0;
 }
 
 static void smi_debug_dump_status(const bool gce)
 {
+#if 0
 	s32 on, i;
 
 	for (i = 0; i <= SMI_DEV_NUM; i++)
@@ -733,6 +738,7 @@ static void smi_debug_dump_status(const bool gce)
 			on ? ' ' : '*', smi_record[i][0].sec,
 			smi_record[i][0].nsec, smi_record[i][0].user);
 	}
+#endif
 }
 
 s32 smi_debug_bus_hang_detect(const bool gce, const char *user)
