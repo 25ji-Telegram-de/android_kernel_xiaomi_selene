@@ -437,9 +437,6 @@ int mtk_gpufreq_register(struct mt_gpufreq_power_table_info *freqs, int num)
 	for (i = 0; i < num; i++) {
 		mtk_gpu_power[i].gpufreq_khz = freqs[i].gpufreq_khz;
 		mtk_gpu_power[i].gpufreq_power = freqs[i].gpufreq_power;
-
-		tscpu_printk("[%d].gpufreq_khz=%u, .gpufreq_power=%u\n",
-			i, freqs[i].gpufreq_khz, freqs[i].gpufreq_power);
 	}
 
 	gpu_max_opp = mt_gpufreq_get_seg_max_opp_index();
