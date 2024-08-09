@@ -849,6 +849,7 @@ page_owner=on quiet nodebugmon loop.max_part=7";
 		compatible = "mediatek,mt67xx-rng";
 	};
 
+#ifdef CONFIG_MTK_SYSTRACKER_V2
 	bus_dbg@10208000 {
 		compatible = "mediatek,bus_dbg-v2";
 		reg = <0 0x10208000 0 0x1000>,
@@ -856,6 +857,7 @@ page_owner=on quiet nodebugmon loop.max_part=7";
 		mediatek,bus_dbg_con_offset = <0x2fc>;
 		interrupts = <GIC_SPI 158 IRQ_TYPE_LEVEL_LOW>;
 	};
+#endif
 
 	ap_ccif0@10209000 {
 		compatible = "mediatek,ap_ccif0";
