@@ -506,7 +506,7 @@ static int vcu_ipi_get(struct mtk_vcu *vcu, unsigned long arg)
 				   atomic_read(&vcu->ipi_got[i]));
 
 	if (ret != 0) {
-		pr_err("[VCU][%d][%d] wait event return %d @%s\n",
+		pr_debug("[VCU][%d][%d] wait event return %d @%s\n",
 			vcu->vcuid, i, ret, __func__);
 		return ret;
 	}
@@ -532,7 +532,7 @@ static int vcu_log_get(struct mtk_vcu *vcu, unsigned long arg)
 	ret = wait_event_freezable(vcu->vdec_log_get_wq,
 				   atomic_read(&vcu->vdec_log_got));
 	if (ret != 0) {
-		pr_err("[VCU][%d] wait event return %d @%s\n",
+		pr_debug("[VCU][%d] wait event return %d @%s\n",
 			vcu->vcuid, ret, __func__);
 		return ret;
 	}
@@ -1028,7 +1028,7 @@ static int vcu_wait_gce_callback(struct mtk_vcu *vcu, unsigned long arg)
 	ret = wait_event_interruptible(vcu->gce_wq[i],
 		atomic_read(&vcu->gce_info[j].flush_done) > 0);
 	if (ret != 0) {
-		pr_err("[VCU][%d][%d] wait event return %d @%s\n",
+		pr_debug("[VCU][%d][%d] wait event return %d @%s\n",
 			vcu->vcuid, i, ret, __func__);
 		return ret;
 	}
