@@ -372,19 +372,6 @@ page_owner=on quiet nodebugmon loop.max_part=7";
 #endif
 	};
 
-	cpu_dbgapb: cpu_dbgapb@0e010000 {
-		compatible = "mediatek,hw_dbg";
-		num = <8>;
-		reg =	<0 0x0e010000 0 0x1000>,
-			<0 0x0e110000 0 0x1000>,
-			<0 0x0e210000 0 0x1000>,
-			<0 0x0e310000 0 0x1000>,
-			<0 0x0e410000 0 0x1000>,
-			<0 0x0e510000 0 0x1000>,
-			<0 0x0e610000 0 0x1000>,
-			<0 0x0e710000 0 0x1000>;
-	};
-
 	gic: interrupt-controller {
 		compatible = "arm,gic-v3";
 		#interrupt-cells = <3>;
