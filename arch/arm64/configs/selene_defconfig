@@ -1381,7 +1381,7 @@ CONFIG_MTK_GPT_SCHEME_SUPPORT=y
 # Storage Block Tag
 #
 # CONFIG_MTK_IO_BOOST is not set
-CONFIG_MTK_PID_MAP=y
+# CONFIG_MTK_PID_MAP is not set
 
 #
 # Power, PMIC, Battery & Low Power related configs
