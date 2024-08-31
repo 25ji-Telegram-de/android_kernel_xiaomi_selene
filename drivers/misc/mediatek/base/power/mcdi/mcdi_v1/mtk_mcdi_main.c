@@ -568,6 +568,7 @@ static void __go_to_wfi(int cpu)
 
 void mcdi_heart_beat_log_dump(void)
 {
+#if 0
 	static struct mtk_mcdi_buf buf;
 	int i;
 	unsigned long long mcdi_heart_beat_log_curr = 0;
@@ -644,6 +645,7 @@ void mcdi_heart_beat_log_dump(void)
 						system_idle_hint_result_raw());
 
 	printk_deferred("[mcdi]%s\n", get_mcdi_buf(buf));
+#endif
 }
 
 int wfi_enter(int cpu)
