@@ -6470,6 +6470,7 @@ static const char *dsi_mode_spy(enum LCM_DSI_MODE_CON mode)
 
 void dsi_analysis(enum DISP_MODULE_ENUM module)
 {
+#if 0
 	int i = 0;
 
 	DDPDUMP("== DISP DSI ANALYSIS ==\n");
@@ -6515,6 +6516,7 @@ void dsi_analysis(enum DISP_MODULE_ENUM module)
 			i, DSI_REG[i]->DSI_LFR_CON.LFR_TYPE,
 			DSI_REG[i]->DSI_LFR_CON.LFR_SKIP_NUM);
 	}
+#endif
 }
 
 int ddp_dsi_dump(enum DISP_MODULE_ENUM module, int level)
