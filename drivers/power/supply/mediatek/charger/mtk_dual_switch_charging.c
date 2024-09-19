@@ -363,7 +363,7 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 				info->data.apple_2_1a_charger_current;
 		pdata->charging_current_limit =
 				info->data.apple_2_1a_charger_current;
-	} else if (info->chr_type == POWER_SUPPLY_TYPE_USB_HVDCP) {
+	} else if (info->chr_type == HVDCP_CHARGER) {
 		pdata->input_current_limit = 2000000;
 		pdata->charging_current_limit = 6000000;
 		pr_err("POWER_SUPPLY_TYPE_USB_HVDCP set icl\n");
