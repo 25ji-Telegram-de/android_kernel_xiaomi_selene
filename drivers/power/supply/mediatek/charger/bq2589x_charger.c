@@ -1345,6 +1345,7 @@ static int bq2589x_detect_device(struct bq2589x *bq)
 
 static void bq2589x_dump_regs(struct bq2589x *bq)
 {
+#if 0
 	int addr;
 	u8 val;
 	int ret;
@@ -1354,6 +1355,7 @@ static void bq2589x_dump_regs(struct bq2589x *bq)
 		if (ret == 0)
 			pr_err("Reg[%.2x] = 0x%.2x\n", addr, val);
 	}
+#endif
 }
 
 static ssize_t
