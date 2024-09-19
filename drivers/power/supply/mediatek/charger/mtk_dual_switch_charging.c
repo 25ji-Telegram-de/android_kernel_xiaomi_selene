@@ -295,7 +295,7 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 					info->data.ac_charger_input_current;
 		pdata->charging_current_limit =
 					info->data.ac_charger_current;
-          /*K19A K19A-137 K19A  smb1351 kernel charger by wangqi at 2021/4/14 start*/
+		/*K19A K19A-137 K19A  smb1351 kernel charger by wangqi at 2021/4/14 start*/
 		switch (info->usb_psy->desc->type) {
 		case POWER_SUPPLY_TYPE_USB_HVDCP:
 				pdata->input_current_limit = 2000000;
@@ -314,7 +314,7 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 				pdata->charging_current_limit = 3000000;
 		}
 		/*K19A K19A-159 K19A charger by wangqi at 2021/4/20 end*/
-          /*K19A K19A-137 K19A  smb1351 kernel charger by wangqi at 2021/4/14 end*/
+		/*K19A K19A-137 K19A  smb1351 kernel charger by wangqi at 2021/4/14 end*/
 		mtk_pe20_set_charging_current(info,
 					&pdata->charging_current_limit,
 					&pdata->input_current_limit);
@@ -364,9 +364,9 @@ dual_swchg_select_charging_current_limit(struct charger_manager *info)
 		pdata->charging_current_limit =
 				info->data.apple_2_1a_charger_current;
 	} else if (info->chr_type == POWER_SUPPLY_TYPE_USB_HVDCP) {
-          pdata->input_current_limit = 2000000;
-          pdata->charging_current_limit = 6000000;
-          pr_err("POWER_SUPPLY_TYPE_USB_HVDCP set icl\n");
+		pdata->input_current_limit = 2000000;
+		pdata->charging_current_limit = 6000000;
+		pr_err("POWER_SUPPLY_TYPE_USB_HVDCP set icl\n");
 	}
 /*K19A HQ-133296 K19A charger of low temperature by wangqi at 2021/4/27 start*/
 #if 0
