@@ -136,10 +136,6 @@ ifneq ($(strip $(TARGET_NO_KERNEL)),true)
     KERNEL_MAKE_OPTION += MTK_DTBO_FEATURE=$(MTK_DTBO_FEATURE)
   endif
 
-  # Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start
-  ifeq ($(ENABLE_MIUI_DEBUGGING), true)
-    KERNEL_MAKE_OPTION += ENABLE_MIUI_DEBUGGING=true
-  endif
   # Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end
   else
     BUILT_KERNEL_TARGET := $(TARGET_PREBUILT_KERNEL)
