@@ -109,6 +109,7 @@ static DEFINE_SPINLOCK(idle_dump_cnt_spin_lock);
 
 void mtk_idle_dump_cnt_in_interval(void)
 {
+#if 0
 	unsigned long long idle_cnt_dump_curr_time = 0;
 	unsigned long flags;
 	bool dump_log = false;
@@ -154,6 +155,7 @@ void mtk_idle_dump_cnt_in_interval(void)
 			, get_log());
 		idle_ratio_profile_start_time = idle_get_current_time_ms();
 	}
+#endif
 }
 
 void mtk_idle_block_reason_report(struct MTK_IDLE_MODEL_CLERK const *clerk)
