@@ -716,7 +716,6 @@ int do_ptim_internal(bool isSuspend, unsigned int *bat,
 
 	while (pmic_get_register_value(PMIC_AUXADC_IMPEDANCE_IRQ_STATUS) == 0) {
 		if ((count_adc_imp++) > count_time_out_adc_imp) {
-			pr_debug("do_ptim over %d times/ms\n", count_adc_imp);
 			ret = 1;
 			break;
 		}
@@ -743,7 +742,6 @@ int do_ptim_internal(bool isSuspend, unsigned int *bat,
 #else
 	*cur = 0;
 #endif
-	pr_debug("%s: bat %d cur %d\n", __func__, *bat, *cur);
 
 	return ret;
 }
