@@ -14,6 +14,8 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/sspm/$(MTK_PLATFORM)/
 obj-y += pmic_ipi.o
 endif
 
+ccflags-y += -Werror
+
 ifeq ($(CONFIG_MTK_GAUGE_VERSION),30)
 obj-y += mt6358_gauge.o
 endif
