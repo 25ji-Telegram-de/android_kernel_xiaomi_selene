@@ -128,3 +128,15 @@ kernel/configs/android-*.cfg
 
 # commonly used output directory for building
 out/
+
+# Droidian
+!.gitmodules
+!debian
+debian/changelog
+debian/path-override
+debian/*.substvars
+debian/*.debhelper
+debian/files
+debian/debhelper-build-stamp
+debian/linux-*/
+debian/*.postinst
