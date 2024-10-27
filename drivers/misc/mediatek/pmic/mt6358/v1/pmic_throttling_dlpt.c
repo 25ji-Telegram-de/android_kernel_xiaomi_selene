@@ -965,21 +965,17 @@ void pmic_quicksort(int *data, int left, int right)
 
 int get_dlpt_imix(void)
 {
-	int volt[5], curr[5], volt_avg = 0, curr_avg = 0;
+	int volt[3], curr[3], volt_avg = 0, curr_avg = 0;
 	int imix;
 	int i, count_do_ptim = 0;
 
-	for (i = 0; i < 5; i++) {
+	for (i = 0; i < 3; i++) {
 		/*adc and fg---------------------------------------------- */
 		while (do_ptim(false)) {
-			if ((count_do_ptim >= 2) && (count_do_ptim < 4))
-				pr_debug("do_ptim more than twice times\n");
-			else if (count_do_ptim > 3) {
-				pr_debug("do_ptim more than five times\n");
+			if (count_do_ptim > 2) {
 				ptim_lock();
 				wk_auxadc_reset();
 				ptim_unlock();
-				aee_kernel_warning("PTIM timeout", "PTIM");
 				break;
 			}
 			count_do_ptim++;
@@ -987,14 +983,12 @@ int get_dlpt_imix(void)
 
 		volt[i] = ptim_bat_vol;
 		curr[i] = ptim_R_curr;
-		PMICLOG("[%s:%d] %d,%d,%d,%d\n", __func__, i,
-			volt[i], curr[i], volt_avg, curr_avg);
 	}
 
-	pmic_quicksort(volt, 0, 4);
-	pmic_quicksort(curr, 0, 4);
-	volt_avg = volt[1] + volt[2] + volt[3];
-	curr_avg = curr[1] + curr[2] + curr[3];
+	pmic_quicksort(volt, 0, 3);
+	pmic_quicksort(curr, 0, 3);
+	volt_avg = volt[0] + volt[1] + volt[2];
+	curr_avg = curr[0] + curr[1] + curr[2];
 	volt_avg = volt_avg / 3;
 	curr_avg = curr_avg / 3;
 
@@ -1003,19 +997,9 @@ int get_dlpt_imix(void)
 	imix = (curr_avg + (volt_avg - g_lbatInt1) * 1000 / ptim_rac_val_avg)
 				/ 10;
 
-#if (CONFIG_MTK_GAUGE_VERSION == 30)
-	pr_debug("[%s] %d,%d,%d,%d,%d,%d,%d\n", __func__,
-		volt_avg, curr_avg, g_lbatInt1, ptim_rac_val_avg, imix,
-		battery_get_soc(), battery_get_uisoc());
-#else
-	pr_debug("[%s] %d,%d,%d,%d,%d,NA,NA\n", __func__,
-		volt_avg, curr_avg, g_lbatInt1, ptim_rac_val_avg, imix);
-#endif
-
-	if (imix < 0) {
-		pr_debug("[%s] imix = %d < 1\n", __func__, imix);
+	if (imix < 0)
 		return g_imix_val;
-	}
+
 	return imix;
 
 }
