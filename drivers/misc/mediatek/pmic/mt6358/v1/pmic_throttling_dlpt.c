@@ -965,11 +965,11 @@ void pmic_quicksort(int *data, int left, int right)
 
 int get_dlpt_imix(void)
 {
-	int volt[3], curr[3], volt_avg = 0, curr_avg = 0;
+	int volt[2], curr[2], volt_avg = 0, curr_avg = 0;
 	int imix;
 	int i, count_do_ptim = 0;
 
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < 2; i++) {
 		/*adc and fg---------------------------------------------- */
 		while (do_ptim(false)) {
 			if (count_do_ptim > 2) {
@@ -985,12 +985,12 @@ int get_dlpt_imix(void)
 		curr[i] = ptim_R_curr;
 	}
 
-	pmic_quicksort(volt, 0, 3);
-	pmic_quicksort(curr, 0, 3);
-	volt_avg = volt[0] + volt[1] + volt[2];
-	curr_avg = curr[0] + curr[1] + curr[2];
-	volt_avg = volt_avg / 3;
-	curr_avg = curr_avg / 3;
+	pmic_quicksort(volt, 0, 2);
+	pmic_quicksort(curr, 0, 2);
+	volt_avg = volt[0] + volt[1];
+	curr_avg = curr[0] + curr[1];
+	volt_avg = volt_avg / 2;
+	curr_avg = curr_avg / 2;
 
 	volt_avg = wk_vbat_cali(volt_avg, 1);
 
