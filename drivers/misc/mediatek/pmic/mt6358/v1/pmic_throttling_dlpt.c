@@ -597,7 +597,7 @@ void __attribute__ ((weak)) register_battery_percent_notify(
 /*******************************************************************
  * AuxADC Impedence Measurement
  *******************************************************************/
-static unsigned int count_time_out_adc_imp = 36;
+static unsigned int count_time_out_adc_imp = 24;
 static struct wakeup_source ptim_wake_lock;
 static struct mutex ptim_mutex;
 
