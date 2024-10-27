@@ -194,31 +194,11 @@ int wk_vbat_cali(int vbat_out, int precision_factor)
 	if (precision_factor > 1)
 		vbat_out *= precision_factor;
 	vbat_out_old = vbat_out;
-	if (g_AUXCALI_EN == 1) {
+	if (g_AUXCALI_EN == 1)
 		vbat_out = wk_aux_cali(T_curr, vbat_out);
-		/*pr_debug("vbat_out_auxcali = %d\n", vbat_out);*/
-	}
 
-	if (g_BGRCALI_EN == 1) {
+	if (g_BGRCALI_EN == 1)
 		vbat_out = wk_bgr_cali(T_curr, vbat_out);
-		/*pr_debug("vbat_out_bgrcali = %d\n", vbat_out);*/
-	}
-
-	if (abs(vbat_out - vbat_out_old) > 1000) {
-		pr_debug("vbat_out_old=%d, vthr=%d, T_curr=%d, vbat_out=%d\n",
-			vbat_out_old, vthr, T_curr, vbat_out);
-		pr_debug("%d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",
-			g_DEGC, g_O_VTS, g_O_SLOPE_SIGN, g_O_SLOPE,
-			g_SIGN_AUX, g_SIGN_BGRL, g_SIGN_BGRH,
-			g_AUXCALI_EN, g_BGRCALI_EN,
-			g_GAIN_AUX, g_GAIN_BGRL, g_GAIN_BGRH,
-			g_TEMP_L_CALI, g_TEMP_H_CALI);
-#ifdef CONFIG_MTK_AEE_FEATURE
-		aee_kernel_warning("PMIC AUXADC CALI", "VBAT CALI");
-#endif
-	} else
-		pr_debug("vbat_out_old=%d, vthr=%d, T_curr=%d, vbat_out=%d\n",
-			vbat_out_old, vthr, T_curr, vbat_out);
 
 	if (precision_factor > 1)
 		vbat_out = DIV_ROUND_CLOSEST(vbat_out, precision_factor);
