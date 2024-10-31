@@ -35,10 +35,6 @@
 #include <linux/earlysuspend.h>
 #endif
 
-#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-#include "../xiaomi/xiaomi_touch.h"
-#endif
-
 /* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
 #include "mtk_boot_common.h"
 /* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
@@ -1379,18 +1375,12 @@ int32_t nvt_check_palm(uint8_t input_id, uint8_t *data)
 		ret = palm_state;
 		if (palm_state == PACKET_PALM_ON) {
 			NVT_LOG("get packet palm on event.\n");
-			#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-			update_palm_sensor_value(1);
-			#endif
 			input_report_key(ts->input_dev, 523, 1);
 			input_sync(ts->input_dev);
 			input_report_key(ts->input_dev, 523, 0);
 			input_sync(ts->input_dev);
 		} else if (palm_state == PACKET_PALM_OFF) {
 			NVT_LOG("get packet palm off event.\n");
-			#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-			update_palm_sensor_value(0);
-			#endif
 		} else {
 			// should never go here
 			NVT_ERR("invalid palm state %d!\n", palm_state);
@@ -1678,271 +1668,6 @@ int nvt_gesture_switch(struct input_dev *dev, unsigned int type, unsigned int co
 }
 #endif
 
-#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-static struct xiaomi_touch_interface xiaomi_touch_interfaces;
-
-/*BSP.Touch - 2020.12.31 - add game mode - start*/
-extern int32_t nvt_set_pf_switch(uint8_t pf_switch);
-
-extern int32_t nvt_set_sensitivity_switch(uint8_t sensitivity_switch);
-
-extern int32_t nvt_set_er_range_switch(uint8_t er_range_switch);
-
-extern int32_t nvt_get_pf_switch(uint8_t *pf_switch);
-
-extern int32_t nvt_get_sensitivity_switch(uint8_t *sensitivity_switch);
-
-extern int32_t nvt_get_er_range_switch(uint8_t *er_range_switch);
-
-static int nvt_set_cur_value(int mode, int value)
-{
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
-	mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
-	nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
-	if (mode < Touch_Mode_NUM && mode >= 0) {
-		xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE] = value;
-		if (xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE] > xiaomi_touch_interfaces.touch_mode[mode][GET_MAX_VALUE])
-			xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE] = xiaomi_touch_interfaces.touch_mode[mode][GET_MAX_VALUE];
-		else if (xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE] < xiaomi_touch_interfaces.touch_mode[mode][GET_MIN_VALUE])
-			xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE] = xiaomi_touch_interfaces.touch_mode[mode][GET_MIN_VALUE];
-
-		xiaomi_touch_interfaces.touch_mode[mode][GET_CUR_VALUE] = xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE];
-
-		if (mode == 0) {
-			if (value == 0) {
-				nvt_set_sensitivity_switch(3);
-				nvt_set_pf_switch(0);
-                        	/* Huaqin modify for HQ-158397 by jiangyue at 2021/10/25 start */
-				/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 start */
-				nvt_set_er_range_switch(2);
-				/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 end */
-				/* Huaqin modify for HQ-158397 by jiangyue at 2021/10/25 end */
-			} else {
-				nvt_set_sensitivity_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
-				nvt_set_pf_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
-				nvt_set_er_range_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
-			}
-		}
-
-		if (mode == 2) {
-			NVT_LOG("choose mode 2 sensitivity\n", __func__);
-			nvt_set_sensitivity_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
-		} else if (mode == 3) {
-			NVT_LOG("choose mode 3 pf\n", __func__);
-			nvt_set_pf_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
-		} else if (mode == 7) {
-			NVT_LOG("choose mode 7 er_range\n", __func__);
-			nvt_set_er_range_switch(xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE]);
-		} else
-			NVT_LOG("don't support\n", __func__);
-	} else
-		NVT_LOG("don't support\n", __func__);
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
-	mutex_unlock(&ts->lock);
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
-	return 0;
-}
-
-static int nvt_get_mode_cur_value(int mode)
-{
-	int ret = 0;
-	uint8_t pf_switch = xiaomi_touch_interfaces.touch_mode[mode][GET_DEF_VALUE];
-		
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
-	mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
-	nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
-	/* Huaqin modify for TP optimutex_unlock protectmization by zhangjiangbin at 2021/07/13 end */
-	
-	if (mode < Touch_Mode_NUM && mode >= 0) {
-		printk("%s ,mode = %d\n", __func__, mode);
-		if (mode == 2) {
-			NVT_LOG("choose mode 2 sensitivity\n", __func__);
-			pf_switch = xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE];
-			ret = nvt_get_sensitivity_switch(&pf_switch);
-		} else if (mode == 3) {
-			NVT_LOG("choose mode 3 pf\n", __func__);
-			pf_switch = xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE];
-			ret = nvt_get_pf_switch(&pf_switch);
-		} else if (mode == 7) {
-			NVT_LOG("choose mode 7 er_range\n", __func__);
-			pf_switch = xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE];
-			ret = nvt_get_er_range_switch(&pf_switch);
-		} else {
-			pf_switch = 0;
-			NVT_LOG("don't support\n", __func__);
-			}
-	} else {
-		printk("%s, mode %d don't support\n", __func__, mode);
-	}
-	printk("%s mode:%d pf_switch:%d\n", mode, pf_switch);
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
-	mutex_unlock(&ts->lock);
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
-	return pf_switch;
-}
-
-static void nvt_init_touchmode_data(void)
-{
-	int i;
-	/* default value should equl the first initial value */
-	for (i = 0; i < Touch_Mode_NUM; i++) {
-		xiaomi_touch_interfaces.touch_mode[i][GET_DEF_VALUE] = xiaomi_touch_interfaces.touch_mode[i][GET_CUR_VALUE];
-		xiaomi_touch_interfaces.touch_mode[i][SET_CUR_VALUE] = xiaomi_touch_interfaces.touch_mode[i][GET_CUR_VALUE];
-	}
-	/* Touch Game Mode Switch */
-	xiaomi_touch_interfaces.touch_mode[Touch_Game_Mode][GET_MAX_VALUE] = 1;
-	xiaomi_touch_interfaces.touch_mode[Touch_Game_Mode][GET_MIN_VALUE] = 0;
-	xiaomi_touch_interfaces.touch_mode[Touch_Game_Mode][GET_DEF_VALUE] = 1;
-
-	/*Active Mode*/
-	xiaomi_touch_interfaces.touch_mode[Touch_Active_MODE][GET_MAX_VALUE] = 1;
-	xiaomi_touch_interfaces.touch_mode[Touch_Active_MODE][GET_MIN_VALUE] = 0;
-	xiaomi_touch_interfaces.touch_mode[Touch_Active_MODE][GET_DEF_VALUE] = 1;
-
-	/*Touch_Sensitivity mode*/
-	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][GET_MAX_VALUE] = 4;
-	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][GET_MIN_VALUE] = 0;
-	/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 start */
-	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][GET_DEF_VALUE] = 2;
-	/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 end */
-	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][SET_CUR_VALUE] = 0;
-	xiaomi_touch_interfaces.touch_mode[Touch_UP_THRESHOLD][GET_CUR_VALUE] = 0;
-
-	/* PF Mode */
-	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][GET_MAX_VALUE] = 4;
-	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][GET_MIN_VALUE] = 0;
-	/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 start */
-	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][GET_DEF_VALUE] = 2;
-	/* Huaqin modify for HQ-144660 by liunianliang at 2021/07/10 end */
-	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][SET_CUR_VALUE] = 0;
-	xiaomi_touch_interfaces.touch_mode[Touch_Tolerance][GET_CUR_VALUE] = 0;
-
-	/*Touch_ER_Range mode*/
-	xiaomi_touch_interfaces.touch_mode[Touch_Edge_Filter][GET_MAX_VALUE] = 3;
-	xiaomi_touch_interfaces.touch_mode[Touch_Edge_Filter][GET_MIN_VALUE] = 0;
-	xiaomi_touch_interfaces.touch_mode[Touch_Edge_Filter][GET_DEF_VALUE] = 2;
-	xiaomi_touch_interfaces.touch_mode[Touch_Edge_Filter][SET_CUR_VALUE] = 2;
-	xiaomi_touch_interfaces.touch_mode[Touch_Edge_Filter][GET_CUR_VALUE] = 2;
-
-}
-
-static int nvt_get_mode_value(int mode, int value_type)
-{
-	int value = -1;
-
-	if (mode < Touch_Mode_NUM && mode >= 0)
-		value = xiaomi_touch_interfaces.touch_mode[mode][value_type];
-	else
-		printk("%s ,don't support\n", __func__);
-	return value;
-}
-
-static int nvt_get_mode_all(int mode, int *value)
-{
-	if (mode < Touch_Mode_NUM && mode >= 0) {
-		value[0] = xiaomi_touch_interfaces.touch_mode[mode][GET_CUR_VALUE];
-		value[1] = xiaomi_touch_interfaces.touch_mode[mode][GET_DEF_VALUE];
-		value[2] = xiaomi_touch_interfaces.touch_mode[mode][GET_MIN_VALUE];
-		value[3] = xiaomi_touch_interfaces.touch_mode[mode][GET_MAX_VALUE];
-	} else{
-		NVT_LOG("don't support\n", __func__);
-	}
-	printk("%s,mode:%d, value:%d:%d:%d:%d\n", __func__, mode, value[0],
-					value[1], value[2], value[3]);
-	return 0;
-}
-
-static int nvt_reset_Mode(int mode)
-{
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
-	if (mode < Touch_Mode_NUM && mode >= 0) {
-		if (mode == 0) {
-			nvt_set_cur_value(0, 0);
-		} else if (mode == 2) {
-			mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
-			nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
-			nvt_set_sensitivity_switch(3);
-			mutex_unlock(&ts->lock);
-		} else if (mode == 3) {
-			mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
-			nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
-			nvt_set_pf_switch(0);
-			mutex_unlock(&ts->lock);
-		} else if (mode == 7) {
-			mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
-			nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
-			nvt_set_er_range_switch(2);
-			mutex_unlock(&ts->lock);
-		} else {
-			NVT_LOG("%s,unknown value", __func__);
-		}
-	} else
-	NVT_LOG("%s,don't support", __func__);
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
-	return 0;
-}
-/*BSP.Touch - 2020.12.31 - add game mode - start*/
-
-extern int32_t nvt_set_pocket_palm_switch(uint8_t pocket_palm_switch);
-
-int nvt_palm_sensor_cmd(int on)
-{
-	int ret;
-
-	if (on) {
-		ret = nvt_set_pocket_palm_switch(1);
-	} else {
-		ret = nvt_set_pocket_palm_switch(0);
-	}
-
-	if (ret < 0) {
-		NVT_LOG("%s: write anti mis-touch cmd on...ERROR %08X !\n", __func__, ret);
-		return -EINVAL;
-	}
-	NVT_LOG("%s %d\n", __func__, on);
-
-	return 0;
-}
-
-int nvt_palm_sensor_write(int value)
-{
-	int ret = 0;
-
-	ts->palm_sensor_switch = value;
-
-	if (!bTouchIsAwake) {
-		ts->palm_sensor_changed = false;
-		return 0;
-	}
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
-	mutex_lock(&ts->lock);
-#if NVT_TOUCH_ESD_PROTECT
-	nvt_esd_check_enable(false);
-#endif /* #if NVT_TOUCH_ESD_PROTECT */
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
-	ret = nvt_palm_sensor_cmd(value);
-	if (!ret) {
-		NVT_LOG("%s %d succeed\n", __func__, value);
-		ts->palm_sensor_changed = true;
-	}
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 start */
-	mutex_unlock(&ts->lock);
-	/* Huaqin modify for TP mutex_unlock protect by zhangjiangbin at 2021/07/13 end */
-	return ret;
-}
-#endif
-
 /*BSP.TP add nvt_irq - 2020.11.11 - Start*/
 static ssize_t nvt_irq_show(
 	struct device *dev, struct device_attribute *attr, char *buf)
@@ -2092,18 +1817,6 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 #endif
 /* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
 
-	#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-	memset(&xiaomi_touch_interfaces, 0x00, sizeof(struct xiaomi_touch_interface));
-	xiaomi_touch_interfaces.palm_sensor_write = nvt_palm_sensor_write;
-	NVT_LOG("xiaomitouch_register_modedata:xinabo:start!");
-	xiaomi_touch_interfaces.setModeValue = nvt_set_cur_value;
-	xiaomi_touch_interfaces.getModeValue = nvt_get_mode_value;
-	xiaomi_touch_interfaces.getModeAll = nvt_get_mode_all;
-	xiaomi_touch_interfaces.resetMode = nvt_reset_Mode;
-	xiaomi_touch_interfaces.getModeCurValue = nvt_get_mode_cur_value;
-	xiaomitouch_register_modedata(&xiaomi_touch_interfaces);
-	nvt_init_touchmode_data();
-	#endif
 	ts->client = client;
 	spi_set_drvdata(client, ts);
 	/*BSP.TP add nvt_irq - 2020.11.11 - Start*/
@@ -2653,14 +2366,6 @@ static int32_t nvt_ts_suspend(struct device *dev)
 		NVT_LOG("Touch is already suspend\n");
 		return 0;
 	}
-	#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-	if (ts->palm_sensor_switch) {
-		NVT_LOG("%s: palm sensor on status, switch to off\n", __func__);
-		update_palm_sensor_value(0);
-		//nvt_palm_sensor_cmd(0);
-		ts->palm_sensor_switch = false;
-		}
-	#endif
 /* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
 #if WAKEUP_GESTURE
 	if (nvt_gesture_flag == false)
@@ -2737,14 +2442,6 @@ int32_t nvt_ts_tp_suspend(void)
 		NVT_LOG("Touch is already suspend\n");
 		return 0;
 	}
-	#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-	if (ts->palm_sensor_switch) {
-		NVT_LOG("%s: palm sensor on status, switch to off\n", __func__);
-		update_palm_sensor_value(0);
-		//nvt_palm_sensor_cmd(0);
-		ts->palm_sensor_switch = false;
-		}
-	#endif
 #if WAKEUP_GESTURE
 	if (nvt_gesture_flag == false)
 		nvt_irq_enable(false);
@@ -2872,14 +2569,6 @@ static int32_t nvt_ts_resume(struct device *dev)
 	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 end */
 
 	mutex_unlock(&ts->lock);
-	#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-	if (ts->palm_sensor_switch) {
-		NVT_LOG("%s: palm sensor on status, switch to off\n", __func__);
-		update_palm_sensor_value(0);
-		//nvt_palm_sensor_cmd(0);
-		ts->palm_sensor_switch = false;
-		}
-	#endif
 	NVT_LOG("end\n");
 
 	return 0;
@@ -2938,14 +2627,6 @@ int32_t nvt_ts_tp_resume(void)
 	/* Huaqin modify for HQ-131628 by shujiawang at 2021/05/10 end */
 
 	mutex_unlock(&ts->lock);
-#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-	if (ts->palm_sensor_switch) {
-		NVT_LOG("%s: palm sensor on status, switch to off\n", __func__);
-		update_palm_sensor_value(0);
-		//nvt_palm_sensor_cmd(0);
-		ts->palm_sensor_switch = false;
-		}
-#endif
 	NVT_LOG("end\n");
 
 	return 0;
