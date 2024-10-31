@@ -121,7 +121,7 @@ extern const uint16_t gesture_key_array[];
 extern char *BOOT_UPDATE_FIRMWARE_NAME;
 extern char *MP_UPDATE_FIRMWARE_NAME;
 /*BSP.TP - add tp compare - 20201116 - End*/
-#define POINT_DATA_CHECKSUM 1
+#define POINT_DATA_CHECKSUM 0
 #define POINT_DATA_CHECKSUM_LEN 65
 
 //---ESD Protect.---
