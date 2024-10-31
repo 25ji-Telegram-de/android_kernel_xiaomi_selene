@@ -167,10 +167,6 @@ struct nvt_ts_data {
 	uint8_t *xbuf;
 	struct mutex xbuf_lock;
 	bool irq_enabled;
-	#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-	bool palm_sensor_changed;
-	bool palm_sensor_switch;
-	#endif
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - start*/
 	char lockdowninfo[17];
 /*BSP.Tp - 2020.11.05 -add NVT_LOCKDOWN - end*/
