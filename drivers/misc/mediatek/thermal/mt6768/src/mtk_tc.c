@@ -361,6 +361,7 @@ thermal_bank_name ts_bank)
 }
 EXPORT_SYMBOL(get_thermal_slope_intercept);
 
+#if 0
 /* chip dependent */
 void mtkts_dump_cali_info(void)
 {
@@ -383,6 +384,7 @@ void mtkts_dump_cali_info(void)
 	tscpu_printk("[cal] g_o_vtsabb      = %d\n", g_o_vtsabb);
 
 }
+#endif
 
 void eDataCorrector(void)
 {
@@ -502,7 +504,9 @@ void tscpu_thermal_cal_prepare(void)
 	}
 
 
+#if 0
 	mtkts_dump_cali_info();
+#endif
 }
 
 void tscpu_thermal_cal_prepare_2(__u32 ret)
@@ -537,12 +541,14 @@ void tscpu_thermal_cal_prepare_2(__u32 ret)
 		g_x_roomt[i] = (((format[i] * 10000) / 4096) * 10000) / g_gain;
 	}
 
+#if 0
 	tscpu_printk("[T_De][cal] g_ge         = %d\n", g_ge);
 	tscpu_printk("[T_De][cal] g_gain       = %d\n", g_gain);
 
 	for (i = 0; i < TS_ENUM_MAX; i++)
 		tscpu_printk("[T_De][cal] g_x_roomt%d   = %d\n", i,
 							g_x_roomt[i]);
+#endif
 
 #if THERMAL_ENABLE_TINYSYS_SSPM
 	thermal_data.u.data.arg[0] = g_degc_cali;
