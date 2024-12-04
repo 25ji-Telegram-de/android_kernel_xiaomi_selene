@@ -2,6 +2,7 @@
  * u_ether.c -- Ethernet-over-USB link layer utilities for Gadget stack
  *
  * Copyright (C) 2003-2005,2008 David Brownell
+ * Copyright (C) 2021 XiaoMi, Inc.
  * Copyright (C) 2003-2004 Robert Schwebel, Benedikt Spranger
  * Copyright (C) 2008 Nokia Corporation
  *
@@ -1189,9 +1190,12 @@ struct eth_dev *gether_setup_name(struct usb_gadget *g,
 	snprintf(net->name, sizeof(net->name), "%s%%d", netname);
 
 #if 0
-	if (get_ether_addr(dev_addr, net->dev_addr))
+	if (get_ether_addr(dev_addr, net->dev_addr)) {
+		net->addr_assign_type = NET_ADDR_RANDOM;
 		dev_info(&g->dev, "using random %s ethernet address\n", "self");
-
+	} else {
+		net->addr_assign_type = NET_ADDR_SET;
+	}
 	if (get_ether_addr(host_addr, dev->host_mac))
 		dev_info(&g->dev, "using random %s ethernet address\n", "host");
 #else
