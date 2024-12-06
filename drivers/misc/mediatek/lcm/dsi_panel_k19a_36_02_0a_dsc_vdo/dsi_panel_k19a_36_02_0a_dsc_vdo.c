@@ -695,6 +695,7 @@ static void lcm_init(void)
 	MDELAY(10);
 	/* Huaqin modify for HQ-132702 by caogaojie at 2021/06/15 end */
 	/* Huaqin modify for HQ-132702 by liunianliang at 2021/05/20 end */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
 	/* Huaqin modify for HQ-161950 by jiangyue at 2021/11/05 start */
 	if(esd_flag){
 		nvt_bootloader_reset_locked();
@@ -708,6 +709,7 @@ static void lcm_init(void)
 		g_trigger_disp_esd_recovery = false;
 	}
 	/* Huaqin modify for HQ-161950 by jiangyue at 2021/11/05 end */
+#endif
 		LCM_LOGI("[DENNIS][%s][%d]\n", __func__, __LINE__);
 	/* Huaqin modify for HQ-140017 by caogaojie at 2021/07/06 start */
 	/* Huaqin modify for HQ-155949 by caogaojie at 2021/09/18 start */
