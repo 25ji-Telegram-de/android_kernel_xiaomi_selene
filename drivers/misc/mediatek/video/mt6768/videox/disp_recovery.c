@@ -317,6 +317,9 @@ int do_esd_check_eint(void)
 	atomic_set(&esd_ext_te_event, 0);
 
 	disable_irq(te_irq);
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+	return ret || g_trigger_disp_esd_recovery;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 #else
 	int ret = 0;
 
@@ -332,11 +335,10 @@ int do_esd_check_eint(void)
 	atomic_set(&esd_ext_te_event, 0);
 
 	primary_display_switch_esd_mode(GPIO_DSI_MODE);
+
+	return ret;
 #endif
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
-/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
-	return ret || g_trigger_disp_esd_recovery;
-/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 }
 
 int do_esd_check_dsi_te(void)
