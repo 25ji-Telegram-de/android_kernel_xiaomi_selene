@@ -1419,11 +1419,19 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 	};
 
 	goodix_fp: fingerprint {
-		compatible = "mediatek,goodix-fp";
+		compatible = "mediatek,fpc1022_irq","mediatek,goodix-fp";
+		status = "okay";
 	};
 
 	accdet: accdet {
 		compatible = "mediatek,pmic-accdet";
+	};
+
+	swtp: swtp {
+		compatible = "mediatek, swtp-eint";
+/*Huaqin modify for HQ-123513 by shiwenlong at 2021.4.01 start*/
+		swtp-gpio = <&pio 56 0>;
+/*Huaqin modify for HQ-123513 by shiwenlong at 2021.4.01 end*/
 	};
 
 	mt6358_gauge {
@@ -1435,10 +1443,17 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 	gauge_timer {
 		compatible = "mediatek,gauge_timer_service";
 	};
-
+	simtray {
+		compatible = "xiaomi,simtray-status";
+		/* Huaqin modify for HQ-124268 by liunianliang at 2021/08/03 start */
+		status-gpio = <&pio 47 0>;
+		/* Huaqin modify for HQ-124268 by liunianliang at 2021/08/03 end */
+	};
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
 #if (CONFIG_MTK_GAUGE_VERSION == 30)
 	#include "mediatek/bat_setting/mt6768_battery_prop.dtsi"
 #endif
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 end*/
 
 	md_ccif3@1023f000 {
 		compatible = "mediatek,md_ccif3";
@@ -2047,7 +2062,9 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 
 	spi0:spi0@1100a000 {
 		compatible = "mediatek,mt6765-spi";
-		mediatek,pad-select = <0>;
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+		mediatek,pad-select = <0>,<1>;
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 		reg = <0 0x1100a000 0 0x1000>;
 		interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_LOW>;
 		clocks = <&topckgen CLK_TOP_SYSPLL3_D2>,
@@ -2294,6 +2311,10 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 		reg = <0 0x11c90000 0 0x1000>;
 	};
 
+	msdc1_ins:msdc1_ins@0 {
+		compatible = "mediatek,mt6768-sdcard-ins";
+	};
+
 	usb1p_sif@11210000 {
 		compatible = "mediatek,usb1p_sif";
 		reg = <0 0x11210000 0 0x10000>;
@@ -2420,9 +2441,6 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 		mtk_spk_i2s_out = <3>;
 		mtk_spk_i2s_in = <0>;
 		/* mtk_spk_i2s_mck = <3>; */
-		mediatek,speaker-codec {
-			sound-dai = <&speaker_amp>;
-		};
 	};
 
 	snd_scp_spk: snd_scp_spk {
@@ -2801,10 +2819,54 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 			"TOP_UNIVPLL2_D4",
 			"TOP_ULPOSC1_D2",
 			"TOP_ULPOSC1_D8";
+
+
+		mboxes = <&gce_mbox_bdg 0 0 CMDQ_THR_PRIO_4>,
+			<&gce_mbox_bdg 1 0 CMDQ_THR_PRIO_4>,
+			<&gce_mbox_bdg 2 0 CMDQ_THR_PRIO_4>,
+			<&gce_mbox_bdg 3 CMDQ_NO_TIMEOUT CMDQ_THR_PRIO_2>,
+			<&gce_mbox_bdg 5 CMDQ_NO_TIMEOUT CMDQ_THR_PRIO_2>;
+
+		gce-client-names = "BDG_CLIENT_CFG0",
+			"BDG_CLIENT_CFG1",
+			"BDG_CLIENT_CFG2",
+			"BDG_CLIENT_TRIG_LOOP0",
+			"BDG_CLIENT_TRIG_LOOP1";
+
+		/* define subsys, see mt6885-gce.h */
+		gce-subsys = <&gce_mbox 0x14000000 SUBSYS_1400XXXX>,
+			<&gce_mbox 0x14010000 SUBSYS_1401XXXX>,
+			<&gce_mbox 0x14020000 SUBSYS_1402XXXX>;
+
+		/* define events, see mt6885-gce.h */
+		gce-event-names = "bdg_rdma0_sof",
+			"bdg_dsi0_sof",
+			"bdg_rdma0_sof",
+			"bdg_rdma0_eof",
+			"bdg_dsi0_eof",
+			"bdg_dsi0_te",
+			"bdg_dsi0_irq",
+			"bdg_dsi0_done",
+			"bdg_dsi0_target_line";
+
+		gce-events = <&gce_mbox_bdg CMDQ_BRIDGE_EVENT_DISP_RDMA0_SOF>,
+			<&gce_mbox_bdg CMDQ_BRIDGE_EVENT_DISP_DSI0_SOF>,
+			<&gce_mbox_bdg CMDQ_BRIDGE_EVENT_DISP_RDMA0_SOF>,
+			<&gce_mbox_bdg CMDQ_BRIDGE_EVENT_DISP_RDMA0_FRAME_DONE>,
+			<&gce_mbox_bdg CMDQ_BRIDGE_EVENT_DSI_FRAME_DONE>,
+			<&gce_mbox_bdg CMDQ_BRIDGE_EVENT_DSI0_TE_ENG_EVENT>,
+			<&gce_mbox_bdg CMDQ_BRIDGE_EVENT_DSI0_IRQ_ENG_EVENT>,
+			<&gce_mbox_bdg CMDQ_BRIDGE_EVENT_DSI0_DONE_ENG_EVENT>,
+			<&gce_mbox_bdg CMDQ_BRIDGE_EVENT_DSI0_TARGET_LINE_EVENT>;
 	};
 
 	dsi_te: dsi_te {
 		compatible = "mediatek, dsi_te-eint";
+		status = "disabled";
+	};
+
+	dsi_err_flag: dsi_err_flag {
+		compatible = "mediatek, dsi_err-flag";
 		status = "disabled";
 	};
 
@@ -3292,14 +3354,29 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 			"CLK_MIPI_ANA_2A_CG",
 			"CLK_MIPI_ANA_2B_CG",
 			"CLK_TOP_CAMTM_SEL_CG",
-			"CLK_TOP_CAMTM_208_CG",
-			"CLK_SCP_SYS_CAM";
+            "CLK_TOP_CAMTM_208_CG",
+            "CLK_SCP_SYS_CAM";
+
 	};
 
 	flashlight_core: flashlight_core {
 		compatible = "mediatek,flashlight_core";
 	};
 
+	flashlights_led191: flashlights_led191 {
+		compatible = "mediatek,flashlights_led191";
+		decouple = <0>;
+		channel@1 {
+			type = <0>;
+			ct = <0>;
+			part = <0>;
+		};
+		channel@2 {
+			type = <0>;
+			ct = <1>;
+			part = <0>;
+		};
+	};
 	flashlights_mt6370: flashlights_mt6370 {
 		compatible = "mediatek,flashlights_mt6370";
 		decouple = <0>;
@@ -3387,21 +3464,35 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 		compatible = "mediatek,radio_md_cfg";
 	};
 
+
+
 	mt_charger: mt_charger {
 		compatible = "mediatek,mt-charger";
 	};
+/*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 start*/
+	onewire_gpio: onewire_gpio {
+		compatible = "xiaomi,onewire_gpio";
+	};
 
+	maxim_ds28e16: maxim_ds28e16 {
+		compatible = "maxim,ds28e16";
+	};
+/*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 end*/
 	lk_charger: lk_charger {
 		compatible = "mediatek,lk_charger";
 		enable_anime;
 		/* enable_pe_plus; */
 		enable_pd20_reset;
 		power_path_support;
-		max_charger_voltage = <6500000>;
+		max_charger_voltage = <15000000>;
 		fast_charge_voltage = <3000000>;
 
 		/* charging current */
+/*K19A HQHW-881 K19A charger of 2.5v by wangqi at 2021/5/20 start*/
+/* Huaqin add for K19AFAC-33 by wangqi at 2021/6/13 start */
 		usb_charger_current = <500000>;
+/* Huaqin add for K19AFAC-33 by wangqi at 2021/6/13 end */
+/*K19A HQHW-881 K19A charger of 2.5v by wangqi at 2021/5/20 end*/
 		ac_charger_current = <2050000>;
 		ac_charger_input_current = <3200000>;
 		non_std_ac_charger_current = <500000>;
@@ -3430,7 +3521,7 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 
 		/* common */
 		battery_cv = <4350000>;
-		max_charger_voltage = <6500000>;
+		max_charger_voltage = <15000000>;
 		min_charger_voltage = <4600000>;
 
 		/* dynamic mivr */
@@ -3477,9 +3568,8 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 		max_charge_temp = <50>;
 		max_charge_temp_minus_x_degree = <47>;
 
+
 		/* PE */
-		ta_12v_support;
-		ta_9v_support;
 		pe_ichg_level_threshold = <1000000>; /* uA */
 		ta_ac_12v_input_current = <3200000>;
 		ta_ac_9v_input_current = <3200000>;
@@ -3569,16 +3659,21 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 	};
 
 	touch: touch {
-		compatible = "goodix,touch";
+		compatible = "mediatek,touch";
 	};
-
+	xiaomi_touch{
+		compatible = "xiaomi-touch";
+		status = "ok";
+		touch,name = "xiaomi-touch";
+    };
+/*
 	nfc:nfc {
 		compatible = "mediatek,nfc-gpio-v2";
 		gpio-rst = <159>;
 		gpio-rst-std = <&pio 159 0x0>;
 		gpio-irq = <9>;
 		gpio-irq-std = <&pio 9 0x0>;
-	};
+	};*/
 
 	irq_nfc: irq_nfc {
 		compatible = "mediatek,irq_nfc-eint";
@@ -3588,6 +3683,16 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 	smart_pa: smart_pa {
 	};
 
+    board_id: board_id {
+		compatible = "mediatek,board_id";
+	};
+
+	blk_thermal: blk_thermal {
+		compatible = "mediatek,blk_thermal_ntc";
+		io-channels = <&auxadc 4>;
+		io-channel-names = "blk_thermal-channel";
+		status = "okay";
+	};
 	gpio_usage_mapping:gpio {
 		compatible = "mediatek,gpio_usage_mapping";
 	};
@@ -3601,10 +3706,7 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 
 &i2c7 {
 	speaker_amp: speaker_amp@34 {
-		compatible = "mediatek,speaker_amp";
-		#sound-dai-cells = <0>;
-		reg = <0x34>;
-		status = "okay";
+		status = "disable";
 	};
 };
 
@@ -3675,19 +3777,23 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 	aud_dat_mosi_on: aud_dat_mosi_on {
 		pins_cmd0_dat {
 			pinmux = <PINMUX_GPIO136__FUNC_AUD_CLK_MOSI>;
-			input-schmitt-enable;
+			//input-schmitt-enable;
+			drive-strength = <3>;
 		};
 		pins_cmd1_dat {
 			pinmux = <PINMUX_GPIO137__FUNC_AUD_SYNC_MOSI>;
-			input-schmitt-enable;
+			//input-schmitt-enable;
+			drive-strength = <3>;
 		};
 		pins_cmd2_dat {
 			pinmux = <PINMUX_GPIO138__FUNC_AUD_DAT_MOSI0>;
-			input-schmitt-enable;
+			//input-schmitt-enable;
+			drive-strength = <3>;
 		};
 		pins_cmd3_dat {
 			pinmux = <PINMUX_GPIO139__FUNC_AUD_DAT_MOSI1>;
-			input-schmitt-enable;
+			//input-schmitt-enable;
+			drive-strength = <3>;
 		};
 	};
 
@@ -3721,19 +3827,23 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 	aud_dat_miso_on: aud_dat_miso_on {
 		pins_cmd0_dat {
 			pinmux = <PINMUX_GPIO140__FUNC_AUD_CLK_MISO>;
-			input-schmitt-enable;
+			//input-schmitt-enable;
+			drive-strength = <3>;
 		};
 		pins_cmd1_dat {
 			pinmux = <PINMUX_GPIO141__FUNC_AUD_SYNC_MISO>;
-			input-schmitt-enable;
+			//input-schmitt-enable;
+			drive-strength = <3>;
 		};
 		pins_cmd2_dat {
 			pinmux = <PINMUX_GPIO142__FUNC_AUD_DAT_MISO0>;
-			input-schmitt-enable;
+			//input-schmitt-enable;
+			drive-strength = <3>;
 		};
 		pins_cmd3_dat {
 			pinmux = <PINMUX_GPIO143__FUNC_AUD_DAT_MISO1>;
-			input-schmitt-enable;
+			//input-schmitt-enable;
+			drive-strength = <3>;
 		};
 	};
 
@@ -3800,8 +3910,24 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 			pinmux = <PINMUX_GPIO143__FUNC_VOW_CLK_MISO>;
 		};
 	};
-};
 
+
+	reverse_high: reverse_high {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO91__FUNC_GPIO91>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	reverse_low: reverse_low {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO91__FUNC_GPIO91>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+};
 
 #include "mediatek/mt6358.dtsi"
 #include "mediatek/cust_mt6768_msdc.dtsi"
@@ -3810,9 +3936,7 @@ defined(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 #ifdef CONFIG_CHARGER_RT9471
 #include "mediatek/rt9471.dtsi"
 #endif
-#ifdef CONFIG_TCPC_RT1711H
 #include "mediatek/tcpc_config.dtsi"
-#endif
 #ifdef CONFIG_MTK_ENABLE_GENIEZONE
 #include "mediatek/trusty.dtsi"
 #endif
