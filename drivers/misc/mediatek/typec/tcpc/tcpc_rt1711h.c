@@ -34,6 +34,7 @@
 #include "inc/pd_dbg_info.h"
 #include "inc/tcpci.h"
 #include "inc/rt1711h.h"
+#include "../../../../power/supply/mediatek/charger/mtk_charger_init.h"
 
 #ifdef CONFIG_RT_REGMAP
 #include <mt-plat/rt-regmap.h>
@@ -48,6 +49,13 @@
 #define RT1711H_DRV_VERSION	"2.0.5_MTK"
 
 #define RT1711H_IRQ_WAKE_TIME	(500) /* ms */
+
+bool g_pd_is_present = false;
+
+bool get_pd_status(void)
+{
+       return g_pd_is_present;
+}
 
 struct rt1711_chip {
 	struct i2c_client *client;
@@ -1370,6 +1378,8 @@ static int rt_parse_dt(struct rt1711_chip *chip, struct device *dev)
 	if (!np) {
 		pr_notice("%s find node rt1711_type_c_port0 fail\n", __func__);
 		return -ENODEV;
+	} else {
+		pr_err("%s zhanghuan rt1711_type_c_port0\n", __func__);
 	}
 	dev->of_node = np;
 
@@ -1549,14 +1559,17 @@ static inline int rt1711h_check_revision(struct i2c_client *client)
 	int ret;
 	u8 data = 1;
 
+	dev_err(&client->dev, "%s :%x\n", __func__, client->addr);
 	ret = rt1711_read_device(client, TCPC_V10_REG_VID, 2, &vid);
 	if (ret < 0) {
 		dev_err(&client->dev, "read chip ID fail\n");
 		return -EIO;
 	}
+	
+	g_pd_is_present = true;
 
 	if (vid != RICHTEK_1711_VID) {
-		pr_info("%s failed, VID=0x%04x\n", __func__, vid);
+		pr_info("%s failedaaa, VID=0x%04x\n", __func__, vid);
 		return -ENODEV;
 	}
 
@@ -1601,17 +1614,21 @@ static int rt1711_i2c_probe(struct i2c_client *client,
 		pr_info("I2C functionality check : failuare...\n");
 
 	chip_id = rt1711h_check_revision(client);
-	if (chip_id < 0)
+	if (chip_id < 0){
+		pr_err("szw:222rt1711\n");
 		return chip_id;
-
+		}	
+	pr_err("szw:read rt1711 chip id success\n");
 #if TCPC_ENABLE_ANYMSG
 	check_printk_performance();
 #endif /* TCPC_ENABLE_ANYMSG */
 
+	pr_err("szw:read rt17111 chip id success\n");
 	chip = devm_kzalloc(&client->dev, sizeof(*chip), GFP_KERNEL);
 	if (!chip)
 		return -ENOMEM;
 
+	pr_err("szw:read rt17112 chip id success\n");
 	if (use_dt) {
 		ret = rt_parse_dt(chip, &client->dev);
 		if (ret < 0)
@@ -1620,6 +1637,7 @@ static int rt1711_i2c_probe(struct i2c_client *client,
 		dev_err(&client->dev, "no dts node\n");
 		return -ENODEV;
 	}
+	pr_err("szw:read rt17113 chip id success\n");
 	chip->dev = &client->dev;
 	chip->client = client;
 	sema_init(&chip->io_lock, 1);
@@ -1629,6 +1647,7 @@ static int rt1711_i2c_probe(struct i2c_client *client,
 	chip->irq_wake_lock =
 		wakeup_source_register(chip->dev, "rt1711h_irq_wake_lock");
 
+	pr_err("szw:read rt17114 chip id success\n");
 	chip->chip_id = chip_id;
 	pr_info("rt1711h_chipID = 0x%0x\n", chip_id);
 
@@ -1761,13 +1780,13 @@ static const struct i2c_device_id rt1711_id_table[] = {
 MODULE_DEVICE_TABLE(i2c, rt1711_id_table);
 
 static const struct of_device_id rt_match_table[] = {
-	{.compatible = "mediatek,usb_type_c",},
+	{.compatible = "mediatek,usb_type_c_mtk",},
 	{},
 };
 
 static struct i2c_driver rt1711_driver = {
 	.driver = {
-		.name = "usb_type_c",
+		.name = "usb_type_c_mtk",
 		.owner = THIS_MODULE,
 		.of_match_table = rt_match_table,
 		.pm = RT1711_PM_OPS,
@@ -1783,11 +1802,11 @@ static int __init rt1711_init(void)
 	struct device_node *np;
 
 	pr_info("%s (%s): initializing...\n", __func__, RT1711H_DRV_VERSION);
-	np = of_find_node_by_name(NULL, "usb_type_c");
+	np = of_find_node_by_name(NULL, "usb_type_c_mtk");
 	if (np != NULL)
-		pr_info("usb_type_c node found...\n");
+		pr_info("usb_type_c_mtk node found...\n");
 	else
-		pr_info("usb_type_c node not found...\n");
+		pr_info("usb_type_c_mtk node not found...\n");
 
 	return i2c_add_driver(&rt1711_driver);
 }

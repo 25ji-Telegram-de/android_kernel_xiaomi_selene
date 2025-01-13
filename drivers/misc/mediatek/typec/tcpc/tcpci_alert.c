@@ -560,6 +560,28 @@ static inline int tcpci_report_usb_port_attached(struct tcpc_device *tcpc)
 {
 	TCPC_INFO("usb_port_attached\n");
 
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
+	switch (tcpc->typec_attach_new) {
+	case TYPEC_ATTACHED_SNK:
+		tcpc->dual_role_pr = DUAL_ROLE_PROP_PR_SNK;
+		tcpc->dual_role_dr = DUAL_ROLE_PROP_DR_DEVICE;
+		tcpc->dual_role_mode = DUAL_ROLE_PROP_MODE_UFP;
+		tcpc->dual_role_vconn = DUAL_ROLE_PROP_VCONN_SUPPLY_NO;
+		break;
+	case TYPEC_ATTACHED_SRC:
+		tcpc->dual_role_pr = DUAL_ROLE_PROP_PR_SRC;
+		tcpc->dual_role_dr = DUAL_ROLE_PROP_DR_HOST;
+		tcpc->dual_role_mode = DUAL_ROLE_PROP_MODE_DFP;
+		tcpc->dual_role_vconn = DUAL_ROLE_PROP_VCONN_SUPPLY_YES;
+		break;
+	default:
+		break;
+	}
+	dual_role_instance_changed(tcpc->dr_usb);
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 end*/
+
 	tcpci_set_wake_lock_pd(tcpc, true);
 
 #ifdef CONFIG_USB_POWER_DELIVERY
@@ -580,6 +602,16 @@ static inline int tcpci_report_usb_port_attached(struct tcpc_device *tcpc)
 static inline int tcpci_report_usb_port_detached(struct tcpc_device *tcpc)
 {
 	TCPC_INFO("usb_port_detached\n");
+
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
+	tcpc->dual_role_pr = DUAL_ROLE_PROP_PR_NONE;
+	tcpc->dual_role_dr = DUAL_ROLE_PROP_DR_NONE;
+	tcpc->dual_role_mode = DUAL_ROLE_PROP_MODE_NONE;
+	tcpc->dual_role_vconn = DUAL_ROLE_PROP_VCONN_SUPPLY_NO;
+	dual_role_instance_changed(tcpc->dr_usb);
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 end*/
 
 #ifdef CONFIG_USB_POWER_DELIVERY
 	/* MTK Only */

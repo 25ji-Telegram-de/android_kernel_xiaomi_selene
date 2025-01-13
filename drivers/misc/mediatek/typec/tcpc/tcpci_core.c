@@ -822,6 +822,12 @@ void tcpc_device_unregister(struct device *dev, struct tcpc_device *tcpc)
 	wakeup_source_unregister(tcpc->detach_wake_lock);
 	wakeup_source_unregister(tcpc->attach_wake_lock);
 
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
+	devm_dual_role_instance_unregister(&tcpc->dev, tcpc->dr_usb);
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-140788 K19A for typec mode by langjunjun at 2021/6/11 end*/
+
 	device_unregister(&tcpc->dev);
 
 }

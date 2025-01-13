@@ -722,6 +722,8 @@ static inline void typec_source_attached_entry(struct tcpc_device *tcpc)
 	typec_enable_vconn(tcpc);
 	tcpci_source_vbus(tcpc,
 			TCP_VBUS_CTRL_TYPEC, TCPC_VBUS_SOURCE_5V, -1);
+	tcpc->pd_capable = false;
+	tcpc->partner_desc.accessory = TYPEC_ACCESSORY_NONE;
 }
 
 static inline void typec_sink_attached_entry(struct tcpc_device *tcpc)
@@ -1415,6 +1417,8 @@ static inline bool typec_audio_acc_attached_entry(struct tcpc_device *tcpc)
 		typec_audio_acc_sink_vbus(tcpc, true);
 #endif	/* CONFIG_TYPEC_CAP_AUDIO_ACC_SINK_VBUS */
 
+	tcpc->pd_capable = false;
+	tcpc->partner_desc.accessory = TYPEC_ACCESSORY_AUDIO;
 	return true;
 }
 
@@ -2771,6 +2775,7 @@ static int typec_init_power_off_charge(struct tcpc_device *tcpc)
 
 	return 1;
 }
+#endif
 #endif	/* CONFIG_TYPEC_CAP_POWER_OFF_CHARGE */
 
 int tcpc_typec_init(struct tcpc_device *tcpc, uint8_t typec_role)
@@ -2803,6 +2808,7 @@ int tcpc_typec_init(struct tcpc_device *tcpc, uint8_t typec_role)
 	tcpc->typec_during_custom_hv = false;
 #endif	/* CONFIG_TYPEC_CAP_CUSTOM_HV */
 
+#if 1
 #ifdef CONFIG_TYPEC_CHECK_LEGACY_CABLE
 	tcpc->typec_legacy_cable = false;
 	typec_legacy_reset_retry_wk(tcpc);

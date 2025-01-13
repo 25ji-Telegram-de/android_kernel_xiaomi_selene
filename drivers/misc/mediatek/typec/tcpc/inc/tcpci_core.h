@@ -22,6 +22,7 @@
 #include <linux/notifier.h>
 #include <linux/semaphore.h>
 #include <linux/spinlock.h>
+#include <linux/usb/typec.h>
 
 #include "tcpm.h"
 #include "tcpci_timer.h"
@@ -40,17 +41,17 @@
 #define PE_EVENT_DBG_ENABLE	1
 #define PE_STATE_INFO_ENABLE	1
 #define TCPC_INFO_ENABLE	1
-#define TCPC_TIMER_DBG_EN	0
-#define TCPC_TIMER_INFO_EN	0
+#define TCPC_TIMER_DBG_EN	1
+#define TCPC_TIMER_INFO_EN	1	
 #define PE_INFO_ENABLE		1
-#define TCPC_DBG_ENABLE		0
-#define TCPC_DBG2_ENABLE	0
+#define TCPC_DBG_ENABLE		1
+#define TCPC_DBG2_ENABLE	1	
 #define DPM_INFO_ENABLE		1
 #define DPM_INFO2_ENABLE	1
-#define DPM_DBG_ENABLE		0
+#define DPM_DBG_ENABLE		1	
 #define PD_ERR_ENABLE		1
-#define PE_DBG_ENABLE		0
-#define TYPEC_DBG_ENABLE	0
+#define PE_DBG_ENABLE		1
+#define TYPEC_DBG_ENABLE	1	
 
 
 #define DP_INFO_ENABLE		1
@@ -227,6 +228,8 @@ struct tcpc_ops {
 	int (*get_fault_status)(struct tcpc_device *tcpc, uint8_t *status);
 	int (*get_cc)(struct tcpc_device *tcpc, int *cc1, int *cc2);
 	int (*set_cc)(struct tcpc_device *tcpc, int pull);
+	int (*set_role)(struct tcpc_device *tcpc, int status);
+	int (*get_mode)(struct tcpc_device *tcpc, int *typec_mode);
 	int (*set_polarity)(struct tcpc_device *tcpc, int polarity);
 	int (*set_low_rp_duty)(struct tcpc_device *tcpc, bool low_rp);
 	int (*set_vconn)(struct tcpc_device *tcpc, int enable);
@@ -248,6 +251,11 @@ struct tcpc_ops {
 	int (*set_low_power_mode)(struct tcpc_device *tcpc, bool en, int pull);
 #endif /* CONFIG_TCPC_LOW_POWER_MODE */
 
+/*K19A HQ-135321 K19A for VtsHalUsbV1_0TargetTest fail by langjunjun at 2021/6/6 start*/
+#ifdef CONFIG_TCPC_IDLE_MODE
+	int (*set_idle_mode)(struct tcpc_device *tcpc, bool en);
+#endif /* CONFIG_TCPC_IDLE_MODE */
+/*K19A HQ-135321 K19A for VtsHalUsbV1_0TargetTest fail by langjunjun at 2021/6/6 end*/
 	int (*set_watchdog)(struct tcpc_device *tcpc, bool en);
 
 #ifdef CONFIG_TCPC_INTRST_EN
@@ -422,6 +430,17 @@ struct tcpc_device {
 #endif	/* CONFIG_TCPC_SOURCE_VCONN */
 
 	uint32_t tcpc_flags;
+
+/*K19A HQ-135321 K19A for VtsHalUsbV1_0TargetTest fail by langjunjun at 2021/6/6 start*/
+#ifdef CONFIG_DUAL_ROLE_USB_INTF
+	struct dual_role_phy_instance *dr_usb;
+	uint8_t dual_role_supported_modes;
+	uint8_t dual_role_mode;
+	uint8_t dual_role_pr;
+	uint8_t dual_role_dr;
+	uint8_t dual_role_vconn;
+#endif /* CONFIG_DUAL_ROLE_USB_INTF */
+/*K19A HQ-135321 K19A for VtsHalUsbV1_0TargetTest fail by langjunjun at 2021/6/6 end*/
 
 #ifdef CONFIG_USB_POWER_DELIVERY
 	/* Event */
