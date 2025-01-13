@@ -89,15 +89,17 @@ static struct stAF_OisPosInfo OisPosInfo;
 
 static struct stAF_DrvList g_stAF_DrvList[MAX_NUM_OF_LENS] = {
 #if 0
-	{1, AFDRV_AK7371AF, AK7371AF_SetI2Cclient, AK7371AF_Ioctl,
+	{0, AFDRV_AK7371AF, AK7371AF_SetI2Cclient, AK7371AF_Ioctl,
 	 AK7371AF_Release, AK7371AF_GetFileName, NULL},
 #endif
-	{1, AFDRV_BU24253AF, BU24253AF_SetI2Cclient, BU24253AF_Ioctl,
-	 BU24253AF_Release, BU24253AF_GetFileName, NULL},
-	{1, AFDRV_GT9772AF, GT9772AF_SetI2Cclient, GT9772AF_Ioctl,
-	 GT9772AF_Release, GT9772AF_GetFileName, NULL},
-
-
+#ifdef CONFIG_MTK_LENS_CN3927AF_SUPPORT
+	{1, AFDRV_CN3927AF, CN3927AF_SetI2Cclient_Main3, CN3927AF_Ioctl_Main3,
+	 CN3927AF_Release_Main3, CN3927AF_GetFileName_Main3, NULL},
+#endif
+#ifdef CONFIG_MTK_LENS_DW9714VAF_SUPPORT
+	{1, AFDRV_DW9714VAF, DW9714VAF_SetI2Cclient_Main3, DW9714VAF_Ioctl_Main3,
+	 DW9714VAF_Release_Main3, DW9714VAF_GetFileName_Main3, NULL},
+#endif
 };
 
 static struct stAF_DrvList *g_pstAF_CurDrv;
@@ -273,8 +275,6 @@ static long AF_SetMotorName(__user struct stAF_MotorName *pstMotorName)
 			   sizeof(struct stAF_MotorName)))
 		LOG_INF("copy to user failed when getting motor information\n");
 
-	stMotorName.uMotorName[sizeof(stMotorName.uMotorName) - 1] = '\0';
-
 	for (i = 0; i < MAX_NUM_OF_LENS; i++) {
 		if (g_stAF_DrvList[i].uEnable != 1)
 			break;
@@ -366,8 +366,6 @@ static long AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command,
 			   sizeof(struct stAF_MotorName)))
 		LOG_INF("copy to user failed when getting motor information\n");
 
-	stMotorName.uMotorName[sizeof(stMotorName.uMotorName) - 1] = '\0';
-
 	/* LOG_INF("set driver name(%s)\n", stMotorName.uMotorName); */
 
 	for (i = 0; i < MAX_NUM_OF_LENS; i++) {
@@ -411,10 +409,10 @@ static long AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command,
 
 #if !defined(CONFIG_MTK_LEGACY)
 	case AFIOC_S_SETPOWERCTRL:
-		AFRegulatorCtrl(0);
+		AF3RegulatorCtrl(0);
 
 		if (a_u4Param > 0)
-			AFRegulatorCtrl(1);
+			AF3RegulatorCtrl(1);
 		break;
 #endif
 
@@ -493,8 +491,7 @@ static int AF_Open(struct inode *a_pstInode, struct file *a_pstFile)
 	spin_unlock(&g_AF_SpinLock);
 
 #if !defined(CONFIG_MTK_LEGACY)
-	AFRegulatorCtrl(0);
-	AFRegulatorCtrl(1);
+	AF3RegulatorCtrl(1);
 #endif
 
 	/* OIS/EIS Timer & Workqueue */
@@ -537,7 +534,7 @@ static int AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
 	}
 
 #if !defined(CONFIG_MTK_LEGACY)
-	AFRegulatorCtrl(2);
+	AF3RegulatorCtrl(2);
 #endif
 
 	/* OIS/EIS Timer & Workqueue */
@@ -690,6 +687,18 @@ static int AF_i2c_probe(struct i2c_client *client,
 
 	spin_lock_init(&g_AF_SpinLock);
 
+#if !defined(CONFIG_MTK_LEGACY)
+	AF3RegulatorCtrl(0);
+#endif
+#ifdef CONFIG_MTK_LENS_CN3927AF_SUPPORT
+	LOG_INF("Low power start\n");
+	CN3927AF_WriteReg(g_pstAF_I2Cclient, 0x8000); /* Power down mode */
+#endif
+
+#ifdef CONFIG_MTK_LENS_DW9714VAF_SUPPORT
+	LOG_INF("dw9714vaf Low power start\n");
+	DW9714VAF_SwitchToPowerDown(g_pstAF_I2Cclient, true); /* Power down mode */
+#endif
 	LOG_INF("Attached!!\n");
 
 	return 0;
