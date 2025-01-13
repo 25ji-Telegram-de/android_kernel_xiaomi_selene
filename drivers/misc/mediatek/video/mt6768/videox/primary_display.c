@@ -5736,6 +5736,7 @@ done:
 #if 0 //def CONFIG_TRUSTONIC_TRUSTED_UI
 	switch_set_state(&disp_switch_data, DISP_ALIVE);
 #endif
+#endif
 
 	DISPCHECK("done. begin\n");
 	/* need enter share sram for resume */
