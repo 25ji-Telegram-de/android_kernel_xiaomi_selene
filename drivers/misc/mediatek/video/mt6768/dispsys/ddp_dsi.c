@@ -156,8 +156,9 @@ do {	\
 	(x == DISP_MODULE_DSIDUAL ? 1 : DSI_MODULE_to_ID(x))
 #define DSI_MODULE_to_ID(x)	(x == DISP_MODULE_DSI0 ? 0 : 1)
 #define DIFF_CLK_LANE_LP (0x10)
-
-
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
+int real_refresh;
+/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 /*****************************************************************************/
 struct t_condition_wq {
 	wait_queue_head_t wq;
@@ -882,6 +883,15 @@ int ddp_dsi_porch_setting(enum DISP_MODULE_ENUM module, void *handle,
 			if (pgc != NULL && pgc->vfp_chg_sync_bdg
 					&& bdg_is_bdg_connected() == 1)
 				ddp_dsi_set_bdg_porch_setting(module, handle, value);
+		/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
+			if(value == 54){
+				real_refresh = 90;
+			}else if(value == 1290){
+				real_refresh = 60;
+			}else{
+				real_refresh = 45;
+			}
+		/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 		}
 		if (type == DSI_VSA) {
 			DISPINFO("set dsi%d vsa to %d\n", i, value);
@@ -2213,10 +2223,12 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 
 		/* hs_trail > max(8*UI, 60ns+4*UI) (spec) */
 		/* hs_trail = 80ns+4*UI */
-		hs_trail = 80 + 4 * ui;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+		hs_trail = 76 + 4 * ui;
 		timcon0.HS_TRAIL = (hs_trail > cycle_time) ?
 				(NS_TO_CYCLE(hs_trail, cycle_time) +
 				NS_TO_CYCLE_MOD(hs_trail, cycle_time) + 1) : 2;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 		/* hs_exit > 100ns (spec) */
 		/* hs_exit = 120ns */
@@ -2248,9 +2260,11 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 
 		/* clk_trail > 60ns (spec) */
 		/* clk_trail = 100ns */
-		timcon2.CLK_TRAIL = NS_TO_CYCLE(100, cycle_time) + 1;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+		timcon2.CLK_TRAIL = NS_TO_CYCLE(88, cycle_time) + 1;
 		if (timcon2.CLK_TRAIL < 2)
 			timcon2.CLK_TRAIL = 2;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 		timcon2.CONT_DET = 0;
 
 		/* clk_exit > 100ns (spec) */
@@ -2343,7 +2357,8 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 			timcon0.HS_PRPR, timcon0.LPX,
 			timcon1.TA_GET, timcon1.TA_SURE,
 			timcon1.TA_GO, timcon2.CLK_TRAIL,
-			timcon2.CLK_ZERO, timcon3.CLK_HS_PRPR);
+			timcon2.CLK_ZERO, timcon3.CLK_HS_PRPR, cycle_time);
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 	for (i = DSI_MODULE_BEGIN(module); i <= DSI_MODULE_END(module); i++) {
 		DSI_OUTREGBIT(cmdq, struct DSI_PHY_TIMCON0_REG,
@@ -6657,6 +6672,22 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 				&DSI_REG[dsi_i]->DSI_START, 0);
 			DSI_OUTREG32(cmdq_trigger_handle,
 				&DSI_REG[dsi_i]->DSI_START, 1);
+			if (dsi_i == 0) {
+				DSI_POLLREG32(cmdq_trigger_handle,
+					&DSI_REG[dsi_i]->DSI_INTSTA,
+					0x80000000, 0);
+			}
+
+			DSI_OUTREG32(cmdq_trigger_handle,
+				&DSI_CMDQ_REG[dsi_i]->data[0], AS_UINT32(&t0));
+
+			DSI_OUTREG32(cmdq_trigger_handle,
+				&DSI_REG[dsi_i]->DSI_CMDQ_SIZE, 1);
+
+			DSI_OUTREG32(cmdq_trigger_handle,
+				&DSI_REG[dsi_i]->DSI_START, 0);
+			DSI_OUTREG32(cmdq_trigger_handle,
+				&DSI_REG[dsi_i]->DSI_START, 1);
 
 			if (dsi_i == 0) {
 				DSI_POLLREG32(cmdq_trigger_handle,
@@ -6953,14 +6984,16 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 		DSI_SetMode(module, cmdq_trigger_handle, CMD_MODE);
 
 #ifdef CONFIG_MTK_MT6382_BDG
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
+		if (bdg_is_bdg_connected() == 1) {
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
 				stopdsi, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x10, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x10, 7,
 				reset1, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x10, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x10, 7,
 				reset0, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
 				setcmd, 1);
+		}
 #endif
 	} else if (state == CMDQ_START_VDO_MODE) {
 #ifdef CONFIG_MTK_MT6382_BDG
@@ -6968,12 +7001,14 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 		unsigned char stopdsi[] = {0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}; //ID 0x00
 		unsigned char startdsi[] = {0x10, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00}; //ID 0x00
 
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
+		if (bdg_is_bdg_connected() == 1) {
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x14, 7,
 				setvdo, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
 				stopdsi, 1);
-		DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
+			DSI_send_cmd_cmd(cmdq_trigger_handle, DISP_MODULE_DSI0, 1, 0x79, 0x00, 7,
 				startdsi, 1);
+		}
 #endif
 		/* 0. dual dsi set DSI_START/DSI_DUAL_EN */
 		if (module == DISP_MODULE_DSIDUAL) {
@@ -6999,7 +7034,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 
 		/* 1. set dsi vdo mode */
 		DSI_SetMode(module, cmdq_trigger_handle, dsi_params->mode);
-
+		//set_bdg_tx_mode(dsi_params->mode);
 	} else if (state == CMDQ_DSI_RESET) {
 		DISPCHECK("CMDQ Timeout, Reset DSI\n");
 		DSI_DumpRegisters(module, 1);

@@ -8,7 +8,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * GNU General Public License FOR more details.
  */
 
 #include <linux/string.h>
@@ -575,14 +575,15 @@ static int __maybe_unused compare_dsi_checksum(unsigned long unused)
 	if (!cksum_golden)
 		return 0;
 
-	ret = cmdqBackupReadSlot(cksum_slot, 0, &cksum);
+	pr_err("called from compare_dsi_checksum\n");
+	ret = cmdqBackupReadSlotext(cksum_slot, 0, &cksum);
 	if (ret) {
-		DISPWARN("Fail to read cksum from cmdq slot\n");
+		DISPERR("Fail to read cksum from cmdq slot\n");
 		return -1;
 	}
 
 	if (cksum_golden != cksum)
-		DISPWARN("%s fail, cksum=0x%08x, golden=0x%08x\n",
+		DISPERR("%s fail, cksum=0x%08x, golden=0x%08x\n",
 			__func__, cksum, cksum_golden);
 
 	return 0;
