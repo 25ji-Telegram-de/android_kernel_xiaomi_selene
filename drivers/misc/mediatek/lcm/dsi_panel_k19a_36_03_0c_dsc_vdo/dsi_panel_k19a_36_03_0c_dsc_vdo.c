@@ -310,10 +310,7 @@ static void push_table(void *cmdq, struct LCM_setting_table *table,
 		cmd = table[i].cmd;
 		switch (cmd) {
 		case REGFLAG_DELAY:
-			if (table[i].count <= 10)
-				MDELAY(table[i].count);
-			else
-				MDELAY(table[i].count);
+			MDELAY(table[i].count);
 			break;
 		case REGFLAG_UDELAY:
 			UDELAY(table[i].count);
