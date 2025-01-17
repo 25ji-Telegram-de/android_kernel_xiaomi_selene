@@ -11,10 +11,7 @@
 # GNU General Public License for more details.
 #
 
-#
-# Makefile for misc devices that really don't fit anywhere else.
-#
+#ccflags-y += -DCONFIG_MTK_FPGA
+#ccflags-y += -DFIX_TO_26M
 
-obj-$(CONFIG_MTK_LENS_DW9800WAF_SUPPORT) += DW9800WAF.o
-
-
+obj-$(CONFIG_SIMTRAY_STATUS) += simtray.o
