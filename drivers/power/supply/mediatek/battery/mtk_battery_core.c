@@ -93,6 +93,10 @@ int mtk_qmax_aging;
 /* ============================================================ */
 /* gauge hal interface */
 /* ============================================================ */
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
+extern int hq_config(void);
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
+
 bool gauge_get_current(int *bat_current)
 {
 	bool is_charging = false;
@@ -601,6 +605,7 @@ bool __attribute__ ((weak)) mt_usb_is_device(void)
 int my_battery_id_voltage;
 void fgauge_get_profile_id(void)
 {
+
 	int id_volt = 0;
 	int ret = 0;
 	int auxadc_voltage = 0;
@@ -647,13 +652,31 @@ void fgauge_get_profile_id(void)
 	pr_err("[%s]battery_id_voltage is %d\n", __func__, id_volt);
 
 	my_battery_id_voltage = id_volt;
-	if (id_volt >= NVT_MIN_VOLTAGE && id_volt <= NVT_MAX_VOLTAGE) {
+	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
+	if (id_volt >= SWD_MIN_VOLTAGE && id_volt <= SWD_MAX_VOLTAGE) {
 		gm.battery_id = 0;
-	} else if (id_volt >= COSMX_MIN_VOLTAGE && id_volt <= COSMX_MAX_VOLTAGE) {
-		gm.battery_id = 1;
-	} else {
+	if(hq_config()== 1)
 		gm.battery_id = 2;
+	}else if (id_volt >= COSMX_MIN_VOLTAGE && id_volt <= COSMX_MAX_VOLTAGE) {
+		gm.battery_id = 1;
+		/* K19SFAC-41 code for K19T by wanglicheng at 20210929 start */
+		if(hq_config()== 4)
+			gm.battery_id = 5;
+		/* K19SFAC-41 code for K19T by wanglicheng at 20210929 end */
+	} else if (id_volt >= SWD_SEC_MIN_VOLTAGE && id_volt <= SWD_SEC_MAX_VOLTAGE) {
+		gm.battery_id = 3;
+		/* K19SFAC-41 code for K19T by wanglicheng at 20210929 start */
+		if(hq_config()== 4)
+			gm.battery_id = 4;
+		/* K19SFAC-41 code for K19T by wanglicheng at 20210929 end */
+	}else if (id_volt >= SECRET_MIN_VOLTAGE && id_volt <= SECRET_MAX_VOLTAGE) {
+		gm.battery_id = 4;
+	}else {
+		gm.battery_id = 5;
 	}
+	/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 end*/
+	pr_err("[%s]Battery id (%d) volt (%d)\n",
+		__func__, gm.battery_id, id_volt);
 
 	pr_err("[%s]Battery id (%d) volt (%d)\n",
 		__func__, gm.battery_id, id_volt);
@@ -3164,16 +3187,6 @@ void fg_daemon_comm_INT_data(char *rcv, char *ret)
 
 			bm_err("set GAUGE_MONITOR_SOFF_VALIDTIME ori:%d, new:%d\n",
 				ori_value, prcv->input);
-		}
-		break;
-	case FG_SET_ZCV_INTR_EN:
-		{
-			int zcv_intr_en = prcv->input;
-
-			if (zcv_intr_en == 0 || zcv_intr_en == 1)
-				gauge_set_zcv_interrupt_en(zcv_intr_en);
-
-			bm_err("set zcv_interrupt_en %d\n", zcv_intr_en);
 		}
 		break;
 	default:
