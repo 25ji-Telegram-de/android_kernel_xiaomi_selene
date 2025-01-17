@@ -326,6 +326,7 @@ static inline char *power_mode_to_string(enum mtkfb_power_mode pm)
 
 typedef int (*PRIMARY_DISPLAY_CALLBACK) (unsigned int user_data);
 
+enum mtkfb_power_mode primary_display_get_power_mode_nolock(void);
 struct display_primary_path_context *_get_context(void);
 void _primary_path_lock(const char *caller);
 void _primary_path_unlock(const char *caller);

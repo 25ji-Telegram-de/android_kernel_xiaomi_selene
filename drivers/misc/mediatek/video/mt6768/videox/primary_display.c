@@ -109,6 +109,32 @@
 
 #define FRM_UPDATE_SEQ_CACHE_NUM (DISP_INTERNAL_BUFFER_COUNT+1)
 
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+#define _SUPPORT_LCM_BOOST_
+#define SWITCH_FPS_IN_WORKQUEUE
+
+#ifdef _SUPPORT_LCM_BOOST_
+#include "mtk_ppm_api.h"
+#include "cpu_ctrl.h"
+#include <linux/pm_qos.h>
+#include "helio-dvfsrc-opp.h"
+#include "mtk_boot_common.h"
+
+#define BSP_CERVINO_CLUSTER_NUMBERS 2
+
+static struct ppm_limit_data fb_blank_freq_to_set[BSP_CERVINO_CLUSTER_NUMBERS];
+static struct ppm_limit_data fb_blank_freq_to_release[BSP_CERVINO_CLUSTER_NUMBERS];
+static struct pm_qos_request fb_blank_ddr_req;
+static int fb_boost_start(void);
+static int fb_boost_release(void);
+#endif
+
+#ifdef SWITCH_FPS_IN_WORKQUEUE
+static struct work_struct sWork;
+static struct workqueue_struct *fb_resume_workqueue;
+#endif
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
+
 static struct disp_internal_buffer_info
 	*decouple_buffer_info[DISP_INTERNAL_BUFFER_COUNT];
 static struct RDMA_CONFIG_STRUCT decouple_rdma_config;
@@ -125,6 +151,14 @@ static unsigned int gPresentFenceIndex;
 unsigned int gTriggerDispMode;
 static unsigned int g_keep;
 static unsigned int g_skip;
+
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+extern atomic_t lcm_ready;
+extern atomic_t lcm_valid_irq;
+#endif
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
+
 #if 0 //def CONFIG_TRUSTONIC_TRUSTED_UI
 static struct switch_dev disp_switch_data;
 #endif
@@ -248,6 +282,84 @@ void lock_primary_wake_lock(bool lock)
 	}
 
 }
+
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+#ifdef _SUPPORT_LCM_BOOST_
+static int fb_boost_start(void)
+{
+	int i, cluster_num;
+
+	cluster_num = arch_get_nr_clusters();
+	if(cluster_num > BSP_CERVINO_CLUSTER_NUMBERS)
+		cluster_num = BSP_CERVINO_CLUSTER_NUMBERS;
+
+	pm_qos_update_request(&fb_blank_ddr_req, DDR_OPP_0);
+
+	for (i = 0; i < BSP_CERVINO_CLUSTER_NUMBERS; i++) {
+		fb_blank_freq_to_set[i].min = 2001000;
+		fb_blank_freq_to_set[i].max = -1;
+	}
+
+	if(cluster_num > 0){
+		update_userlimit_cpu_freq(CPU_KIR_BOOT, cluster_num, fb_blank_freq_to_set);
+		return 0;
+	}
+
+	return -1;
+}
+
+static int fb_boost_release(void)
+{
+	int i,cluster_num;
+
+	cluster_num = arch_get_nr_clusters();
+	if(cluster_num > BSP_CERVINO_CLUSTER_NUMBERS)
+		cluster_num = BSP_CERVINO_CLUSTER_NUMBERS;
+
+	pm_qos_update_request(&fb_blank_ddr_req, DDR_OPP_UNREQ);
+
+	for (i = 0; i < BSP_CERVINO_CLUSTER_NUMBERS; i++) {
+		fb_blank_freq_to_release[i].min = -1;
+		fb_blank_freq_to_release[i].max = -1;
+	}
+
+	if(cluster_num > 0){
+		update_userlimit_cpu_freq(CPU_KIR_BOOT, cluster_num, fb_blank_freq_to_release);
+		return 0;
+	}
+
+	return -1;
+}
+#endif
+
+#ifdef SWITCH_FPS_IN_WORKQUEUE
+static void fb_resume_func(struct work_struct *work)
+{
+	DISPMSG("Enter %s", __func__);
+#ifdef CONFIG_MTK_KERNEL_POWER_OFF_CHARGING
+	if (get_boot_mode() == KERNEL_POWER_OFF_CHARGING_BOOT
+		|| get_boot_mode() == LOW_POWER_OFF_CHARGING_BOOT) {
+		DISPMSG("power off charging mode, skip switch fps!");
+		return;
+	}
+#endif
+	if (primary_display_is_support_DynFPS()) {
+		int last_cfg = primary_display_get_current_cfg_id();
+
+		DISPMSG("DynFPS. switch fps in fb_resume_func");
+
+		/* easy way to force change fps */
+		primary_display_update_cfg_id(!last_cfg);
+		primary_display_dynfps_chg_fps(last_cfg);
+	}
+}
+
+void fb_resume_queue_work(void)
+{
+	queue_work(fb_resume_workqueue, &sWork);
+}
+#endif
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
 
 static int smart_ovl_try_switch_mode_nolock(void);
 
@@ -3834,6 +3946,11 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 	DISPCHECK("%s begin lcm=%s, inited=%d\n",
 		__func__, lcm_name, is_lcm_inited);
 
+	/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+	pm_qos_add_request(&fb_blank_ddr_req, PM_QOS_DDR_OPP,
+		PM_QOS_DDR_OPP_DEFAULT_VALUE);
+	/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
+
 	dprec_init();
 	dpmgr_init();
 	if (bdg_is_bdg_connected() == 1) {
@@ -4002,6 +4119,19 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 	init_decouple_buffer_thread =
 		kthread_run(_init_decouple_buffers_thread,
 			NULL, "init_decouple_buffer");
+
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+#ifdef SWITCH_FPS_IN_WORKQUEUE
+	INIT_WORK(&sWork, fb_resume_func);
+	fb_resume_workqueue = create_workqueue("fb_resume_wq");
+	if (fb_resume_workqueue == NULL) {
+		DISPERR("Failed to create fb_resume_workqueue!!!");
+		ret = DISP_STATUS_ERROR;
+		goto done;
+	}
+#endif
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
+
 	if (IS_ERR(init_decouple_buffer_thread))
 		DISPERR("kthread_run init_decouple_buffer_thread err = %d",
 			IS_ERR(init_decouple_buffer_thread));
@@ -4518,6 +4648,10 @@ int primary_display_deinit(void)
 	pm_qos_remove_request(&primary_display_mm_freq_request);
 #endif
 
+	/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
+	pm_qos_remove_request(&fb_blank_ddr_req);
+	/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
+
 	return 0;
 }
 
@@ -4715,6 +4849,18 @@ int primary_display_suspend(void)
 #endif
 
 	DISPCHECK("%s begin\n", __func__);
+
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	atomic_set(&lcm_ready, 0);
+	DISPERR("[ESD] atomic_set(&lcm_ready, 0)\n");
+#endif
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
+
+#ifdef _SUPPORT_LCM_BOOST_
+	fb_boost_start();
+#endif
+
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_suspend,
 		MMPROFILE_FLAG_START, 0, 0);
 	primary_display_idlemgr_kick(__func__, 1);
@@ -4924,6 +5070,11 @@ done:
 	primary_display_request_dvfs_perf(0,
 		HRT_LEVEL_DEFAULT);
 #endif
+
+#ifdef _SUPPORT_LCM_BOOST_
+	fb_boost_release();
+#endif
+
 	return ret;
 }
 
@@ -5021,6 +5172,7 @@ int primary_display_lcm_power_on_state(int alive)
 	return skip_update;
 }
 
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/03 start */
 int primary_display_resume(void)
 {
 	enum DISP_STATUS ret = DISP_STATUS_OK;
@@ -5033,6 +5185,17 @@ int primary_display_resume(void)
 	unsigned int out_fps = 60;
 #endif
 	DISPCHECK("%s begin\n", __func__);
+
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	atomic_set(&lcm_valid_irq, 1);
+#endif
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
+
+#ifdef _SUPPORT_LCM_BOOST_
+	fb_boost_start();
+#endif
+
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_START, 0, 0);
 	_primary_path_lock(__func__);
@@ -5393,6 +5556,9 @@ int primary_display_resume(void)
 	}
 
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
+#ifdef SWITCH_FPS_IN_WORKQUEUE
+	fb_resume_queue_work();
+#else
 	/*DynFPS*/
 	/*check whether need change fps according cfg*/
 	if (primary_display_is_support_DynFPS()) {
@@ -5402,6 +5568,7 @@ int primary_display_resume(void)
 		primary_display_update_cfg_id(!last_cfg);
 		primary_display_dynfps_chg_fps(last_cfg);
 	}
+#endif
 #endif
 done:
 	primary_set_state(DISP_ALIVE);
@@ -5430,8 +5597,20 @@ done:
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_END, 0, 0);
 	ddp_clk_check();
+
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+	atomic_set(&lcm_ready, 1);
+	DISPERR("[ESD] atomic_set(&lcm_ready, 1)\n");
+#endif
+/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
+
+#ifdef _SUPPORT_LCM_BOOST_
+	fb_boost_release();
+#endif
 	return ret;
 }
+/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/03 end */
 
 int primary_display_aod_backlight(int level)
 {
@@ -10181,6 +10360,10 @@ void primary_display_update_cfg_id(int cfg_id)
 extern int read_lcm(unsigned char cmd, unsigned char *buf,
 			unsigned char buf_size, bool sendhs, bool need_lock,
 			unsigned char offset);
+
+extern void ddp_dsi_bdg_dynfps_chg_fps(
+	enum DISP_MODULE_ENUM module, void *handle,
+	unsigned int last_fps, unsigned int new_fps, unsigned int chg_index);
 
 void primary_display_dynfps_chg_fps(int cfg_id)
 {

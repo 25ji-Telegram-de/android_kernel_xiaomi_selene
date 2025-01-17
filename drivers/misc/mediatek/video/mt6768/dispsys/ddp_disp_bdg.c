@@ -54,7 +54,9 @@ struct DSI_TX_PHY_TIMCON2_REG timcon2;
 struct DSI_TX_PHY_TIMCON3_REG timcon3;
 unsigned int bg_tx_data_phy_cycle = 0, tx_data_rate = 0, ap_tx_data_rate = 0;
 //unsigned int ap_tx_data_phy_cycle = 0;
-unsigned int hsa_byte = 0, hbp_byte = 0, hfp_byte = 0, bllp_byte = 0, bg_tx_line_cycle = 0;
+/* Huaqin modify for HQ-146521 by caogaojie at 2021/08/02 start */
+int hsa_byte = 0, hbp_byte = 0, hfp_byte = 0, bllp_byte = 0, bg_tx_line_cycle = 0;
+/* Huaqin modify for HQ-146521 by caogaojie at 2021/08/02 end */
 //unsigned int ap_tx_hsa_wc = 0, ap_tx_hbp_wc = 0, ap_tx_hfp_wc = 0, ap_tx_bllp_wc = 0;
 unsigned int dsc_en;
 unsigned int mt6382_init;
@@ -95,7 +97,22 @@ struct lcm_setting_table {
 	unsigned char para_list[256];
 };
 
-#define MM_CLK			405 //fpga=26
+/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 start */
+int mtk_mm_clk = 0;
+int mtk_rxtx_ratio = 0;
+extern char *saved_command_line;
+int mtk_panel_compare()
+{
+    if (strstr(saved_command_line, "dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv")) {
+        mtk_mm_clk = 405;
+        mtk_rxtx_ratio = 232;
+    } else {
+	mtk_mm_clk = 270;
+        mtk_rxtx_ratio = 225;
+    }
+    return 0;
+}
+/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 end */
 #define NS_TO_CYCLE(n, c)	((n) / (c) + (((n) % (c)) ? 1 : 0))
 
 #define DSI_MODULE_to_ID(x)	(x == DISP_BDG_DSI0 ? 0 : 1)
@@ -536,24 +553,11 @@ void ana_macro_on(void *cmdq)
 	 * bit 16-17 is display mm clk 1(270m)/2(405m)/3(540m)
 	 * dsc_on:vact * hact * vrefresh * (vtotal / vact) * bubble_ratio
 	 */
-	switch (MM_CLK) {
-	case 546:
-		DISPMSG("%s, 6382 mmclk 546M\n", __func__);
-		reg = (3 << 24) | (3 << 16) | (1 << 8) | (1 << 0); //540M
-		break;
-	case 405:
-		DISPMSG("%s, 6382 mmclk 405M\n", __func__);
-		reg = (3 << 24) | (2 << 16) | (1 << 8) | (1 << 0); //405M for 120Hz
-		break;
-	case 270:
-		DISPMSG("%s, 6382 mmclk 270M\n", __func__);
-		reg = (3 << 24) | (1 << 16) | (1 << 8) | (1 << 0); //270M for 90Hz
-		break;
-	default:
-		DISPMSG("%s, 6382 mmclk default 546M\n", __func__);
-		reg = (3 << 24) | (3 << 16) | (1 << 8) | (1 << 0); //540M
-		break;
-	}
+#ifdef _90HZ_
+	reg = (3 << 24) | (1 << 16) | (1 << 8) | (1 << 0); //270M for 90Hz
+#else
+	reg = (3 << 24) | (2 << 16) | (1 << 8) | (1 << 0); //405M for 120Hz
+#endif
 
 	DSI_OUTREG32(cmdq, TOPCKGEN->CLK_CFG_0_SET, reg);
 	//config update
@@ -1189,9 +1193,11 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 
 	/* hs_trail > max(8*UI, 60ns+4*UI) (spec) */
 	/* hs_trail = 80ns+4*UI */
-	hs_trail = 80 + 4 * ui;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	hs_trail = 76 + 4 * ui;
 	timcon0.HS_TRAIL = (hs_trail > cycle_time) ?
 				NS_TO_CYCLE(hs_trail, cycle_time) + 1 : 2;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 	/* hs_exit > 100ns (spec) */
 	/* hs_exit = 120ns */
@@ -1221,10 +1227,11 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 
 	/* clk_trail > 60ns (spec) */
 	/* clk_trail = 100ns */
-	timcon2.CLK_TRAIL = NS_TO_CYCLE(100, cycle_time) + 1;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	timcon2.CLK_TRAIL = NS_TO_CYCLE(80, cycle_time) + 1;
 	if (timcon2.CLK_TRAIL < 2)
 		timcon2.CLK_TRAIL = 2;
-
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 	/* clk_exit > 100ns (spec) */
 	/* clk_exit = 200ns */
 	/* timcon3.CLK_EXIT = NS_TO_CYCLE(200, cycle_time); */
@@ -1491,7 +1498,9 @@ int bdg_tx_ps_ctrl(enum DISP_BDG_ENUM module,
 int bdg_tx_vdo_timing_set(enum DISP_BDG_ENUM module,
 			void *cmdq, struct LCM_DSI_PARAMS *tx_params)
 {
-	unsigned int i;
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+	unsigned int i,j;
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 	u32 dsi_buf_bpp, data_init_byte;
 	data_init_byte = 0;
 
@@ -1581,6 +1590,17 @@ int bdg_tx_vdo_timing_set(enum DISP_BDG_ENUM module,
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_VFP_NL,
 					(tx_params->vertical_frontporch));
 
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+		for (j = 0; j < DFPS_LEVELS; j++) {
+			if (tx_params->dfps_params[j].fps == 9000) {
+				DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_VFP_NL,
+					(tx_params->dfps_params[j].vertical_frontporch));
+				break;
+			}
+		}
+#endif
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_HSA_WC, hsa_byte);
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_HBP_WC, hbp_byte);
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_HFP_WC, hfp_byte);
@@ -2275,12 +2295,14 @@ int ap_tx_phy_config(enum DISP_BDG_ENUM module,
 int bdg_dsi_line_timing_dphy_setting(enum DISP_BDG_ENUM module,
 			void *cmdq, struct LCM_DSI_PARAMS *tx_params)
 {
+/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 start */
 	unsigned int width, height, lanes, ps_wc, new_hfp_byte;
 	unsigned int bg_tx_total_word_cnt = 0;
 	unsigned int bg_tx_line_time = 0, disp_pipe_line_time = 0;
 	unsigned int rxtx_ratio = 0;
 //	unsigned int ap_tx_total_word_cnt = 0, ap_tx_total_word_cnt_no_hfp_wc = 0;
 
+	mtk_panel_compare();
 	DISPFUNCSTART();
 	width = tx_params->horizontal_active_pixel / 1;
 	height = tx_params->vertical_active_line;
@@ -2291,12 +2313,13 @@ int bdg_dsi_line_timing_dphy_setting(enum DISP_BDG_ENUM module,
 	if (dsc_en) {
 //		ps_wc = width;
 		ps_wc = width * 24 / 8 / 3;	/* for 8bpp, 1/3 compression */
-		rxtx_ratio = RXTX_RATIO;	/* ratio=2.30 */
+		rxtx_ratio = mtk_rxtx_ratio;	/* ratio=2.30 */
 	} else {
 		ps_wc = width * 24 / 8;	/* for 8bpp, 1/3 compression */
 		rxtx_ratio = 100;
 	}
 	new_hfp_byte = hfp_byte;
+/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 end */
 
 	DISPMSG("%s, dsc_en=%d, hsa_byte=%d, hbp_byte=%d\n",
 		__func__, dsc_en, hsa_byte, hbp_byte);
@@ -2344,7 +2367,9 @@ int bdg_dsi_line_timing_dphy_setting(enum DISP_BDG_ENUM module,
 	bg_tx_line_cycle = (bg_tx_total_word_cnt + (lanes - 1)) / lanes;
 	bg_tx_line_time = bg_tx_line_cycle * 8000 / tx_data_rate;
 
-	disp_pipe_line_time = width * 1000 / MM_CLK;
+	/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 start */
+	disp_pipe_line_time = width * 1000 / mtk_mm_clk;
+	/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 end */
 
 	DISPMSG("bg_tx_total_word_cnt=%d, bg_tx_line_cycle=%d\n",
 		bg_tx_total_word_cnt, bg_tx_line_cycle);
@@ -3427,11 +3452,12 @@ int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RDY_TO_CNT_OS, 0);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_RESP_TO_CNT_OS, 0);
 	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_VALID_VC_CFG_OS, 0xf);
-	/* 0x1b for MMCLK 270M 0x37 for MMCLK 405M */
-	if (MM_CLK == 270)
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0x1b);
-	else
-		DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0x37);
+	/* 0x1b for MMCLK 270M 0x37 for MMCLK 407M */
+#ifdef _90HZ_
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0x1b);
+#else
+	DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_DDI_CLK_MGR_CFG_OS, 0x37);
+#endif
 //	}
 
 	//video mode/ipi
@@ -3440,10 +3466,10 @@ int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
 
 		if (ipi_mode_qst)
 			DSI_OUTREG32(cmdq, DSI2_REG->DSI2_DEVICE_IPI_MODE_CFG_OS, 1);
-
-		t_ipi_clk  = 1000 / MM_CLK;
+		/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 start */
+		t_ipi_clk  = 1000 / mtk_mm_clk;
 		//t_hact_ipi = frame_width * t_ipi_clk;
-		t_hact_ipi = frame_width * 1000 / MM_CLK;
+		t_hact_ipi = frame_width * 1000 / mtk_mm_clk;
 		if (tx_params->IsCphy) { //c-phy
 			temp = 7000;
 			t_ppi_clk = temp / ap_tx_data_rate;
@@ -3460,13 +3486,13 @@ int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
 
 		if (t_hact_ppi > t_hact_ipi)
 //ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) / t_ipi_clk + 20 * (t_ppi_clk / t_ipi_clk) + 4);
-//ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) * MM_CLK / 1000 + 20 *
-//(temp * MM_CLK / tx_data_rate / 1000) + 4);
-			ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) * MM_CLK +
-					20 * temp * MM_CLK / ap_tx_data_rate) / 1000 + 4;
+//ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) * mtk_mm_clk / 1000 + 20 *
+//(temp * mtk_mm_clk / tx_data_rate / 1000) + 4);
+			ipi_tx_delay_qst = ((t_hact_ppi - t_hact_ipi) * mtk_mm_clk +
+					20 * temp * mtk_mm_clk / ap_tx_data_rate) / 1000 + 4;
 		else
-		//ipi_tx_delay_qst =  (20 * (temp * MM_CLK / tx_data_rate / 1000) + 4);
-			ipi_tx_delay_qst =  20 * temp * MM_CLK /
+		//ipi_tx_delay_qst =  (20 * (temp * mtk_mm_clk / tx_data_rate / 1000) + 4);
+			ipi_tx_delay_qst =  20 * temp * mtk_mm_clk /
 				ap_tx_data_rate / 1000 + 4;
 
 		DISPINFO("ap_tx_data_rate=%d, temp=%d, t_ppi_clk=%d, t_ipi_clk=%d\n",
@@ -3474,7 +3500,8 @@ int mipi_dsi_rx_mac_init(enum DISP_BDG_ENUM module,
 		DISPINFO("t_hact_ppi=%d, t_hact_ipi=%d\n", t_hact_ppi, t_hact_ipi);
 
 		//t_ipi_tx_delay = ipi_tx_delay_qst_i * t_ipi_clk;
-		t_ipi_tx_delay = ipi_tx_delay_qst * 1000 / MM_CLK;
+		t_ipi_tx_delay = ipi_tx_delay_qst * 1000 / mtk_mm_clk;
+		/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 end */
 
 		DISPINFO("ipi_tx_delay_qst=%d, t_ipi_tx_delay=%d\n",
 			ipi_tx_delay_qst, t_ipi_tx_delay);
