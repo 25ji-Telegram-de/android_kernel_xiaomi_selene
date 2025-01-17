@@ -12,7 +12,7 @@
  */
 
 /*
- * DW9714AF voice coil motor driver
+ * CN3927AF voice coil motor driver
  *
  *
  */
@@ -24,7 +24,7 @@
 
 #include "lens_info.h"
 
-#define AF_DRVNAME "DW9714AF_DRV"
+#define AF_DRVNAME "CN3927AF_DRV"
 #define AF_I2C_SLAVE_ADDR 0x18
 
 #define AF_DEBUG
@@ -235,7 +235,7 @@ static inline int setAFMacro(unsigned long a_u4Position)
 }
 
 /* ////////////////////////////////////////////////////////////// */
-long DW9714AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command,
+long CN3927AFJ19_Ioctl(struct file *a_pstFile, unsigned int a_u4Command,
 		    unsigned long a_u4Param)
 {
 	long i4RetValue = 0;
@@ -272,7 +272,7 @@ long DW9714AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command,
 /* 2.Shut down the device on last close. */
 /* 3.Only called once on last time. */
 /* Q1 : Try release multiple times. */
-int DW9714AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
+int CN3927AFJ19_Release(struct inode *a_pstInode, struct file *a_pstFile)
 {
 	char puSendCmdRelease[2] = { 0x02, 0x01 };
 	char puSendCmdMoveRelease[2] = { 0x06, 0x83 };
@@ -323,7 +323,7 @@ int DW9714AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
 	return 0;
 }
 
-int DW9714AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient,
+int CN3927AFJ19_SetI2Cclient(struct i2c_client *pstAF_I2Cclient,
 			  spinlock_t *pAF_SpinLock, int *pAF_Opened)
 {
 	g_pstAF_I2Cclient = pstAF_I2Cclient;
@@ -333,7 +333,7 @@ int DW9714AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient,
 	return 1;
 }
 
-int DW9714AF_GetFileName(unsigned char *pFileName)
+int CN3927AFJ19_GetFileName(unsigned char *pFileName)
 {
 	#if SUPPORT_GETTING_LENS_FOLDER_NAME
 	char FilePath[256];
@@ -351,7 +351,7 @@ int DW9714AF_GetFileName(unsigned char *pFileName)
 	return 1;
 }
 
-void DW9714AF_SwitchToPowerDown(struct i2c_client *pstAF_I2Cclient, bool disable)
+void CN3927AFJ19_SwitchToPowerDown(struct i2c_client *pstAF_I2Cclient, bool disable)
 {
 	g_pstAF_I2Cclient = pstAF_I2Cclient;
 	LOG_INF("DW9714AF sleep Start\n");
