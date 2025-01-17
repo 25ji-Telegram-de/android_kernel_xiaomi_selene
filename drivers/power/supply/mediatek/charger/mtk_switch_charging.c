@@ -169,7 +169,6 @@ static void swchg_select_charging_current_limit(struct charger_manager *info)
 		pdata->charging_current_limit = 500000;
 		goto done;
 	}
-
 	if (mtk_is_TA_support_pd_pps(info)) {
 		pdata->input_current_limit =
 			info->data.pe40_single_charger_input_current;
@@ -263,7 +262,14 @@ static void swchg_select_charging_current_limit(struct charger_manager *info)
 				pdata->charging_current_limit = 2000000;
 				break;
 		}
-	} else if (info->chr_type == CHARGING_HOST) {
+	}
+/* Huaqin add/modify/del for WXYFB-996 by miaozhichao at 2021/3/29 start */
+	else if (info->chr_type == HVDCP_CHARGER) {
+		pdata->input_current_limit = 2000000;
+		pdata->charging_current_limit = 3000000;
+	}
+/* Huaqin add/modify/del for WXYFB-996 by miaozhichao at 2021/3/29 end */
+	else if (info->chr_type == CHARGING_HOST) {
 		pdata->input_current_limit =
 				info->data.charging_host_charger_current;
 		pdata->charging_current_limit =
