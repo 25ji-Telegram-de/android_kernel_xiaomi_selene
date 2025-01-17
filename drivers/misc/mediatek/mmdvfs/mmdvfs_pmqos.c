@@ -2283,12 +2283,10 @@ void mmdvfs_autok_qos_enable(bool enable)
 {
 	pr_notice("%s: step_size=%d current_max_step=%d\n",
 		__func__, step_size, current_max_step);
-	if (!enable && step_size > 0
-#ifndef AUTOK_FORCE_LOW
-		&& current_max_step == STEP_UNREQUEST
-#endif
-	)
+/*K19A K19A-138 repair flash screen  by feiwen at 2021/5/20 start*/
+	if (!enable && step_size > 0 && current_max_step == STEP_UNREQUEST)
 		mmdvfs_qos_force_step(step_size - 1);
+/*K19A K19A-138 repair flash screen  by feiwen at 2021/5/20 end*/
 
 	mmdvfs_autok_enable = enable;
 	if (enable && step_size > 0)
