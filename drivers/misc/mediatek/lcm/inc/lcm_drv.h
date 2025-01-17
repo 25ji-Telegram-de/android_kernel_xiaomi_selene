@@ -1020,6 +1020,7 @@ struct LCM_DRIVER {
 	void (*set_pwm)(unsigned int divider);
 	unsigned int (*get_pwm)(unsigned int divider);
 	void (*set_backlight_mode)(unsigned int mode);
+	void (*set_hw_info)(void);
 	/* ///////////////////////// */
 
 	int (*adjust_fps)(void *cmdq, int fps, struct LCM_PARAMS *params);
