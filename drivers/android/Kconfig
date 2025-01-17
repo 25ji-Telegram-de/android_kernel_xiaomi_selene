@@ -54,6 +54,11 @@ config ANDROID_BINDER_IPC_SELFTEST
 	  exhaustively with combinations of various buffer sizes and
 	  alignments.
 
+config TARGET_PRODUCT_SELENECOMMON
+	bool "TARGET PRODUCT SELENECOMMON"
+	---help---
+	  Enable support for TARGET PRODUCT SELENECOMMON
+
 endif # if ANDROID
 
 endmenu
