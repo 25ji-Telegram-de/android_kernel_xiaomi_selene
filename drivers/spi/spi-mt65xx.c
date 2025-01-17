@@ -885,6 +885,9 @@ static int mtk_spi_probe(struct platform_device *pdev)
 				goto err_put_master;
 			}
 		}
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+		master->num_chipselect = mdata->pad_num;
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 	}
 
 	platform_set_drvdata(pdev, master);
@@ -972,12 +975,16 @@ static int mtk_spi_probe(struct platform_device *pdev)
 			goto err_disable_runtime_pm;
 		}
 
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 start*/
+/*
 		if (!master->cs_gpios && master->num_chipselect > 1) {
 			dev_err(&pdev->dev,
 				"cs_gpios not specified and num_chipselect > 1\n");
 			ret = -EINVAL;
 			goto err_disable_runtime_pm;
 		}
+*/
+/*K19A coad for HQ-147450 by feiwen at 2021/7/23 end*/
 
 		if (master->cs_gpios) {
 			for (i = 0; i < master->num_chipselect; i++) {
