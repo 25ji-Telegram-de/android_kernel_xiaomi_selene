@@ -1621,11 +1621,11 @@ short is_clkbuf_bringup(void)
 void clk_buf_post_init(void)
 {
 #ifndef CONFIG_MTK_MT6382_BDG
-#if defined(CONFIG_MTK_UFS_SUPPORT)
+/* #if defined(CONFIG_MTK_UFS_SUPPORT)
 	int boot_type;
 
 	boot_type = get_boot_type();
-	/* no need to use XO_EXT if storage is emmc */
+	// no need to use XO_EXT if storage is emmc
 	if (boot_type != BOOTDEV_UFS) {
 		clk_buf_ctrl_internal(CLK_BUF_UFS, CLK_BUF_FORCE_OFF);
 		CLK_BUF7_STATUS = CLOCK_BUFFER_DISABLE;
@@ -1633,7 +1633,7 @@ void clk_buf_post_init(void)
 #else
 	clk_buf_ctrl_internal(CLK_BUF_UFS, CLK_BUF_FORCE_OFF);
 	CLK_BUF7_STATUS = CLOCK_BUFFER_DISABLE;
-#endif
+#endif */
 #endif
 
 //#ifndef CONFIG_NFC_CHIP_SUPPORT
@@ -1667,6 +1667,17 @@ void clk_buf_post_init(void)
 		&xo_mode_init[XO_CEL],
 		PMIC_XO_EXTBUF4_MODE_MASK,
 		PMIC_XO_EXTBUF4_MODE_SHIFT);
+
+	pmic_config_interface(PMIC_DCXO_CW11_CLR_ADDR,
+				  PMIC_XO_EXTBUF7_MODE_MASK,
+				  PMIC_XO_EXTBUF7_MODE_MASK,
+				  PMIC_XO_EXTBUF7_MODE_SHIFT);
+	pmic_config_interface(PMIC_DCXO_CW11_SET_ADDR,
+		PMIC_XO_EXTBUF7_EN_M_MASK,
+		PMIC_XO_EXTBUF7_EN_M_MASK,
+		PMIC_XO_EXTBUF7_EN_M_SHIFT);
+	pmic_clk_buf_swctrl[XO_EXT] = 1;
+
 	pmic_read_interface(PMIC_XO_EXTBUF7_MODE_ADDR,
 		&xo_mode_init[XO_EXT],
 		PMIC_XO_EXTBUF7_MODE_MASK,
