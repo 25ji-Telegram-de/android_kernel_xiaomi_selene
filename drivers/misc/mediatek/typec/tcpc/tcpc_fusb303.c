@@ -28,6 +28,9 @@
 #include <linux/delay.h>
 #include <linux/workqueue.h>
 #include "inc/tcpci.h"
+/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
+#include "inc/wusb3801.h"
+/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 #ifdef HAVE_DR
 #include <linux/usb/class-dual-role.h>
 #endif /* HAVE_DR */

@@ -51,7 +51,10 @@
 #include "inc/tcpci.h"
 #include "inc/tcpci_timer.h"
 #include "inc/tcpci_typec.h"
-
+/*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 start*/
+#define __BQ25890H__ 1
+#include "../../../../power/supply/mediatek/charger/bq2589x_reg.h"
+/*K19A HQHW-963 K19A for sy cdp  by langjunjun at 2021/7/15 end*/
 
 #if 1 /*  #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0))*/
 #include <linux/sched/rt.h>
@@ -97,6 +100,10 @@ struct wusb3801_chip {
 extern	uint8_t     typec_cc_orientation;
 #endif	/* __TEST_CC_PATCH__ */
 static struct i2c_client *w_client;
+/*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 start*/
+static bool g_irq_3801_flag = false;
+struct wusb3801_chip *g_3801_chip = NULL;
+/*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 end*/
 
 static int wusb3801_read_device(void *client, u32 reg, int len, void *dst)
 {
@@ -233,6 +240,9 @@ static int test_cc_patch(struct wusb3801_chip *chip)
 	if (ret & WUSB3801_FORCE_ERR_RCY_MASK) {
 		pr_err("wusb3801 [%s]enter error recovery :0x%x\n", __func__, ret);
 		wusb3801_i2c_write8(chip->tcpc, WUSB3801_REG_TEST_02, 0x00);
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
+		wusb3801_i2c_write8(chip->tcpc, WUSB3801_REG_TEST_09, 0x00);
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 	}
     return BITS_GET(rc, 0x40);
 }
@@ -349,14 +359,32 @@ static void wusb3801_irq_work_handler(struct kthread_work *work)
 	tcpci_unlock_typec(tcpc);
 }
 
+/*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 start*/
+void wusb3801_intr_handler_resume(void)
+{
+	if (g_irq_3801_flag == true) {
+		g_irq_3801_flag = false;
+		pr_err("%s:ljj  g_irq_3801_flag is true\n", __func__);
+		__pm_wakeup_event(&g_3801_chip->irq_wake_lock, WUSB3801_IRQ_WAKE_TIME);
+		kthread_queue_work(&g_3801_chip->irq_worker, &g_3801_chip->irq_work);
+	}
+	return;
+}
+/*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 end*/
 
 static irqreturn_t wusb3801_intr_handler(int irq, void *data)
 {
 	struct wusb3801_chip *chip = data;
-
-	__pm_wakeup_event(&chip->irq_wake_lock, WUSB3801_IRQ_WAKE_TIME);
-
-	kthread_queue_work(&chip->irq_worker, &chip->irq_work);
+	/*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 start*/
+	if (bq2589x_get_cdp_status() == true) {
+		pr_err("%s:ljj  bq2589x_get_cdp_status is true,returned!!!\n", __func__);
+		g_irq_3801_flag = true;
+		g_3801_chip = chip;
+	} else {
+		__pm_wakeup_event(&chip->irq_wake_lock, WUSB3801_IRQ_WAKE_TIME);
+		kthread_queue_work(&chip->irq_worker, &chip->irq_work);
+	}
+	/*K19A HQHW-963 K19A for sy cdp by langjunjun at 2021/7/15 end*/
 	return IRQ_HANDLED;
 }
 
@@ -418,6 +446,9 @@ static int wusb3801_init_alert(struct tcpc_device *tcpc)
 	if (ret & WUSB3801_FORCE_ERR_RCY_MASK) {
 		pr_err("wusb3801 [%s]enter error recovery :0x%x\n", __func__, ret);
 		wusb3801_i2c_write8(chip->tcpc, WUSB3801_REG_TEST_02, 0x00);
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 start*/
+		wusb3801_i2c_write8(chip->tcpc, WUSB3801_REG_TEST_09, 0x00);
+		/*K19A HQ-134474 K19A for typec mode by langjunjun at 2021/6/1 end*/
 	}
 	ret = request_irq(chip->irq, wusb3801_intr_handler,
 		IRQF_TRIGGER_FALLING | IRQF_NO_THREAD |
