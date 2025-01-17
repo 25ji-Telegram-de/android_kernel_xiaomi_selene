@@ -65,11 +65,14 @@ static const char * const power_supply_technology_text[] = {
 	"Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe", "NiCd",
 	"LiMn"
 };
-
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 start*/
 static const char * const power_supply_battery_type_text[] = {
-	"NVT_68k", "COSMX_100K", "Unknown"
+	"SWD_68K", "COSMX_100K","NVT_68K","SWD_330K","secret","Unknown"
 };
-
+static const char * const power_supply_battery_vendor_text[] = {
+	"SWD_68K", "COSMX_100K","NVT_68K","SWD_330K","secret","Unknown"
+};
+/*K19A HQ-123457 K19A charger of profile by wangqi at 2021/4/22 end*/
 static const char * const power_supply_capacity_level_text[] = {
 	"Unknown", "Critical", "Low", "Normal", "High", "Full"
 };
@@ -94,7 +97,6 @@ static ssize_t power_supply_show_property(struct device *dev,
 		value.intval = psy->desc->type;
 	} else {
 		ret = power_supply_get_property(psy, off, &value);
-
 		if (ret < 0) {
 			if (ret == -ENODATA)
 				dev_dbg_ratelimited(dev,
@@ -135,13 +137,33 @@ static ssize_t power_supply_show_property(struct device *dev,
 	else if (off == POWER_SUPPLY_PROP_BATTERY_TYPE)
 		return sprintf(buf, "%s\n",
 			       power_supply_battery_type_text[value.intval]);
-	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME)
+	else if (off == POWER_SUPPLY_PROP_BATTERY_VENDOR)
+		return sprintf(buf, "%s\n",
+				   power_supply_battery_vendor_text[value.intval]);
+	/*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 start*/
+	if ((off == POWER_SUPPLY_PROP_ROMID) || (off == POWER_SUPPLY_PROP_DS_STATUS)){
+		return scnprintf(buf, PAGE_SIZE, "%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
+			value.arrayval[0], value.arrayval[1], value.arrayval[2], value.arrayval[3],
+			value.arrayval[4], value.arrayval[5], value.arrayval[6], value.arrayval[7]);
+	}
+	else if ((off == POWER_SUPPLY_PROP_PAGE0_DATA) || (off == POWER_SUPPLY_PROP_PAGE1_DATA) || (off == POWER_SUPPLY_PROP_PAGEDATA)){
+		return scnprintf(buf, PAGE_SIZE, "%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
+			value.arrayval[0], value.arrayval[1], value.arrayval[2], value.arrayval[3],
+			value.arrayval[4], value.arrayval[5], value.arrayval[6], value.arrayval[7],
+			value.arrayval[8], value.arrayval[9], value.arrayval[10], value.arrayval[11],
+			value.arrayval[12], value.arrayval[13], value.arrayval[14], value.arrayval[15]);
+	}
+	else if (off == POWER_SUPPLY_PROP_VERIFY_MODEL_NAME)
 		return sprintf(buf, "%s\n", value.strval);
-
+	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME){
+		return sprintf(buf, "%s\n", value.strval);
+	}
+	/*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 end*/
 	if (off == POWER_SUPPLY_PROP_CHARGE_COUNTER_EXT)
 		return sprintf(buf, "%lld\n", value.int64val);
 	else
 		return sprintf(buf, "%d\n", value.intval);
+
 }
 
 static ssize_t power_supply_store_property(struct device *dev,
@@ -240,6 +262,18 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(input_current_now),
 	POWER_SUPPLY_ATTR(input_current_settled),
 	POWER_SUPPLY_ATTR(input_current_limit),
+	POWER_SUPPLY_ATTR(sc_battery_present),
+	POWER_SUPPLY_ATTR(sc_vbus_present),
+	POWER_SUPPLY_ATTR(sc_battery_voltage),
+	POWER_SUPPLY_ATTR(sc_battery_current),
+	POWER_SUPPLY_ATTR(sc_battery_temperature),
+	POWER_SUPPLY_ATTR(sc_bus_voltage),
+	POWER_SUPPLY_ATTR(sc_bus_current),
+	POWER_SUPPLY_ATTR(sc_bus_temperature),
+	POWER_SUPPLY_ATTR(sc_die_temperature),
+	POWER_SUPPLY_ATTR(sc_alarm_status),
+	POWER_SUPPLY_ATTR(sc_fault_status),
+	POWER_SUPPLY_ATTR(sc_vbus_error_status),
 	POWER_SUPPLY_ATTR(energy_full_design),
 	POWER_SUPPLY_ATTR(energy_empty_design),
 	POWER_SUPPLY_ATTR(energy_full),
@@ -275,6 +309,7 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(reverse_chg_cc),
 	POWER_SUPPLY_ATTR(reverse_chg_status),
 	POWER_SUPPLY_ATTR(reverse_limit),
+	POWER_SUPPLY_ATTR(charging_enabled),
 	/* Local extensions */
 	POWER_SUPPLY_ATTR(usb_hc),
 	POWER_SUPPLY_ATTR(usb_otg),
@@ -284,11 +319,41 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(resistance),
 	POWER_SUPPLY_ATTR(resistance_id),
 	POWER_SUPPLY_ATTR(input_suspend),
+	POWER_SUPPLY_ATTR(battery_id_voltage),
+	/*K19A-75 charge by wangchao at 2021/4/15 start*/
+	POWER_SUPPLY_ATTR(hiz_enable),
+	/*K19A-75 charge by wangchao at 2021/4/15 end*/
+	/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 start */
+	POWER_SUPPLY_ATTR(shutdown_delay),
+	/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 end */
 	POWER_SUPPLY_ATTR(ra_detected),
 	POWER_SUPPLY_ATTR(tx_adapter),
 	POWER_SUPPLY_ATTR(connector_temp),
 	POWER_SUPPLY_ATTR(vbus_disable),
 	POWER_SUPPLY_ATTR(chip_ok),
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 start*/
+	POWER_SUPPLY_ATTR(quick_charge_type),
+/*K19A HQ-124188 provide node quick_charge_type by miaozhichao at 2021/4/26 end*/
+/*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 start*/
+/* BSP.Charge - 2021.03.02 - add batterysecrete - start*/
+	/* battery verify properties */
+	POWER_SUPPLY_ATTR(romid),
+	POWER_SUPPLY_ATTR(ds_status),
+	POWER_SUPPLY_ATTR(pagenumber),
+	POWER_SUPPLY_ATTR(pagedata),
+	POWER_SUPPLY_ATTR(authen_result),
+	POWER_SUPPLY_ATTR(session_seed),
+	POWER_SUPPLY_ATTR(s_secret),
+	POWER_SUPPLY_ATTR(challenge),
+	POWER_SUPPLY_ATTR(auth_anon),
+	POWER_SUPPLY_ATTR(auth_bdconst),
+	POWER_SUPPLY_ATTR(page0_data),
+	POWER_SUPPLY_ATTR(page1_data),
+	POWER_SUPPLY_ATTR(verify_model_name),
+	POWER_SUPPLY_ATTR(chip_ok_ds28e16),
+	POWER_SUPPLY_ATTR(maxim_batt_cycle_count),
+/* BSP.Charge - 2021.03.02 - add batterysecrete - end*/
+/*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 end*/
 	/* Local extensions of type int64_t */
 	POWER_SUPPLY_ATTR(charge_counter_ext),
 	/* Properties of type `const char *' */
@@ -296,6 +361,7 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(manufacturer),
 	POWER_SUPPLY_ATTR(serial_number),
 	POWER_SUPPLY_ATTR(battery_type),
+	POWER_SUPPLY_ATTR(battery_vendor),
 };
 
 static struct attribute *
