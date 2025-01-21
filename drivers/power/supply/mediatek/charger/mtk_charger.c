@@ -1365,7 +1365,7 @@ int charger_get_vbus(void)
 }
 
 /*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
-int hq_config()
+int hq_config(void)
 {
 	int config;
 
