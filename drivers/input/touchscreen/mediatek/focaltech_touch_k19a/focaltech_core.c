@@ -845,6 +845,7 @@ static int fts_read_parse_touchdata(struct fts_ts_data *data)
 #if	FTS_PALM_EN
 int enter_palm_mode(struct fts_ts_data *data)
 {
+#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
 	u8 mode0 = 0;
 	u8 mode1 = 0;
 	fts_read_reg(0x9A, &mode0);
@@ -860,6 +861,7 @@ int enter_palm_mode(struct fts_ts_data *data)
 		input_sync(data->input_dev);
 
 	}
+#endif
 
 	return 0;
 }
