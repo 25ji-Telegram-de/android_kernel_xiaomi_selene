@@ -528,6 +528,21 @@ struct bms_data bms_main = {
 	},
 };
 
+int check_cap_level(int uisoc)
+{
+	if (uisoc >= 100)
+		return POWER_SUPPLY_CAPACITY_LEVEL_FULL;
+	else if (uisoc >= 80 && uisoc < 100)
+		return POWER_SUPPLY_CAPACITY_LEVEL_HIGH;
+	else if (uisoc >= 20 && uisoc < 80)
+		return POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
+	else if (uisoc > 0 && uisoc < 20)
+		return POWER_SUPPLY_CAPACITY_LEVEL_LOW;
+	else if (uisoc == 0)
+		return POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
+	else
+		return POWER_SUPPLY_CAPACITY_LEVEL_UNKNOWN;
+}
 
 void battery_update_psd(struct battery_data *bat_data)
 {
@@ -655,9 +670,6 @@ static int battery_get_property(struct power_supply *psy,
 			val->intval = 6000000;
 		/*K19A HQ-124115 K19A charger of charge_full_design by wangqi at 2021/4/22 end*/
 		break;
-	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-		val->intval = 5020000;
-		break;
 	case POWER_SUPPLY_PROP_CURRENT_NOW:
 		b_ischarging = gauge_get_current(&fgcurrent);
 		if (b_ischarging == true)
@@ -683,7 +695,6 @@ static int battery_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_TEMP:
 		val->intval = gm.tbat_precise;
 		break;
-	case POWER_SUPPLY_PROP_INPUT_SUSPEND:
 	/*K19A-75 charge by wangchao at 2021/4/15 start*/
 	case POWER_SUPPLY_PROP_HIZ_ENABLE:
 	/*K19A-75 charge by wangchao at 2021/4/15 end*/
