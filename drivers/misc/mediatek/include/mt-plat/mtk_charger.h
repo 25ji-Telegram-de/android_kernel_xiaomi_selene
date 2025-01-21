@@ -124,6 +124,9 @@ extern int charger_manager_is_input_suspend(void);
 extern int charger_manager_get_prop_system_temp_level(void);
 extern int charger_manager_get_prop_system_temp_level_max(void);
 extern void charger_manager_set_prop_system_temp_level(int temp_level);
+/*K19A-75 charge by wangchao at 2021/4/15 start*/
+extern int charger_manager_set_hiz_enable(int hiz_enable);
+/*K19A-75 charge by wangchao at 2021/4/15 end*/
 
 
 
