@@ -57,8 +57,6 @@
 
 #define NVT_MIN_VOLTAGE		492000
 #define NVT_MAX_VOLTAGE		544500
-#define COSMX_MIN_VOLTAGE	570000
-#define COSMX_MAX_VOLTAGE	630000
 
 /*
  * if ACTIVE_TABLE == 0 , use DTSI table
@@ -336,37 +334,6 @@ struct FUELGAUGE_TEMPERATURE Fg_Temperature_Table[27] = {
 #define BIF_NTC_R 16000
 
 #if (BAT_NTC_100 == 1)
-#if defined(TARGET_PRODUCT_LANCELOT) || defined(TARGET_PRODUCT_SHIVA)
-struct FUELGAUGE_TEMPERATURE Fg_Temperature_Table[27] = {
-		{-40, 4251000},
-		{-35, 3005000},
-		{-30, 2149000},
-		{-25, 1554000},
-		{-20, 1135000},
-		{-15, 837800},
-		{-10, 624100},
-		{-5, 469100},
-		{0, 355600},
-		{5, 271800},
-		{10, 209400},
-		{15, 162500},
-		{20, 127000},
-		{25, 100000},
-		{30, 79230},
-		{35, 63180},
-		{40, 50680},
-		{45, 40900},
-		{50, 33190},
-		{55, 27090},
-		{60, 22220},
-		{65, 18320},
-		{70, 15180},
-		{75, 12640},
-		{80, 10580},
-		{85, 8887},
-		{90, 7500}
-};
-#else
 struct FUELGAUGE_TEMPERATURE Fg_Temperature_Table[27] = {
 		{-40, 4251000},
 		{-35, 3005000},
@@ -396,7 +363,6 @@ struct FUELGAUGE_TEMPERATURE Fg_Temperature_Table[27] = {
 		{85, 8887},
 		{90, 7500}
 };
-#endif
 #endif
 
 #if (BAT_NTC_10 == 1)
