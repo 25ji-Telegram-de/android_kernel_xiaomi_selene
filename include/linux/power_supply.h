@@ -200,7 +200,6 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_RESISTANCE,
 	POWER_SUPPLY_PROP_RESISTANCE_ID, /* in Ohms */
 	POWER_SUPPLY_PROP_INPUT_SUSPEND,
-	POWER_SUPPLY_PROP_INPUT_SUSPEND,
 	/*K19A-75 charge by wangchao at 2021/4/15 start*/
 	POWER_SUPPLY_PROP_HIZ_ENABLE,
 	/*K19A-75 charge by wangchao at 2021/4/15 end*/
@@ -264,7 +263,6 @@ enum power_supply_type {
 	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
 	POWER_SUPPLY_TYPE_PARALLEL,	/* Parallel Path */
 	POWER_SUPPLY_TYPE_BMS,          /* Battery Monitor System */
-	POWER_SUPPLY_TYPE_WIRELESS,		/* Wireless Charger */
 /*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 start*/
 	POWER_SUPPLY_TYPE_BATT_VERIFY,		/* Batterysercet */
 /*K19A WXYFB-996 K19A secret battery bring up by miaozhichao at 2021/3/26 end*/
