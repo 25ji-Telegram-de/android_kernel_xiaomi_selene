@@ -1316,7 +1316,6 @@ struct LCM_DRIVER *lcm_driver_list[] = {
 	&ft8756_fhdp_dsi_vdo_auo_rt4801_lcm_drv,
 #endif
 
-<<<<<<< HEAD
 
 #if defined(HX83102P_WUXGA2000_DSI_VDO_BOE)
 	&hx83102p_wuxga2000_dsi_vdo_boe_lcm_drv,
@@ -1326,8 +1325,6 @@ struct LCM_DRIVER *lcm_driver_list[] = {
 	&nt36672c_fhdp_dsi_vdo_60hz_shenchao_lcm_drv,
 #endif
 
-=======
->>>>>>> f517a6939682 (drivers/misc/mediatek/lcm: import minified OEM changes)
 #if defined(NT36672C_FHDP_DSI_VDO_90HZ_SHENCHAO)
 	&nt36672c_fhdp_dsi_vdo_90hz_shenchao_lcm_drv,
 #endif
@@ -1335,7 +1332,6 @@ struct LCM_DRIVER *lcm_driver_list[] = {
 #if defined(NT36672C_FHDP_DSI_VDO_90HZ_SHENCHAO_6382)
 	&nt36672c_fhdp_dsi_vdo_90hz_shenchao_6382_lcm_drv,
 #endif
-<<<<<<< HEAD
 
 #if defined(NT36672C_FHDP_DSI_VDO_120HZ_SHENCHAO_6382)
 	&nt36672c_fhdp_dsi_vdo_120hz_shenchao_6382_lcm_drv,
@@ -1344,8 +1340,6 @@ struct LCM_DRIVER *lcm_driver_list[] = {
 #if defined(R66451_FHDP_DSI_CMD_TIANMA)
 	&r66451_fhdp_dsi_cmd_tianma_lcm_drv,
 #endif
-=======
->>>>>>> f517a6939682 (drivers/misc/mediatek/lcm: import minified OEM changes)
 };
 
 unsigned char lcm_name_list[][128] = {
