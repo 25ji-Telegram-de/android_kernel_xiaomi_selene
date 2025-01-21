@@ -100,6 +100,7 @@ static DEVICE_ATTR_RW(imsg_log_level);
 static DEVICE_ATTR_RO(imsg_log_level);
 #endif
 
+#ifdef CONFIG_MICROTRUST_TZ_LOG
 static ssize_t teei_log_level_show(struct device *cd,
 			struct device_attribute *attr, char *buf)
 {
@@ -129,6 +130,7 @@ static ssize_t teei_log_level_store(struct device *dev,
 	return len;
 }
 static DEVICE_ATTR_RW(teei_log_level);
+#endif
 
 
 #define DRIVER_LOADER_HOSTNAME "bta_loader"
@@ -637,7 +639,9 @@ static struct device_attribute *attr_list[] = {
 #ifdef CONFIG_MICROTRUST_TZDRIVER_DYNAMICAL_DEBUG
 		&dev_attr_tzdriver_dynamical_debug,
 #endif
+#ifdef CONFIG_MICROTRUST_TZ_LOG
 		&dev_attr_teei_log_level,
+#endif
 		NULL
 };
 
