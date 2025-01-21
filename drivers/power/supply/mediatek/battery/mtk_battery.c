@@ -587,7 +587,6 @@ static int battery_get_property(struct power_supply *psy,
 	int fgcurrent = 0;
 	bool b_ischarging = 0;
 	int input_suspend;
-	int qmax = 5020 * 1000;
 	u32 type;
 	static struct charger_device *primary_charger;
 	/* Huaqin add for HQ-124361 by miaozhichao at 2021/5/14 start */
