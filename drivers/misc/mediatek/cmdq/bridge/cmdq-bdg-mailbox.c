@@ -23,6 +23,10 @@
 #include "cmdq_helper_ext.h"
 #endif
 
+/* Huaqin modify for HQ-145948 by liunianliang at 2021/07/13 start */
+#define CMDQ_IRQ_MASK			GENMASK(CMDQ_THR_MAX_COUNT - 1, 0)
+/* Huaqin modify for HQ-145948 by liunianliang at 2021/07/13 end */
+
 #define SYSREG_IRQ_CTRL2	0x1c
 #define SYSREG_IRQ_MSK_CLR	0x74
 
@@ -374,7 +378,6 @@ static inline u32 cmdq_bdg_dump_thread(struct cmdq_thread *thread)
 #if IS_ENABLED(CONFIG_MTK_CMDQ_V3)
 void cmdq_bdg_dump_handle(struct cmdqRecStruct *rec, const char *tag)
 {
-#if IS_ENABLED(CONFIG_MTK_CMDQ_V3)
 	struct cmdq_client *client = (struct cmdq_client *)rec->pkt->cl;
 	u32 pc, base;
 
@@ -388,9 +391,6 @@ void cmdq_bdg_dump_handle(struct cmdqRecStruct *rec, const char *tag)
 			((pc - SYSBUF_BASE) / CMDQ_SYSBUF_SIZE);
 		cmdq_bdg_dump_sysbuf(base, pc - base + CMDQ_INST_SIZE);
 	}
-#else
-	cmdq_msg("%s: rec:%p CMDQ_V3 not support", __func__, ptr);
-#endif
 }
 EXPORT_SYMBOL(cmdq_bdg_dump_handle);
 #endif
@@ -528,7 +528,8 @@ s32 cmdq_bdg_irq_handler(void)
 		return IRQ_NONE;
 
 	ret = IRQ_HANDLED;
-	for_each_clear_bit(bit, &irq, 32) {
+	/* Huaqin modify for HQ-145948 by liunianliang at 2021/07/13 start */
+	for_each_clear_bit(bit, &irq, fls(CMDQ_IRQ_MASK)) {
 		thread = &cmdq->thread[bit];
 		cmdq_msg("%s: bit:%d thread:%u occupied:%d",
 			__func__, bit, thread->idx, thread->occupied);
@@ -539,6 +540,7 @@ s32 cmdq_bdg_irq_handler(void)
 		}
 		cmdq_bdg_thread_irq_handler(thread);
 	}
+	/* Huaqin modify for HQ-145948 by liunianliang at 2021/07/13 end */
 
 	spi_write_reg(cmdq->base_pa + CMDQ_THR_IRQ_FLAG, UINT_MAX);
 	cmdq_msg("%s: cmdq:%pa usage:%#x irq:%#x:%#x",
