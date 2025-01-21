@@ -12,7 +12,7 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include/
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/$(MTK_PLATFORM)/
 ccflags-y += -I$(srctree)/drivers/devfreq/
-subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/teei/300/tz_driver/include
-subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/teei/300/common/include/
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/teei/400/tz_driver/include
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/teei/400/common/include/
 obj-$(CONFIG_FPC_FINGERPRINT)	+= fpc1022_tee.o
 
