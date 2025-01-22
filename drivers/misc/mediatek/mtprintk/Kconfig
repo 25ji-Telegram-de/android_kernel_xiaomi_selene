@@ -1,7 +1,7 @@
 
 config PRINTK_MT_PREFIX
 	bool "Prefix cpu_id/status/pid/process_name to each kernel log"
-	default y
+	default n
 	help
 	  PRINTK_MT_PREFIX which is used to control whether to show
 	  process information about this log.
@@ -11,7 +11,7 @@ config PRINTK_MT_PREFIX
 config MTK_PRINTK_UART_CONSOLE
 	bool "MTK printk UART controller"
 	depends on MEDIATEK_SOLUTION
-	default y
+	default n
 	help
 	  MTK_PRINTK_UART_CONSOLE which is used to control whether to
 	  control printk to uart console.  when boot up finish
@@ -20,7 +20,7 @@ config MTK_PRINTK_UART_CONSOLE
 
 config LOG_TOO_MUCH_WARNING
 	bool "printk too much warning"
-	default y
+	default n
 	depends on PRINTK_MT_PREFIX
 	help
 	  LOG_TOO_MUCH_WARNING which is used to control whether to
@@ -40,7 +40,7 @@ config LOG_TOO_MUCH_DETECT_GAP
 
 config CONSOLE_LOCK_DURATION_DETECT
 	bool "Console lock duration detection"
-	default y
+	default n
 	help
 	  When one cpu exec console_unlock, it may be writing to console for long time
 	  if log is too much. This may Trigger HWT.
