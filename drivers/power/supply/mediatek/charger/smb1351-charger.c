@@ -3129,6 +3129,10 @@ static int smb1351_charger_probe(struct i2c_client *client,
 	chip->is_connect  = false;
 	chip->thermal_status = TEMP_BELOW_RANGE;
 	chip->rerun_apsd_count = 0;
+	rc = smb_chip_get_version(chip);
+	if (rc < 0) {
+		return -ENOMEM;
+	}
 
 	mutex_init(&chip->chgdet_lock);
 	i2c_set_clientdata(client, chip);
