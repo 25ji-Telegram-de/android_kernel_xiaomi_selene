@@ -1193,7 +1193,6 @@ static ssize_t gf_debug_store(struct device *dev,
 			struct device_attribute *attr, const char *buf, size_t count)
 {
 	struct gf_device *gf_dev =  dev_get_drvdata(dev);
-	int retval = 0;
 	unsigned char rx_test[10] = {0};
 
 	u8 flag = 0;
@@ -1213,7 +1212,7 @@ static ssize_t gf_debug_store(struct device *dev,
 		gf_debug(INFO_LOG, "%s: parameter is -10, gf init start===============\n", __func__);
 
 		gf_irq_gpio_cfg(gf_dev);
-		retval = request_threaded_irq(gf_dev->irq, NULL, gf_irq,
+		request_threaded_irq(gf_dev->irq, NULL, gf_irq,
 				IRQF_TRIGGER_RISING | IRQF_ONESHOT, dev_name(&(gf_dev->spi->dev)), gf_dev);
 		gf_dev->irq_count = 1;
 		gf_disable_irq(gf_dev);
