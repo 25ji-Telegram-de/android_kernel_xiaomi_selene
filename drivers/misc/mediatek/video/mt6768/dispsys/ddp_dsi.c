@@ -6677,22 +6677,6 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module,
 				&DSI_REG[dsi_i]->DSI_START, 0);
 			DSI_OUTREG32(cmdq_trigger_handle,
 				&DSI_REG[dsi_i]->DSI_START, 1);
-			if (dsi_i == 0) {
-				DSI_POLLREG32(cmdq_trigger_handle,
-					&DSI_REG[dsi_i]->DSI_INTSTA,
-					0x80000000, 0);
-			}
-
-			DSI_OUTREG32(cmdq_trigger_handle,
-				&DSI_CMDQ_REG[dsi_i]->data[0], AS_UINT32(&t0));
-
-			DSI_OUTREG32(cmdq_trigger_handle,
-				&DSI_REG[dsi_i]->DSI_CMDQ_SIZE, 1);
-
-			DSI_OUTREG32(cmdq_trigger_handle,
-				&DSI_REG[dsi_i]->DSI_START, 0);
-			DSI_OUTREG32(cmdq_trigger_handle,
-				&DSI_REG[dsi_i]->DSI_START, 1);
 
 			if (dsi_i == 0) {
 				DSI_POLLREG32(cmdq_trigger_handle,

@@ -5215,7 +5215,7 @@ int bdg_mipi_clk_change(int msg, int en)
 	unsigned int dsi_hbp = 0; /* adaptive HBP value */
 
 	if (en) {
-		data_rate = 749;
+		data_rate = 750;
 		dsi_hbp = 0x20;
 	} else {
 		data_rate = 760;

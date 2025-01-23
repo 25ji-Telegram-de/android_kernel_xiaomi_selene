@@ -8829,8 +8829,8 @@ int primary_display_setlcm_cmd(unsigned int *lcm_cmd, unsigned int *lcm_count,
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_set_cmd,
 		MMPROFILE_FLAG_START, 0, 0);
 
-	_primary_path_switch_dst_unlock();
-	_primary_path_unlock(__func__);
+	_primary_path_switch_dst_lock();
+	_primary_path_lock(__func__);
 
 	if (pgc->state == DISP_SLEPT) {
 		DISPCHECK("Sleep State set backlight invalid\n");
