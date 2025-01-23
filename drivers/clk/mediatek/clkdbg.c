@@ -2212,7 +2212,6 @@ static const struct cmd_fn common_cmds[] = {
 	CMDFN("disable_unprepare_provider", clkdbg_disable_unprepare_provider),
 	CMDFN("set_parent", clkdbg_set_parent),
 	CMDFN("set_rate", clkdbg_set_rate),
-#if defined(CONFIG_MTK_ENG_BUILD)
 	CMDFN("reg_read", clkdbg_reg_read),
 	CMDFN("reg_write", clkdbg_reg_write),
 	CMDFN("reg_set", clkdbg_reg_set),
