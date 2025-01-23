@@ -342,6 +342,7 @@ int do_esd_check_eint(void)
 
 	primary_display_switch_esd_mode(GPIO_DSI_MODE);
 
+	return ret;
 #endif
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
 /* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
