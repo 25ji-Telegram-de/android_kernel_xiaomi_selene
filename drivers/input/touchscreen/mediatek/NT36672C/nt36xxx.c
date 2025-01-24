@@ -821,13 +821,7 @@ void get_tp_info(void)
 {
 	nvt_get_fw_info();
 
-	if (is_ft_lcm == 0) {
-		sprintf(tp_version_info, "[Vendor]Tianma,[TP-IC]:NT36672,[FW]0x%x,PID=%04X\n", tp_fw_version, ts->nvt_pid);
-	} else if (is_ft_lcm == 1) {
-		sprintf(tp_version_info, "[Vendor]Dijing,[TP-IC]:NT36672,[FW]0x%x,PID=%04X\n", tp_fw_version, ts->nvt_pid);
-	} else if (is_ft_lcm == 3) {
-		sprintf(tp_version_info, "[Vendor]Dijing,[TP-IC]:NT36672D,[FW]0x%x,PID=%04X\n", tp_fw_version, ts->nvt_pid);
-	} else if (is_ft_lcm == 4) {
+	if (is_ft_lcm == 4) {
 		sprintf(tp_version_info, "[Vendor]Tianma,[TP-IC]:NT36672C,[FW]0x%x,PID=%04X\n", tp_fw_version, ts->nvt_pid);
 	} else if (is_ft_lcm == 5) {
 		sprintf(tp_version_info, "[Vendor]Truly,[TP-IC]:NT36672C,[FW]0x%x,PID=%04X\n", tp_fw_version, ts->nvt_pid);
@@ -2038,22 +2032,7 @@ int nvt_remove_sysfs(struct spi_device *client)
 int tp_compare_ic(void)
 {
 	NVT_LOG("tp_compare_ic in!!");
-	if (is_ft_lcm == 0) {
-		BOOT_UPDATE_FIRMWARE_NAME = "nvt_tm_fw.bin";
-		MP_UPDATE_FIRMWARE_NAME = "nvt_tm_mp.bin";
-		NVT_LOG("match nt36672A_fhdp_dsi_vdo_tianma_j19_lcm_drv");
-		return 0;
-	} else if (is_ft_lcm == 1) {
-		BOOT_UPDATE_FIRMWARE_NAME = "nvt_dj_fw.bin";
-		MP_UPDATE_FIRMWARE_NAME = "nvt_dj_mp.bin";
-		NVT_LOG("match nt36672A_fhdp_dsi_vdo_dijing_j19_lcm_drv");
-		return 0;
-	} else if (is_ft_lcm == 3) {
-		BOOT_UPDATE_FIRMWARE_NAME = "nvt_dj_72d_fw.bin";
-		MP_UPDATE_FIRMWARE_NAME = "nvt_dj_72d_mp.bin";
-		NVT_LOG("match nt36672D_fhdp_dsi_vdo_dijing_j19_lcm_drv");
-		return 0;
-	} else if (is_ft_lcm == 4) {
+	if (is_ft_lcm == 4) {
 		BOOT_UPDATE_FIRMWARE_NAME = "nt36672c_tm_01_ts_fw.bin";
 		MP_UPDATE_FIRMWARE_NAME = "nt36672c_tm_01_ts_mp.bin";
 		NVT_LOG("match dsi_panel_k19a_36_02_0a_dsc_vdo_lcm_drv");
@@ -3136,19 +3115,7 @@ static struct spi_driver nvt_spi_driver = {
 /* Huaqin modify for HQ-123470 by shujiawang at 2021/03/29 start */
 int __init is_lcm_detect(char *str)
 {
-	if (!(strcmp(str, "nt36672A_fhdp_dsi_vdo_tianma_j19_lcm_drv"))) {
-		is_ft_lcm = 0;
-		NVT_LOG("Func:%s is_ft 0:%d", __func__, is_ft_lcm);
-	}else if (!(strcmp(str, "nt36672A_fhdp_dsi_vdo_dijing_j19_lcm_drv"))) {
-		is_ft_lcm = 1;
-		NVT_LOG("Func:%s is_ft 1:%d", __func__, is_ft_lcm);
-	}else if (!(strcmp(str, "ft8719_fhdp_dsi_vdo_huaxing_j19_lcm_drv"))) {
-		is_ft_lcm = 2;
-		NVT_LOG("Func:%s is_ft 2:%d", __func__, is_ft_lcm);
-	}else if (!(strcmp(str, "nt36672D_fhdp_dsi_vdo_dijing_j19_lcm_drv"))) {
-		is_ft_lcm = 3;
-		NVT_LOG("Func:%s is_ft 3:%d", __func__, is_ft_lcm);
-	}else if (!(strcmp(str, "dsi_panel_k19a_36_02_0a_dsc_vdo_lcm_drv"))) {
+	if (!(strcmp(str, "dsi_panel_k19a_36_02_0a_dsc_vdo_lcm_drv"))) {
 		is_ft_lcm = 4;
 		NVT_LOG("Func:%s is_ft 4:%d", __func__, is_ft_lcm);
 	}else if (!(strcmp(str, "dsi_panel_k19a_43_02_0b_dsc_vdo_lcm_drv"))) {
