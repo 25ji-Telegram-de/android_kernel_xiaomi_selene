@@ -5686,11 +5686,11 @@ int primary_display_resume(void)
 		primary_display_dynfps_chg_fps(last_cfg);
 	}
 #endif
+#endif
 done:
 	primary_set_state(DISP_ALIVE);
 #if 0 //def CONFIG_TRUSTONIC_TRUSTED_UI
 	switch_set_state(&disp_switch_data, DISP_ALIVE);
-#endif
 #endif
 
 	DISPCHECK("done. begin\n");
@@ -8772,11 +8772,9 @@ int _set_lcm_cmd_by_cmdq(unsigned int *lcm_cmd, unsigned int *lcm_count,
 		mmprofile_log_ex(ddp_mmp_get_events()->primary_set_cmd,
 			MMPROFILE_FLAG_PULSE, 1, 2);
 		cmdqRecReset(cmdq_handle_lcm_cmd);
-		_cmdq_insert_wait_frame_done_token_mira(cmdq_handle_lcm_cmd);
 		disp_lcm_set_lcm_cmd(pgc->plcm, cmdq_handle_lcm_cmd, lcm_cmd,
 			lcm_count, lcm_value);
-		/*Async flush by cmdq*/
-		_cmdq_flush_config_handle_mira(cmdq_handle_lcm_cmd, 0);
+		_cmdq_flush_config_handle_mira(cmdq_handle_lcm_cmd, 1);
 		DISPCHECK("[CMD]%s ret=%d\n", __func__, ret);
 	} else {
 		mmprofile_log_ex(ddp_mmp_get_events()->primary_set_bl,

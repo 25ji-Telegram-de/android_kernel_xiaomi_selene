@@ -1537,6 +1537,11 @@ int disp_lcm_set_hw_info(struct disp_lcm_handle *plcm)
 	struct LCM_DRIVER *lcm_drv = NULL;
 
 	DISPFUNC();
+	if (!_is_lcm_inited(plcm)) {
+		DISPERR("lcm_drv is null\n");
+		return -1;
+	}
+
 	lcm_drv = plcm->drv;
 	if (lcm_drv->set_hw_info) {
 		lcm_drv->set_hw_info();

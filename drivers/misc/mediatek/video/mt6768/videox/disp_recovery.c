@@ -323,6 +323,9 @@ int do_esd_check_eint(void)
 	atomic_set(&esd_ext_te_event, 0);
 
 	disable_irq(te_irq);
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+	return ret || g_trigger_disp_esd_recovery;
+/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 #else
 	int ret = 0;
 	mmp_event mmp_te = ddp_mmp_get_events()->esd_extte;
@@ -345,9 +348,6 @@ int do_esd_check_eint(void)
 	return ret;
 #endif
 /* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
-/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
-	return ret || g_trigger_disp_esd_recovery;
-/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 }
 
 int do_esd_check_dsi_te(void)
@@ -776,6 +776,7 @@ static int primary_display_check_recovery_worker_kthread(void *data)
 			DISPERR(
 				"[ESD]LCM recover fail. Try time:%d. Disable esd check\n",
 				esd_try_cnt);
+			primary_display_esd_check_enable(0);
 		} else if (recovery_done == 1) {
 			DISPCHECK("[ESD]esd recovery success\n");
 			recovery_done = 0;
@@ -889,6 +890,11 @@ int primary_display_esd_recovery(void)
 	/*after dsi_stop, we should enable the dsi basic irq.*/
 	dsi_basic_irq_enable(DISP_MODULE_DSI0, NULL);
 	disp_lcm_suspend(primary_get_lcm());
+	if (primary_get_lcm()->drv->suspend_power) {
+		primary_get_lcm()->drv->suspend_power();
+	} else {
+		printk("[%s]: ESD recovery,lcm suspend power fail!\n", __func__);
+	}
 	DISPCHECK("[POWER]lcm suspend[end]\n");
 
 	mmprofile_log_ex(mmp_r, MMPROFILE_FLAG_PULSE, 0, 7);
