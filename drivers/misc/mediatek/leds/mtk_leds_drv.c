@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -142,20 +143,15 @@ int setMaxbrightness(int max_level, int enable)
 
 		}
 	}
-	printk("[%s]:--lyd_thmal --------level = %d\n", __func__, max_level);
 #else
 	LEDS_DRV_DEBUG("%s go through AAL\n", __func__);
-	printk("[%s]: --lyd_thmal, set max_level = %d\n", __func__, max_level);
-	printk("[%s]: --lyd_thmal, set thermal_current_brightness  = %d\n", __func__, thermal_current_brightness);
 	disp_bls_set_max_backlight(((((1 << LED_INTERNAL_LEVEL_BIT_CNT) -
 				      1) * max_level + 127) / 2047));
 	if (thermal_current_brightness >= max_level) {
-		//disp_aal_notify_backlight_changed(thermal_current_brightness);
 		disp_aal_notify_backlight_changed(max_level);
 	} else if ((thermal_current_brightness > 0) && (thermal_current_brightness < max_level)) {
 		disp_aal_notify_backlight_changed(thermal_current_brightness);
 	}
-
 #endif
 	return 0;
 }
