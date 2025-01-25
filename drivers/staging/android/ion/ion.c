@@ -1816,6 +1816,12 @@ static int ion_dma_buf_end_cpu_access(struct dma_buf *dmabuf,
 
 	return 0;
 }
+#else
+static int ion_dma_buf_begin_cpu_access(struct dma_buf *dmabuf,
+					enum dma_data_direction direction)
+{
+	return 0;
+}
 
 static int ion_dma_buf_end_cpu_access(struct dma_buf *dmabuf,
 				      enum dma_data_direction direction)
