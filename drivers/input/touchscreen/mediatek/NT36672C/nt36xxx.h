@@ -138,11 +138,7 @@ struct nvt_ts_data {
 	uint16_t addr;
 	int8_t phys[32];
 #if defined(CONFIG_FB)
-#ifdef _MSM_DRM_NOTIFY_H_
-	struct notifier_block drm_notif;
-#else
 	struct notifier_block fb_notif;
-#endif
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 	struct early_suspend early_suspend;
 #endif
