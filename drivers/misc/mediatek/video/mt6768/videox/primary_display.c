@@ -109,7 +109,7 @@
 
 #define FRM_UPDATE_SEQ_CACHE_NUM (DISP_INTERNAL_BUFFER_COUNT+1)
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 start */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
 #define _SUPPORT_LCM_BOOST_
 #define SWITCH_FPS_IN_WORKQUEUE
 
@@ -117,40 +117,23 @@
 #include "mtk_ppm_api.h"
 #include "cpu_ctrl.h"
 #include <linux/pm_qos.h>
-#include <linux/time.h>
 #include "helio-dvfsrc-opp.h"
 #include "mtk_boot_common.h"
 
 #define BSP_CERVINO_CLUSTER_NUMBERS 2
-#define BGD_DEINT_TIMEOUT_TIME 30
 
 static struct ppm_limit_data fb_blank_freq_to_set[BSP_CERVINO_CLUSTER_NUMBERS];
 static struct ppm_limit_data fb_blank_freq_to_release[BSP_CERVINO_CLUSTER_NUMBERS];
 static struct pm_qos_request fb_blank_ddr_req;
 static int fb_boost_start(void);
 static int fb_boost_release(void);
-
-static struct task_struct *bdg_status_check_task;
-static struct timeval begin, end;
-static wait_queue_head_t _bdg_check_task_wq;
-static atomic_t _bdg_check_task_wakeup = ATOMIC_INIT(0);
-static bool bdg_should_init = 1;
-static int is_test_mode = 0;
-static int bdg_timeout = BGD_DEINT_TIMEOUT_TIME;
-
-#ifdef CONFIG_PM_SLEEP
-static struct wakeup_source *bdg_ws;
-#endif
-
-void bdg_check_enable(int enable);
-
 #endif
 
 #ifdef SWITCH_FPS_IN_WORKQUEUE
 static struct work_struct sWork;
 static struct workqueue_struct *fb_resume_workqueue;
 #endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 end */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
 
 static struct disp_internal_buffer_info
 	*decouple_buffer_info[DISP_INTERNAL_BUFFER_COUNT];
@@ -300,29 +283,8 @@ void lock_primary_wake_lock(bool lock)
 
 }
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 start */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 start */
 #ifdef _SUPPORT_LCM_BOOST_
-static int _check_progress_in_task(char *name)
-{
-	struct task_struct *task;
-	int ret = 0;
-
-	if (!name)
-		return ret;
-
-	read_lock(&tasklist_lock);
-	for_each_process(task) {
-		if (task && (strncmp(task->comm, name, strlen(name)) == 0)) {
-			DISPMSG("[XTEST_FLAG] %s found pid:%d.\n",
-					task->comm, task->pid);
-			ret = task->pid;
-			break;
-		}
-	}
-	read_unlock(&tasklist_lock);
-	return ret;
-}
-
 static int fb_boost_start(void)
 {
 	int i, cluster_num;
@@ -368,83 +330,6 @@ static int fb_boost_release(void)
 
 	return -1;
 }
-
-static int bdg_check_worker_kthread(void *data)
-{
-	struct sched_param param = {.sched_priority = 99 };
-	int ret = 0;
-	unsigned long val;
-
-	DISPFUNC();
-	sched_setscheduler(current, SCHED_RR, &param);
-
-	while (1) {
-		msleep(2000); /* 2s */
-		ret = wait_event_interruptible(_bdg_check_task_wq,
-			atomic_read(&_bdg_check_task_wakeup));
-		if (ret < 0) {
-			DISPINFO("[BDG]check thread waked up accidently\n");
-			continue;
-		}
-
-		set_current_state(TASK_RUNNING);
-
-#ifdef CONFIG_PM_SLEEP
-		if (bdg_ws)
-			__pm_stay_awake(bdg_ws);
-#endif
-
-		do_gettimeofday(&end);
-		val = end.tv_sec - begin.tv_sec;
-
-		DISPMSG("display suspend time is %lu s, bdg_timeout is %d\n", val, bdg_timeout);
-
-		if (val >= bdg_timeout && bdg_is_bdg_connected() == 1) {
-			DISPMSG("after suspend %lu s, deint bdg...\n", val);
-			bdg_common_deinit(DISP_BDG_DSI0, NULL);
-			bdg_should_init = 1;
-			bdg_check_enable(0);
-#ifdef CONFIG_PM_SLEEP
-			if (bdg_ws)
-				__pm_relax(bdg_ws);
-#endif
-		}
-
-		if (kthread_should_stop())
-			break;
-	}
-
-	return 0;
-}
-
-void bdg_check_enable(int enable)
-{
-	DISPMSG("[BDG]%s, enable = %d\n", __func__, enable);
-	if (enable) {
-		if (is_test_mode)
-			bdg_timeout = 1;
-		atomic_set(&_bdg_check_task_wakeup, 1);
-		wake_up_interruptible(&_bdg_check_task_wq);
-	} else {
-		atomic_set(&_bdg_check_task_wakeup, 0);
-	}
-	do_gettimeofday(&begin);
-}
-
-
-void bdg_status_check_init(void)
-{
-	bdg_status_check_task =
-		kthread_create(bdg_check_worker_kthread, NULL, "bdg_check");
-	init_waitqueue_head(&_bdg_check_task_wq);
-
-	wake_up_process(bdg_status_check_task);
-
-	bdg_ws = wakeup_source_register(NULL, "bdg_ws");
-	if (!bdg_ws)
-		DISPMSG("bdg wakelock register fail!\n");
-}
-
 #endif
 
 #ifdef SWITCH_FPS_IN_WORKQUEUE
@@ -474,7 +359,7 @@ void fb_resume_queue_work(void)
 	queue_work(fb_resume_workqueue, &sWork);
 }
 #endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 end */
+/* Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end */
 
 static int smart_ovl_try_switch_mode_nolock(void);
 
@@ -4437,14 +4322,6 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 	primary_display_init_multi_cfg_info();
 #endif
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 start */
-#ifdef _SUPPORT_LCM_BOOST_
-	if (bdg_is_bdg_connected() == 1) {
-		bdg_status_check_init();
-	}
-#endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 end */
-
 	DISPCHECK("%s done\n", __func__);
 
 done:
@@ -5122,13 +4999,6 @@ int primary_display_suspend(void)
 	if (bdg_is_bdg_connected() == 1)
 		bdg_common_deinit(DISP_BDG_DSI0, NULL);
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 start */
-#ifndef _SUPPORT_LCM_BOOST_
-	if (bdg_is_bdg_connected() == 1)
-		bdg_common_deinit(DISP_BDG_DSI0, NULL);
-#endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 end */
-
 done:
 	primary_set_state(DISP_SLEPT);
 
@@ -5160,12 +5030,6 @@ done:
 	fb_boost_release();
 #endif
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 start */
-#ifdef _SUPPORT_LCM_BOOST_
-	is_test_mode = _check_progress_in_task("id.cts.verifier");
-	bdg_check_enable(1);
-#endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/07/17 end */
 	return ret;
 }
 
@@ -5287,12 +5151,6 @@ int primary_display_resume(void)
 	fb_boost_start();
 #endif
 
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 start */
-#ifdef _SUPPORT_LCM_BOOST_
-	bdg_check_enable(0);
-#endif
-/* Huaqin add for HQ-131657 by liunianliang at 2021/06/30 end */
-
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume,
 		MMPROFILE_FLAG_START, 0, 0);
 	_primary_path_lock(__func__);
@@ -5339,29 +5197,12 @@ int primary_display_resume(void)
 		if (dsi_force_config)
 			DSI_ForceConfig(1);
 	}
-/* Huaqin modify for HQ-147027 by caogaojie at 2021/07/29 start */
-#ifdef _SUPPORT_LCM_BOOST_
-	if (bdg_is_bdg_connected() == 1 && !bdg_should_init) {
-               data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
-               bdg_tx_init(DISP_BDG_DSI0, data_config, NULL);
-	}
-#endif
-/* Huaqin modify for HQ-147027 by caogaojie at 2021/07/29 end */
 
-/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/30 start */
-#ifdef _SUPPORT_LCM_BOOST_
-	if (bdg_is_bdg_connected() == 1 && bdg_should_init) {
-#else
 	if (bdg_is_bdg_connected() == 1) {
-#endif
 		data_config = dpmgr_path_get_last_config(pgc->dpmgr_handle);
 		bdg_common_init(DISP_BDG_DSI0, data_config, NULL);
 		mipi_dsi_rx_mac_init(DISP_BDG_DSI0, data_config, NULL);
-#ifdef _SUPPORT_LCM_BOOST_
-		bdg_should_init = 0;
-#endif
 	}
-/* Huaqin modify for HQ-131657 by liunianliang at 2021/06/30 start */
 
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
 	/*DynFPS*/
