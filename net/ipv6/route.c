@@ -1422,6 +1422,7 @@ static void ip6_negative_advice(struct sock *sk,
 	struct rt6_info *rt = (struct rt6_info *) dst;
 
 	if (rt->rt6i_flags & RTF_CACHE) {
+		rcu_read_lock();
 		if (rt6_check_expired(rt)) {
 			/* counteract the dst_release() in sk_dst_reset() */
 			dst_hold(dst);
@@ -1429,6 +1430,7 @@ static void ip6_negative_advice(struct sock *sk,
 
 			ip6_del_rt(rt);
 		}
+		rcu_read_unlock();
 		return;
 	}
 	sk_dst_reset(sk);
@@ -1822,6 +1824,7 @@ out:
 static int ip6_convert_metrics(struct mx6_config *mxc,
 			       const struct fib6_config *cfg)
 {
+	struct net *net = cfg->fc_nlinfo.nl_net;
 	bool ecn_ca = false;
 	struct nlattr *nla;
 	int remaining;
@@ -1847,7 +1850,7 @@ static int ip6_convert_metrics(struct mx6_config *mxc,
 			char tmp[TCP_CA_NAME_MAX];
 
 			nla_strlcpy(tmp, nla, sizeof(tmp));
-			val = tcp_ca_get_key_by_name(tmp, &ecn_ca);
+			val = tcp_ca_get_key_by_name(net, tmp, &ecn_ca);
 			if (val == TCP_CA_UNSPEC)
 				goto err;
 		} else {

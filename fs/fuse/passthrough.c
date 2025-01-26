@@ -16,7 +16,7 @@ struct fuse_aio_req {
 };
 
 static inline void kiocb_clone(struct kiocb *kiocb, struct kiocb *kiocb_src,
-					struct file *filp)
+			       struct file *filp)
 {
 	*kiocb = (struct kiocb){
 		.ki_filp = filp,
@@ -37,8 +37,8 @@ static void fuse_file_accessed(struct file *dst_file, struct file *src_file)
 	dst_inode = file_inode(dst_file);
 	src_inode = file_inode(src_file);
 
-	if ((!timespec_equal(&dst_inode->i_mtime, &src_inode->i_mtime) ||
-	     !timespec_equal(&dst_inode->i_ctime, &src_inode->i_ctime))) {
+	if ((!timespec64_equal(&dst_inode->i_mtime, &src_inode->i_mtime) ||
+	     !timespec64_equal(&dst_inode->i_ctime, &src_inode->i_ctime))) {
 		dst_inode->i_mtime = src_inode->i_mtime;
 		dst_inode->i_ctime = src_inode->i_ctime;
 	}
@@ -57,24 +57,6 @@ static void fuse_copyattr(struct file *dst_file, struct file *src_file)
 	i_size_write(dst, i_size_read(src));
 }
 
-static inline rwf_t iocb_to_rw_flags(int ifl)
-{
-	rwf_t flags = 0;
-
-	if (ifl & IOCB_APPEND)
-		flags |= RWF_APPEND;
-	if (ifl & IOCB_DSYNC)
-		flags |= RWF_DSYNC;
-	if (ifl & IOCB_HIPRI)
-		flags |= RWF_HIPRI;
-	if (ifl & IOCB_NOWAIT)
-		flags |= RWF_NOWAIT;
-	if (ifl & IOCB_SYNC)
-		flags |= RWF_SYNC;
-
-	return flags;
-}
-
 static void fuse_aio_cleanup_handler(struct fuse_aio_req *aio_req)
 {
 	struct kiocb *iocb = &aio_req->iocb;
@@ -82,7 +64,7 @@ static void fuse_aio_cleanup_handler(struct fuse_aio_req *aio_req)
 
 	if (iocb->ki_flags & IOCB_WRITE) {
 		__sb_writers_acquired(file_inode(iocb->ki_filp)->i_sb,
-						SB_FREEZE_WRITE);
+				      SB_FREEZE_WRITE);
 		file_end_write(iocb->ki_filp);
 		fuse_copyattr(iocb_fuse->ki_filp, iocb->ki_filp);
 	}
@@ -102,7 +84,7 @@ static void fuse_aio_rw_complete(struct kiocb *iocb, long res, long res2)
 }
 
 ssize_t fuse_passthrough_read_iter(struct kiocb *iocb_fuse,
-					struct iov_iter *iter)
+				   struct iov_iter *iter)
 {
 	ssize_t ret;
 	const struct cred *old_cred;
@@ -116,7 +98,8 @@ ssize_t fuse_passthrough_read_iter(struct kiocb *iocb_fuse,
 	old_cred = override_creds(ff->passthrough.cred);
 	if (is_sync_kiocb(iocb_fuse)) {
 		ret = vfs_iter_read(passthrough_filp, iter, &iocb_fuse->ki_pos,
-							iocb_to_rw_flags(iocb_fuse->ki_flags));
+				    iocb_to_rw_flags(iocb_fuse->ki_flags,
+						     PASSTHROUGH_IOCB_MASK));
 	} else {
 		struct fuse_aio_req *aio_req;
 
@@ -142,7 +125,7 @@ out:
 }
 
 ssize_t fuse_passthrough_write_iter(struct kiocb *iocb_fuse,
-					struct iov_iter *iter)
+				    struct iov_iter *iter)
 {
 	ssize_t ret;
 	const struct cred *old_cred;
@@ -163,7 +146,8 @@ ssize_t fuse_passthrough_write_iter(struct kiocb *iocb_fuse,
 	if (is_sync_kiocb(iocb_fuse)) {
 		file_start_write(passthrough_filp);
 		ret = vfs_iter_write(passthrough_filp, iter, &iocb_fuse->ki_pos,
-							iocb_to_rw_flags(iocb_fuse->ki_flags));
+				     iocb_to_rw_flags(iocb_fuse->ki_flags,
+						      PASSTHROUGH_IOCB_MASK));
 		file_end_write(passthrough_filp);
 		if (ret > 0)
 			fuse_copyattr(fuse_filp, passthrough_filp);
@@ -222,8 +206,7 @@ ssize_t fuse_passthrough_mmap(struct file *file, struct vm_area_struct *vma)
 	return ret;
 }
 
-int fuse_passthrough_open(struct fuse_dev *fud,
-			  struct fuse_passthrough_out *pto)
+int fuse_passthrough_open(struct fuse_dev *fud, u32 lower_fd)
 {
 	int res;
 	struct file *passthrough_filp;
@@ -235,11 +218,7 @@ int fuse_passthrough_open(struct fuse_dev *fud,
 	if (!fc->passthrough)
 		return -EPERM;
 
-	/* This field is reserved for future implementation */
-	if (pto->len != 0)
-		return -EINVAL;
-
-	passthrough_filp = fget(pto->fd);
+	passthrough_filp = fget(lower_fd);
 	if (!passthrough_filp) {
 		pr_err("FUSE: invalid file descriptor for passthrough.\n");
 		return -EBADF;
