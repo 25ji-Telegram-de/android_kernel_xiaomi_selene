@@ -23,25 +23,9 @@
 #define DISP_LOG_PRINT(level, sub_module, fmt, args...)			\
 	dprec_logger_pr(DPREC_LOGGER_DEBUG, fmt, ##args)
 
-#define DISPINFO(string, args...)					\
-	do {								\
-		dprec_logger_pr(DPREC_LOGGER_DEBUG, string, ##args);	\
-		if (g_mobilelog) \
-			pr_debug("[DISP]"string, ##args);		\
-	} while (0)
-
-#define DISPMSG(string, args...)					\
-	do {								\
-		dprec_logger_pr(DPREC_LOGGER_DEBUG, string, ##args);	\
-		pr_debug("[DISP]"string, ##args);		\
-	} while (0)
-
-#define DISPCHECK(string, args...)					\
-	do {								\
-		dprec_logger_pr(DPREC_LOGGER_DEBUG, string, ##args);	\
-		pr_debug("[DISP]"string, ##args);		\
-	} while (0)
-
+#define DISPINFO(string, args...) ((void)0)
+#define DISPMSG(string, args...) ((void)0)
+#define DISPCHECK(string, args...) ((void)0)
 #define DISPWARN(string, args...)					\
 	do {								\
 		dprec_logger_pr(DPREC_LOGGER_ERROR, string, ##args);	\
@@ -56,43 +40,12 @@
 				__func__, __LINE__, ##args);		\
 	} while (0)
 
-#define DISPPR_FENCE(string, args...)					\
-	do {								\
-		dprec_logger_pr(DPREC_LOGGER_FENCE, string, ##args);	\
-		if (g_mobilelog)					\
-			pr_debug("fence/"string, ##args);		\
-	} while (0)
-
-#define DISPDBG(string, args...)					\
-	do {								\
-		if (ddp_debug_dbg_log_level()) {			\
-			DISPMSG(string, ##args);			\
-		}							\
-	} while (0)
-
-#define DISPFUNC()							\
-	do {								\
-		dprec_logger_pr(DPREC_LOGGER_DEBUG, "func|%s\n", __func__); \
-		if (g_mobilelog)					\
-			pr_debug("[DISP]func|%s\n", __func__);		\
-	} while (0)
-
-#define DISPFUNCSTART()							\
-	do {								\
-		dprec_logger_pr(DPREC_LOGGER_DEBUG, "func|%s START\n", __func__); \
-		if (g_mobilelog)					\
-			pr_info("[DISP]mt6382 %s start, line:%d", __func__, __LINE__);\
-	} while (0)
-
-#define DISPFUNCEND()							\
-	do {								\
-		dprec_logger_pr(DPREC_LOGGER_DEBUG, "func|%s END\n", __func__); \
-		if (g_mobilelog)					\
-			pr_info("[DISP]mt6382 %s end, line:%d", __func__, __LINE__);\
-	} while (0)
-
+#define DISPPR_FENCE(string, args...) ((void)0)
+#define DISPDBG(string, args...) ((void)0)
+#define DISPFUNC() ((void)0)
+#define DISPFUNCSTART() ((void)0)
+#define DISPFUNCEND() ((void)0)
 #define DISPDBGFUNC() DISPFUNC()
-
 #define DISPPR_HWOP(string, args...)
 
 #ifdef CONFIG_MTK_AEE_AED
@@ -126,13 +79,6 @@
 #endif
 #endif
 
-#define _DISP_PRINT_FENCE_OR_ERR(is_err, string, args...) \
-	do { \
-		if (is_err) \
-			DISPERR(string, ##args); \
-		else \
-			DISPPR_FENCE(string, ##args); \
-	} while (0)
-
+#define _DISP_PRINT_FENCE_OR_ERR(is_err, string, args...)  ((void)0)
 
 #endif /* __DISP_DRV_LOG_H__ */
