@@ -44,7 +44,6 @@ struct tee_shm {
 	struct list_head link;
 	phys_addr_t paddr;
 	void *kaddr;
-	unsigned long uaddr;
 	size_t size;
 	struct dma_buf *dmabuf;
 	u32 flags;
