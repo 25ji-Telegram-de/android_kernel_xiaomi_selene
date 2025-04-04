@@ -66,3 +66,6 @@ config MTK_TYPEC_WATER_DETECT_BY_PCB
 	  If unsure, say N.
 
 source "drivers/misc/mediatek/typec/tcpc/Kconfig"
+# K19A-104 fusb302b bring up amend by fukiame at idk i dont rember start
+source "drivers/misc/mediatek/typec/fusb302b/Kconfig"
+# K19A-104 fusb302b bring up amend by fukiame at idk i dont rember end
