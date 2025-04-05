@@ -274,7 +274,7 @@ FSC_U32 platform_get_log_time(void)
     return platform_timestamp();
 }
 
-FSC_U32 platform_get_system_time()
+FSC_U32 platform_get_system_time(void)
 {
     return get_system_time_us();
 }
