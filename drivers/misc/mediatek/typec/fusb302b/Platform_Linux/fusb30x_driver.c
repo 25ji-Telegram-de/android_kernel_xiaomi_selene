@@ -27,10 +27,6 @@
 
 #include "fusb30x_driver.h"
 
-#ifdef CONFIG_DUAL_ROLE_USB_INTF
-#include <linux/usb/class-dual-role.h>
-#endif /* CONFIG_DUAL_ROLE_USB_INTF */
-
 #include <linux/power_supply.h>
 #include <mt-plat/mtk_boot.h>
 #include <linux/regulator/consumer.h>
@@ -81,13 +77,6 @@ static int fusb302_i2c_suspend(struct device* dev)
         }
         return 0;
 }
-
- enum dual_role_property fusb_drp_properties[] = {
-	DUAL_ROLE_PROP_SUPPORTED_MODES,
-	DUAL_ROLE_PROP_MODE,
-	DUAL_ROLE_PROP_PR,
-	DUAL_ROLE_PROP_DR,
-};
 
 int fusb30x_alert_status_clear(struct tcpc_device *tcpc,
 						uint32_t mask)
@@ -343,10 +332,6 @@ static int fusb30x_probe (struct i2c_client* client,
     struct regulator	*vbus = NULL;
     struct power_supply *usb_psy = NULL;
     struct tcpc_desc *desc = NULL;
-#ifdef CONFIG_DUAL_ROLE_USB_INTF
-	struct dual_role_phy_desc *dual_desc = NULL;
-	struct dual_role_phy_instance *dual_role = NULL;
-#endif
 
 	pr_info("FUSB - %s\n", __func__);
     if (!client) {
@@ -463,29 +448,6 @@ static int fusb30x_probe (struct i2c_client* client,
 	chip->tcpc->typec_attach_old = TYPEC_UNATTACHED;
 	chip->tcpc->typec_attach_new = TYPEC_UNATTACHED;
 
-#ifdef CONFIG_DUAL_ROLE_USB_INTF
-    if (IS_ENABLED(CONFIG_DUAL_ROLE_USB_INTF)) {
-		dual_desc = devm_kzalloc(&client->dev, sizeof(struct dual_role_phy_desc),
-					GFP_KERNEL);
-		if (!dual_desc) {
-			dev_err(&client->dev,
-				"%s: unable to allocate dual role descriptor\n",
-				__func__);
-			return -ENOMEM;
-		}
-		dual_desc->name = "otg_default";
-		dual_desc->supported_modes = DUAL_ROLE_SUPPORTED_MODES_DFP_AND_UFP;
-		dual_desc->get_property = dual_role_get_local_prop;
-		dual_desc->set_property = dual_role_set_prop;
-		dual_desc->properties = fusb_drp_properties;
-		dual_desc->num_properties = ARRAY_SIZE(fusb_drp_properties);
-		dual_desc->property_is_writeable = dual_role_is_writeable;
-		dual_role = devm_dual_role_instance_register(&client->dev, dual_desc);
-		dual_role->drv_data = client;
-		chip->dual_role = dual_role;
-		chip->dr_desc = dual_desc;
-	}
-#endif
      chip->usb_psy = usb_psy;
      chip->vbus = vbus;
      chip->is_vbus_present = FALSE;

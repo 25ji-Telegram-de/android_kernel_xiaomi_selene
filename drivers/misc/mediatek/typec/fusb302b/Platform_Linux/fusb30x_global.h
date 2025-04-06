@@ -83,10 +83,6 @@ struct fusb30x_chip                                 // Contains data required by
     struct power_supply  *usb_psy;
     struct regulator	*vbus;
     FSC_BOOL	is_vbus_present;
-#ifdef CONFIG_DUAL_ROLE_USB_INTF
-    struct dual_role_phy_instance *dual_role;
-    struct dual_role_phy_desc   *dr_desc;
-#endif
 	struct delayed_work reset_delay_work;
 	struct charger_consumer *chg1_consumer;
 };
