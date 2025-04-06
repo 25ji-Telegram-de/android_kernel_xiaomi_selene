@@ -49,6 +49,13 @@
 
 #define RT1711H_IRQ_WAKE_TIME	(500) /* ms */
 
+bool g_pd_is_present = false;
+
+bool get_pd_status(void)
+{
+       return g_pd_is_present;
+}
+
 struct rt1711_chip {
 	struct i2c_client *client;
 	struct device *dev;
