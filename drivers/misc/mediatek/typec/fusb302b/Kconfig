@@ -1,4 +1,4 @@
-config TYPEC_FUSB302
+config TCPC_FUSB302
     tristate "TYPEC_FUSB302 driver"
     depends on I2C
     help
