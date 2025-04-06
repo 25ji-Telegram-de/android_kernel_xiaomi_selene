@@ -5,5 +5,5 @@ obj-$(CONFIG_TCPC_CLASS) += tcpc/
 obj-$(CONFIG_MTK_USB_TYPEC_U3_MUX) += u3_switch/
 obj-$(CONFIG_MTK_USB_TYPEC_DP_MUX) += dp/
 # K19A-104 fusb302 bring up by wangchao at 2021/4/8 start
-obj-$(CONFIG_TYPEC_FUSB302) += fusb302b/
+obj-$(CONFIG_TCPC_FUSB302) += fusb302b/
 # K19A-104 fusb302 bring up by wangchao at 2021/4/8 end
