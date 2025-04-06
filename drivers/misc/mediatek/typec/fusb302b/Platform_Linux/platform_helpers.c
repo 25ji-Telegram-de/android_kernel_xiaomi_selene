@@ -27,10 +27,6 @@
 #include "modules/observer.h"
 #include "platform.h"
 
-#ifdef CONFIG_DUAL_ROLE_USB_INTF
-#include <linux/usb/class-dual-role.h>
-#endif /* CONFIG_DUAL_ROLE_USB_INTF */
-
 void fusb_init_event_handler(void);
 
 void stop_usb_host(struct fusb30x_chip* chip);
@@ -1398,164 +1394,6 @@ static void init_work_function(struct work_struct *delayed_work)
 
 /* add for platform system interface */
 
-#ifdef CONFIG_DUAL_ROLE_USB_INTF
-
-void fusb_force_source(struct dual_role_phy_instance *dual_role)
-{
-	struct fusb30x_chip* chip = fusb30x_GetChip();
-	pr_debug("FUSB - %s\n", __func__);
-	core_set_source(&chip->port);
-
-	if (dual_role)
-		dual_role_instance_changed(dual_role);
-}
-void fusb_force_sink(struct dual_role_phy_instance *dual_role)
-{
-	struct fusb30x_chip* chip = fusb30x_GetChip();
-	pr_debug("FUSB - %s\n", __func__);
-	core_set_sink(&chip->port);
-	if (dual_role)
-		dual_role_instance_changed(dual_role);
-}
-unsigned int fusb_get_dual_role_mode(void)
-{
-	struct fusb30x_chip* chip = fusb30x_GetChip();
-	int mode = DUAL_ROLE_PROP_MODE_NONE;
-
-	if (chip->port.CCPin != CCNone) {
-		if (chip->port.sourceOrSink == SOURCE) {
-			mode = DUAL_ROLE_PROP_MODE_DFP;
-			pr_debug("FUSB - %s DUAL_ROLE_PROP_MODE_DFP, mode = %d\n",
-					__func__, mode);
-		} else {
-			mode = DUAL_ROLE_PROP_MODE_UFP;
-			pr_debug("FUSB - %s DUAL_ROLE_PROP_MODE_UFP, mode = %d\n",
-					__func__, mode);
-		}
-	}
-	pr_debug("FUSB - %s mode = %d\n", __func__, mode);
-	return mode;
-}
-unsigned int fusb_get_dual_role_power(void)
-{
-	struct fusb30x_chip* chip = fusb30x_GetChip();
-	int current_pr = DUAL_ROLE_PROP_PR_NONE;
-
-	pr_debug("FUSB %s\n", __func__);
-
-	if (chip->port.CCPin != CCNone) {
-		if (chip->port.sourceOrSink == SOURCE) {
-			current_pr = DUAL_ROLE_PROP_PR_SRC;
-			pr_debug("FUSB - %s DUAL_ROLE_PROP_PR_SRC, current_pr = %d\n",
-					__func__, current_pr);
-		} else {
-			current_pr = DUAL_ROLE_PROP_PR_SNK;
-			pr_debug("FUSB - %s DUAL_ROLE_PROP_PR_SNK, current_pr = %d\n",
-					__func__, current_pr);
-		}
-	}
-	pr_debug("FUSB - %s current_pr = %d\n", __func__, current_pr);
-	return current_pr;
-}
-unsigned int fusb_get_dual_role_data(void)
-{
-	struct fusb30x_chip* chip = fusb30x_GetChip();
-	int current_dr = DUAL_ROLE_PROP_DR_NONE;
-
-	pr_debug("FUSB %s\n", __func__);
-
-	if (chip->port.CCPin != CCNone) {
-		if (chip->port.PolicyIsDFP) {
-			current_dr = DUAL_ROLE_PROP_DR_HOST;
-			pr_debug("FUSB - %s DUAL_ROLE_PROP_DR_HOST, current_dr = %d\n",
-					__func__, current_dr);
-		} else {
-			current_dr = DUAL_ROLE_PROP_DR_DEVICE;
-			pr_debug("FUSB - %s DUAL_ROLE_PROP_DR_DEVICE, current_dr = %d\n",
-					__func__, current_dr);
-		}
-	}
-	pr_debug("FUSB - %s current_dr = %d\n", __func__, current_dr);
-	return current_dr;
-}
-int dual_role_get_local_prop(struct dual_role_phy_instance *dual_role,
-		enum dual_role_property prop, unsigned int *val)
-{
-	unsigned int mode = DUAL_ROLE_PROP_MODE_NONE;
-	switch (prop) {
-	case DUAL_ROLE_PROP_MODE:
-		mode = fusb_get_dual_role_mode();
-		*val = mode;
-		break;
-	case DUAL_ROLE_PROP_PR:
-		mode = fusb_get_dual_role_power();
-		*val = mode;
-		break;
-	case DUAL_ROLE_PROP_DR:
-		mode = fusb_get_dual_role_data();
-		*val = mode;
-		break;
-	default:
-		pr_err("FUSB unsupported property %d\n", prop);
-		return -ENODATA;
-	}
-	pr_debug("FUSB %s + prop=%d, val=%d\n", __func__, prop, *val);
-	return 0;
-}
-int dual_role_set_prop(struct dual_role_phy_instance *dual_role,
-		enum dual_role_property prop, const unsigned int *val)
-{
-	struct fusb30x_chip* chip = fusb30x_GetChip();
-	unsigned int mode = fusb_get_dual_role_mode();
-
-	pr_debug("FUSB %s\n", __func__);
-
-	if (!chip) {
-		pr_err("FUSB %s - Error: Chip structure is NULL!\n", __func__);
-		return -1;
-	}
-	pr_debug("FUSB %s + prop=%d,val=%d,mode=%d\n",
-			__func__, prop, *val, mode);
-	switch (prop) {
-	case DUAL_ROLE_PROP_MODE:
-		if (*val != mode) {
-			if (mode == DUAL_ROLE_PROP_MODE_UFP)
-				fusb_force_source(dual_role);
-			else if (mode == DUAL_ROLE_PROP_MODE_DFP)
-				fusb_force_sink(dual_role);
-		}
-		break;
-	case DUAL_ROLE_PROP_PR:
-		pr_debug("FUSB - %s DUAL_ROLE_PROP_PR\n", __func__);
-		break;
-	case DUAL_ROLE_PROP_DR:
-		pr_debug("FUSB - %s DUAL_ROLE_PROP_DR\n", __func__);
-		break;
-	default:
-		pr_debug("FUSB - %s default case\n", __func__);
-		break;
-	}
-	return 0;
-}
-int dual_role_is_writeable(struct dual_role_phy_instance *dual_role,
-		enum dual_role_property prop)
-{
-	pr_debug("FUSB - %s\n", __func__);
-	switch (prop) {
-	case DUAL_ROLE_PROP_MODE:
-		return 1;
-		break;
-	case DUAL_ROLE_PROP_DR:
-	case DUAL_ROLE_PROP_PR:
-		return 0;
-		break;
-	default:
-		break;
-	}
-	return 1;
-}
-#endif
-
 void stop_usb_host(struct fusb30x_chip* chip)
 {
 	pr_info("FUSB - %s\n", __func__);
@@ -1684,22 +1522,6 @@ void handle_core_event(FSC_U32 event, FSC_U8 portId,
 	case DATA_ROLE:
 		pr_info("FUSB %s:DATA_ROLE=0x%x\n", __func__, event);
 
-#ifdef CONFIG_DUAL_ROLE_USB_INTF
-		/* dual role usb--> 0:ufp, 1:dfp */
-		if (chip->port.PolicyIsDFP) {
-			chip->tcpc->dual_role_mode = 1;
-		} else {
-			chip->tcpc->dual_role_mode = 0;
-		}
-		/* dual role usb--> 0:Device, 1:Host */
-		if (chip->port.PolicyIsDFP) {
-			chip->tcpc->dual_role_dr = 0;
-		} else {
-			chip->tcpc->dual_role_dr = 1;
-		}
-
-		//dual_role_instance_changed(chip->tcpc->dr_usb);
-#endif /* CONFIG_DUAL_ROLE_USB_INTF */
 		tcpci_notify_role_swap(chip->tcpc,
 			TCP_NOTIFY_DR_SWAP, chip->port.PolicyIsDFP);
 		break;

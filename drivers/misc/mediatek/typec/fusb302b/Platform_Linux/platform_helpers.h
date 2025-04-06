@@ -1,10 +1,6 @@
 #ifndef __FUSB_PLATFORM_HELPERS_H_
 #define __FUSB_PLATFORM_HELPERS_H_
 
-#ifdef CONFIG_DUAL_ROLE_USB_INTF
-#include <linux/usb/class-dual-role.h>
-#endif /* CONFIG_DUAL_ROLE_USB_INTF */
-
 #define INIT_DELAY_MS   500     // Time to wait before initializing the device, in ms
 #define RETRIES_I2C 3           // Number of retries for I2C reads/writes
 
@@ -196,16 +192,4 @@ void fusb_initialize_timer(void);
 FSC_S32 fusb_EnableInterrupts(void);
 
 void fusb_init_event_handler(void);
-void fusb_force_source(struct dual_role_phy_instance *dual_role);
-void fusb_force_sink(struct dual_role_phy_instance *dual_role);
-unsigned int fusb_get_dual_role_mode(void);
-unsigned int fusb_get_dual_role_power(void);
-unsigned int fusb_get_dual_role_data(void);
-int dual_role_get_local_prop(struct dual_role_phy_instance *dual_role,
-		enum dual_role_property prop, unsigned int *val);
-int dual_role_set_prop(struct dual_role_phy_instance *dual_role,
-		enum dual_role_property prop, const unsigned int *val);
-
-int dual_role_is_writeable(struct dual_role_phy_instance *dual_role,
-		enum dual_role_property prop);
 #endif  // __FUSB_PLATFORM_HELPERS_H_
