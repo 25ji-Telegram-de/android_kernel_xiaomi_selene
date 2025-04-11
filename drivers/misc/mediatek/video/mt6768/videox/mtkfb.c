@@ -1292,7 +1292,7 @@ unsigned int mtkfb_fm_auto_test(void)
 	}
 
 	if (idle_state_backup) {
-		primary_display_idlemgr_kick(__func__, 1);
+		primary_display_idlemgr_kick(__func__, 0);
 		disp_helper_set_option(DISP_OPT_IDLEMGR_ENTER_ULPS, 0);
 	}
 	fbVirAddr = (unsigned long)fbdev->fb_va_base;
@@ -1326,8 +1326,7 @@ unsigned int mtkfb_fm_auto_test(void)
 
 	mtkfb_pan_display_impl(&mtkfb_fbi->var, mtkfb_fbi);
 	msleep(100);
-
-	primary_display_idlemgr_kick(__func__, 1);
+	primary_display_idlemgr_kick(__func__, 0);
 	result = primary_display_lcm_ATA();
 
 	if (idle_state_backup)
