@@ -9,15 +9,3 @@ config TOUCHSCREEN_NT36672C
 	  to your system by SPI bus.
 
 	  If unsure, say N.
-
-if TOUCHSCREEN_NT36672C
-
-config TOUCHSCREEN_NT36672C_MP
-	bool "Novatek NT36672C host download SPI driver - multipoint test"
-	default n
-	help
-	  Say Y here if you want to run multipoint test on NT36672C.
-
-	  If unsure, say N.
-
-endif

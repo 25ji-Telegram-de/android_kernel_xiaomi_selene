@@ -7,5 +7,5 @@
 ccflags-$(CONFIG_TOUCHSCREEN_NT36672C) += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/
 ccflags-$(CONFIG_TOUCHSCREEN_NT36672C) += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/
 # Huaqin add for HQ-131657 by liunianliang at 2021/06/03 end
-obj-$(CONFIG_TOUCHSCREEN_NT36672C) += nt36xxx.o nt36xxx_fw_update.o nt36xxx_ext_proc.o
-obj-$(CONFIG_TOUCHSCREEN_NT36672C_MP) += nt36xxx_mp_ctrlram.o
+
+obj-$(CONFIG_TOUCHSCREEN_NT36672C) += nt36xxx.o nt36xxx_fw_update.o nt36xxx_ext_proc.o nt36xxx_mp_ctrlram.o
