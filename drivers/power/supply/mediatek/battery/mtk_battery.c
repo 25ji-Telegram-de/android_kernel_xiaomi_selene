@@ -694,6 +694,9 @@ static int battery_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_TEMP:
 		val->intval = gm.tbat_precise;
 		break;
+	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
+		val->intval = check_cap_level(data->BAT_CAPACITY);
+		break;
 	/*K19A-75 charge by wangchao at 2021/4/15 start*/
 	case POWER_SUPPLY_PROP_HIZ_ENABLE:
 	/*K19A-75 charge by wangchao at 2021/4/15 end*/
