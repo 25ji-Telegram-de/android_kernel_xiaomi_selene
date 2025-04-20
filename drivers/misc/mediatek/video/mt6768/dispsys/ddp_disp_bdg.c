@@ -1512,7 +1512,9 @@ int bdg_tx_ps_ctrl(enum DISP_BDG_ENUM module,
 int bdg_tx_vdo_timing_set(enum DISP_BDG_ENUM module,
 			void *cmdq, struct LCM_DSI_PARAMS *tx_params)
 {
-	unsigned int i;
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+	unsigned int i,j;
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 	u32 dsi_buf_bpp, data_init_byte;
 	data_init_byte = 0;
 
@@ -1602,6 +1604,17 @@ int bdg_tx_vdo_timing_set(enum DISP_BDG_ENUM module,
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_VFP_NL,
 					(tx_params->vertical_frontporch));
 
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 start */
+#ifdef CONFIG_MTK_HIGH_FRAME_RATE
+		for (j = 0; j < DFPS_LEVELS; j++) {
+			if (tx_params->dfps_params[j].fps == 9000) {
+				DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_VFP_NL,
+					(tx_params->dfps_params[j].vertical_frontporch));
+				break;
+			}
+		}
+#endif
+/* Huaqin modify for HQ-179522 by jiangyue at 2022/01/24 end */
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_HSA_WC, hsa_byte);
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_HBP_WC, hbp_byte);
 		DSI_OUTREG32(cmdq, TX_REG[i]->DSI_TX_HFP_WC, hfp_byte);
