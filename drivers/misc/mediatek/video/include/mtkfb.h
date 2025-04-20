@@ -398,11 +398,6 @@ struct mtkfb_device {
 	int timeline_max;
 	struct list_head pending_configs;
 	struct ion_client *ion_client;
-
-	/* begin modify for unlock speed */
-	atomic_t resume_pending;
-	wait_queue_head_t resume_wait_q;
-	/* end modify for unlock speed */
 };
 
 #endif				/* __KERNEL__ */
