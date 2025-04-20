@@ -179,9 +179,6 @@ unsigned int ext_lcd_fps = 6000;
 char ext_mtkfb_lcm_name[256] = { 0 };
 #endif
 
-/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
-extern int real_refresh;
-/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 DEFINE_SEMAPHORE(sem_flipping);
 DEFINE_SEMAPHORE(sem_early_suspend);
 DEFINE_SEMAPHORE(sem_overlay_buffer);
@@ -320,196 +317,6 @@ static void mdss_fb_pm_complete(struct device *dev)
 }
 /* end modify for unlock speed */
 
-struct fb_lcd_merlin_para lcd_merlin_para = {0};
-bool set_white_point_x = true;
-
-unsigned int hbm_mode;
-#ifdef CONFIG_LM3697_SUPPORT
-extern int ktd_hbm_set(enum backlight_hbm_mode hbm_mode);
-extern int ti_hbm_set(enum backlight_hbm_mode hbm_mode);
-
-/* white_point info from lk */
-static int __init mtkfb_get_white_point(char *p)
-{
-	char wpoint[10];
-
-	strlcpy(wpoint, p, sizeof(wpoint));
-
-	printk("[%s]: white_point = %s\n", __func__, wpoint);
-
-	lcd_merlin_para.white_point_x = (wpoint[0]-'0') * 100
-		+ (wpoint[1]-'0') * 10 + (wpoint[2]-'0');
-
-	lcd_merlin_para.white_point_y = (wpoint[3]-'0') * 100
-		+ (wpoint[4]-'0') * 10 + (wpoint[5]-'0');
-/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 start */
-	lcd_merlin_para.white_point_l = (wpoint[6]-'0') * 100
-		+ (wpoint[7]-'0') * 10 + (wpoint[8]-'0');
-/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 end */
-	return 0;
-}
-
-early_param("ro.boot.lcm_white_point", mtkfb_get_white_point);
-/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 start */
-static ssize_t mtkfb_get_wpoint_level(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	int ret;
-	ret = scnprintf(buf, PAGE_SIZE, "%3d\n", lcd_merlin_para.white_point_l);
-	return ret;
-}
-
-static ssize_t mtkfb_set_wpoint_level(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
-{
-	sscanf(buf, "%3d", &lcd_merlin_para.white_point_l);
-	return len;
-}
-/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 end */
-/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
-static ssize_t mtkfb_get_refresh(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	int ret;
-	ret = scnprintf(buf, PAGE_SIZE, "%3d\n", real_refresh);
-	return ret;
-}
-static ssize_t mtkfb_set_refresh(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
-{
-		sscanf(buf, "%3d", &real_refresh);
-		return len;
-}
-/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
-static ssize_t mtkfb_get_hbm(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	int ret;
-
-	ret = snprintf(buf, 128, "hbm_mode:%d\n", hbm_mode);
-
-	return ret;
-}
-
-static ssize_t mtkfb_set_hbm(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
-{
-	extern char *saved_command_line;
-	int bkl_id = 0;
-	char *bkl_ptr = (char *)strnstr(saved_command_line, ":bklic=", strlen(saved_command_line));
-	bkl_ptr += strlen(":bklic=");
-	bkl_id = simple_strtol(bkl_ptr, NULL, 10);
-
-	sscanf(buf, "%d", &hbm_mode);
-
-	if (hbm_mode >= HBM_MODE_LEVEL_MAX)
-		hbm_mode = HBM_MODE_LEVEL_MAX - 1;
-	if (hbm_mode < HBM_MODE_DEFAULT)
-		hbm_mode = HBM_MODE_DEFAULT;
-
-	if (bkl_id == 1) {
-		ti_hbm_set((enum backlight_hbm_mode)hbm_mode);
-		printk("[%s]: Ti, set hbm_mode = %d\n", __func__, hbm_mode);
-	} else {
-		ktd_hbm_set((enum backlight_hbm_mode)hbm_mode);
-		printk("[%s]: ktd, set hbm_mode = %d\n", __func__, hbm_mode);
-	}
-	return len;
-}
-
-static ssize_t mtkfb_get_wpoint(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	int ret;
-	ret = scnprintf(buf, PAGE_SIZE, "%3d%3d\n",
-			lcd_merlin_para.white_point_x, lcd_merlin_para.white_point_y);
-	return ret;
-}
-
-static ssize_t mtkfb_set_wpoint(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
-{
-	if (set_white_point_x) {
-		sscanf(buf, "%3d", &lcd_merlin_para.white_point_x);
-		set_white_point_x = false;
-	} else {
-		sscanf(buf, "%3d", &lcd_merlin_para.white_point_y);
-		set_white_point_x = true;
-	}
-		return len;
-}
-
-static ssize_t mtkfb_get_rpoint(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	int ret;
-	ret = scnprintf(buf, PAGE_SIZE, "%6d\n",
-			lcd_merlin_para.white_point_r);
-	return ret;
-}
-
-static ssize_t mtkfb_set_rpoint(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
-{
-	sscanf(buf, "%6d", &lcd_merlin_para.white_point_r);
-	return len;
-}
-
-static ssize_t mtkfb_get_gpoint(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	int ret;
-	ret = scnprintf(buf, PAGE_SIZE, "%6d\n",
-			lcd_merlin_para.white_point_g);
-	return ret;
-}
-
-static ssize_t mtkfb_set_gpoint(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
-{
-	sscanf(buf, "%6d", &lcd_merlin_para.white_point_g);
-	return len;
-}
-
-static ssize_t mtkfb_get_bpoint(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	int ret;
-	ret = scnprintf(buf, PAGE_SIZE, "%6d\n",
-			lcd_merlin_para.white_point_b);
-	return ret;
-}
-
-static ssize_t mtkfb_set_bpoint(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
-{
-	sscanf(buf, "%6d", &lcd_merlin_para.white_point_b);
-	return len;
-}
-
-static ssize_t mtkfb_get_panel_info(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	/* Huaqin modify for HQ-140354 by liunianliang at 2021/06/15 start */
-	int ret = 0;
-	/* Huaqin modify for HQ-140354 by liunianliang at 2021/06/15 end */
-
-	return ret;
-}
-
-static DEVICE_ATTR(mtk_fb_hbm, 0644, mtkfb_get_hbm, mtkfb_set_hbm);
-static DEVICE_ATTR(mtkfb_dispwpoint, 0644, mtkfb_get_wpoint, mtkfb_set_wpoint);
-static DEVICE_ATTR(mtkfb_disprpoint, 0644, mtkfb_get_rpoint, mtkfb_set_rpoint);
-static DEVICE_ATTR(mtkfb_dispgpoint, 0644, mtkfb_get_gpoint, mtkfb_set_gpoint);
-static DEVICE_ATTR(mtkfb_dispbpoint, 0644, mtkfb_get_bpoint, mtkfb_set_bpoint);
-static DEVICE_ATTR(panel_info, 0644, mtkfb_get_panel_info, NULL);
-/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 start */
-static DEVICE_ATTR(mtkfb_dispwpoint_level, 0644, mtkfb_get_wpoint_level, mtkfb_set_wpoint_level);
-/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
-static DEVICE_ATTR(mtkfb_fps, 0644, mtkfb_get_refresh, mtkfb_set_refresh);
-
-static struct attribute *mtk_fb_attrs[] = {
-	&dev_attr_mtk_fb_hbm.attr,
-	&dev_attr_mtkfb_dispwpoint.attr,
-	&dev_attr_mtkfb_disprpoint.attr,
-	&dev_attr_mtkfb_dispgpoint.attr,
-	&dev_attr_mtkfb_dispbpoint.attr,
-	&dev_attr_panel_info.attr,
-	&dev_attr_mtkfb_dispwpoint_level.attr,
-	&dev_attr_mtkfb_fps.attr,
-	NULL,
-};
-/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
-/* Huaqin modify for HQ-126356 by caogaojie at 2021/05/06 end */
-static struct attribute_group mtk_fb_attr_group = {
-	.attrs = mtk_fb_attrs,
-};
-#endif
 
 void mtkfb_log_enable(int enable)
 {
@@ -2985,13 +2792,6 @@ static int mtkfb_probe(struct platform_device *pdev)
 	/*wake_lock_init(&prim_panel_wakelock, WAKE_LOCK_SUSPEND,
 	"prim_panel_wakelock");*/
 	/* end modify for unlock speed */
-
-#ifdef CONFIG_LM3697_SUPPORT
-	r = sysfs_create_group(&fbi->dev->kobj, &mtk_fb_attr_group);
-	if (r)
-		pr_err("sysfs group creat failed, rc = %d\n", r);
-#endif
-
 	MSG_FUNC_LEAVE();
 	pr_info("disp driver(2) %s end\n", __func__);
 	return 0;
@@ -3020,10 +2820,6 @@ static int mtkfb_remove(struct platform_device *pdev)
 
 	fbdev->state = MTKFB_DISABLED;
 	mtkfb_free_resources(fbdev, saved_state);
-
-#ifdef CONFIG_LM3697_SUPPORT
-	sysfs_remove_group(&fbdev->fb_info->dev->kobj, &mtk_fb_attr_group);
-#endif
 
 	MSG_FUNC_LEAVE();
 	return 0;
