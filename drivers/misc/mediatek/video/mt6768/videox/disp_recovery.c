@@ -853,6 +853,11 @@ int primary_display_esd_recovery(void)
 	/*after dsi_stop, we should enable the dsi basic irq.*/
 	dsi_basic_irq_enable(DISP_MODULE_DSI0, NULL);
 	disp_lcm_suspend(primary_get_lcm());
+	if (primary_get_lcm()->drv->suspend_power) {
+		primary_get_lcm()->drv->suspend_power();
+	} else {
+		printk("[%s]: ESD recovery,lcm suspend power fail!\n", __func__);
+	}
 	DISPCHECK("[POWER]lcm suspend[end]\n");
 
 
