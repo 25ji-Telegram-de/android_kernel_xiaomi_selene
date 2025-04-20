@@ -151,14 +151,6 @@ static unsigned int gPresentFenceIndex;
 unsigned int gTriggerDispMode;
 static unsigned int g_keep;
 static unsigned int g_skip;
-
-/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
-#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
-extern atomic_t lcm_ready;
-extern atomic_t lcm_valid_irq;
-#endif
-/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
-
 #if 0 //def CONFIG_TRUSTONIC_TRUSTED_UI
 static struct switch_dev disp_switch_data;
 #endif
@@ -4743,14 +4735,6 @@ int primary_display_suspend(void)
 #endif
 
 	DISPCHECK("%s begin\n", __func__);
-
-/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
-#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
-	atomic_set(&lcm_ready, 0);
-	DISPERR("[ESD] atomic_set(&lcm_ready, 0)\n");
-#endif
-/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
-
 #ifdef _SUPPORT_LCM_BOOST_
 	fb_boost_start();
 #endif
@@ -5043,13 +5027,6 @@ int primary_display_resume(void)
 	unsigned int out_fps = 60;
 #endif
 	DISPCHECK("%s begin\n", __func__);
-
-/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
-#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
-	atomic_set(&lcm_valid_irq, 1);
-#endif
-/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
-
 #ifdef _SUPPORT_LCM_BOOST_
 	fb_boost_start();
 #endif
@@ -5413,14 +5390,6 @@ done:
 		WDT_SETBY_Display);
 #endif
 	ddp_clk_check();
-
-/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 start */
-#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
-	atomic_set(&lcm_ready, 1);
-	DISPERR("[ESD] atomic_set(&lcm_ready, 1)\n");
-#endif
-/* Huaqin add for HQ-124138 by dongtingchi at 2021/04/29 end */
-
 #ifdef _SUPPORT_LCM_BOOST_
 	fb_boost_release();
 #endif
