@@ -1207,9 +1207,11 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 
 	/* hs_trail > max(8*UI, 60ns+4*UI) (spec) */
 	/* hs_trail = 80ns+4*UI */
-	hs_trail = 80 + 4 * ui;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	hs_trail = 76 + 4 * ui;
 	timcon0.HS_TRAIL = (hs_trail > cycle_time) ?
 				NS_TO_CYCLE(hs_trail, cycle_time) + 1 : 2;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 	/* hs_exit > 100ns (spec) */
 	/* hs_exit = 120ns */
@@ -1239,10 +1241,11 @@ int bdg_tx_phy_config(enum DISP_BDG_ENUM module,
 
 	/* clk_trail > 60ns (spec) */
 	/* clk_trail = 100ns */
-	timcon2.CLK_TRAIL = NS_TO_CYCLE(100, cycle_time) + 1;
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
+	timcon2.CLK_TRAIL = NS_TO_CYCLE(80, cycle_time) + 1;
 	if (timcon2.CLK_TRAIL < 2)
 		timcon2.CLK_TRAIL = 2;
-
+/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 	/* clk_exit > 100ns (spec) */
 	/* clk_exit = 200ns */
 	/* timcon3.CLK_EXIT = NS_TO_CYCLE(200, cycle_time); */
