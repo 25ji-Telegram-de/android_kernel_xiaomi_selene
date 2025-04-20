@@ -158,9 +158,6 @@ do {	\
 #define DIFF_CLK_LANE_LP (0x10)
 
 
-/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
-int real_refresh;
-/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 /*****************************************************************************/
 struct t_condition_wq {
 	wait_queue_head_t wq;
@@ -886,15 +883,6 @@ int ddp_dsi_porch_setting(enum DISP_MODULE_ENUM module, void *handle,
 			if (pgc != NULL && pgc->vfp_chg_sync_bdg
 					&& bdg_is_bdg_connected() == 1)
 				ddp_dsi_set_bdg_porch_setting(module, handle, value);
-			/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 start */
-			if (value == 54) {
-				real_refresh = 90;
-			} else if (value == 1290) {
-				real_refresh = 60;
-			} else {
-				real_refresh = 45;
-			}
-			/* Huaqin modify for HQ-141505 by caogaojie at 2021/06/18 end */
 		}
 		if (type == DSI_VSA) {
 			DISPINFO("set dsi%d vsa to %d\n", i, value);
@@ -954,9 +942,6 @@ static void DSI_Get_Porch_Addr(enum DISP_MODULE_ENUM module,
 	}
 }
 
-/* Huaqin add for K19S-31 by jiangyue at 2022/01/14 start */
-extern int mtk_rxtx_ratio;
-/* Huaqin add for K19S-31 by jiangyue at 2022/01/14 end */
 void DSI_Config_VDO_Timing_with_DSC(enum DISP_MODULE_ENUM module,
 	struct cmdqRecStruct *cmdq, struct LCM_DSI_PARAMS *dsi_params)
 {
@@ -1032,9 +1017,7 @@ void DSI_Config_VDO_Timing_with_DSC(enum DISP_MODULE_ENUM module,
 		t_hbp = 4;
 		ps_wc = dsi_params->horizontal_active_pixel * dsiTmpBufBpp / 8;
 		t_hbllp = 16 * dsi_params->LANE_NUM;
-/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 start */
-		ap_tx_total_word_cnt = (get_bdg_line_cycle() * lanes * mtk_rxtx_ratio + 99) / 100;
-/* Huaqin modify for K19S-31 by jiangyue at 2022/01/14 end */
+		ap_tx_total_word_cnt = (get_bdg_line_cycle() * lanes * RXTX_RATIO + 99) / 100;
 
 		switch (dsi_params->mode) {
 		case DSI_CMD_MODE:
@@ -2232,12 +2215,10 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 
 		/* hs_trail > max(8*UI, 60ns+4*UI) (spec) */
 		/* hs_trail = 80ns+4*UI */
-/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
-		hs_trail = 76 + 4 * ui;
+		hs_trail = 80 + 4 * ui;
 		timcon0.HS_TRAIL = (hs_trail > cycle_time) ?
 				(NS_TO_CYCLE(hs_trail, cycle_time) +
 				NS_TO_CYCLE_MOD(hs_trail, cycle_time) + 1) : 2;
-/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 
 		/* hs_exit > 100ns (spec) */
 		/* hs_exit = 120ns */
@@ -2269,11 +2250,9 @@ void DSI_PHY_TIMCONFIG(enum DISP_MODULE_ENUM module,
 
 		/* clk_trail > 60ns (spec) */
 		/* clk_trail = 100ns */
-/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 start*/
-		timcon2.CLK_TRAIL = NS_TO_CYCLE(88, cycle_time) + 1;
+		timcon2.CLK_TRAIL = NS_TO_CYCLE(100, cycle_time) + 1;
 		if (timcon2.CLK_TRAIL < 2)
 			timcon2.CLK_TRAIL = 2;
-/*K19A K19A-138 solve mipi timing  by feiwen at 2021/5/19 end*/
 		timcon2.CONT_DET = 0;
 
 		/* clk_exit > 100ns (spec) */
