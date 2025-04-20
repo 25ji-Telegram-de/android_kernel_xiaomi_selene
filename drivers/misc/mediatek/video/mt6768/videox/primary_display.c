@@ -3427,26 +3427,10 @@ static int _ovl_fence_release_callback(unsigned long userdata)
 		unsigned int status;
 
 		cmdqBackupReadSlot(pgc->ovl_status_info, 0, &status);
-#ifdef DEBUG_OVL_CONFIG_TIME
-		unsigned int time_event = 0;
-		unsigned int time_event1 = 0;
-		unsigned int time_event2 = 0;
-
-		cmdqBackupReadSlot(pgc->ovl_config_time, 0, &time_event);
-		cmdqBackupReadSlot(pgc->ovl_config_time, 1, &time_event1);
-		cmdqBackupReadSlot(pgc->ovl_config_time, 2, &time_event2);
-		DISPMSG(
-			"ovl config time_event %d time_event1 %d time_event2 %d time1_diff  %d  time2_diff %d\n",
-			time_event, time_event1, time_event2,
-			time_event1 - time_event, time_event2 - time_event1);
-#endif
 		if (status & 0x1) {
 			/* ovl is not idle !! */
 			DISPERR("disp ovl status error!! stat=0x%x\n",
 			status);
-			/* disp_aee_print("ovl_stat 0x%x\n", status); */
-			mmprofile_log_ex(ddp_mmp_get_events()->primary_error,
-					 MMPROFILE_FLAG_PULSE, status, 0);
 			primary_display_diagnose();
 			ret = -1;
 		}
