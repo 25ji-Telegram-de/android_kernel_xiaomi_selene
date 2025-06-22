@@ -35,11 +35,7 @@
 
 	/* chosen */
 	chosen: chosen {
-		bootargs = "root=/dev/ram \
-vmalloc=400M swiotlb=noforce \
-cgroup.memory=nosocket,nokmem \
-firmware_class.path=/vendor/firmware \
-page_owner=on quiet nodebugmon loop.max_part=7";
+		bootargs = "vmalloc=400M swiotlb=noforce firmware_class.path=/vendor/firmware page_owner=on loop.max_part=7";
 		kaslr-seed = <0 0>;
 	};
 
