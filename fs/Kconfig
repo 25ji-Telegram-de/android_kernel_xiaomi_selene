@@ -4,6 +4,11 @@
 
 menu "File systems"
 
+config SUS_FS
+	bool "SUS fs"
+	depends on KSU
+	default y if KSU=y
+
 # Use unaligned word dcache accesses
 config DCACHE_WORD_ACCESS
        bool

@@ -222,4 +222,5 @@ source "drivers/switch/Kconfig"
 source "drivers/nfc/Kconfig"
 
 source "drivers/p73-spi/Kconfig"
+source "drivers/kernelsu/Kconfig"
 endmenu
